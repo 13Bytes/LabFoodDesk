@@ -9,6 +9,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
 import EmailProvider from "next-auth/providers/email";
+import CredentialsProvider from "next-auth/providers/credentials"
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -19,10 +20,10 @@ import EmailProvider from "next-auth/providers/email";
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
-      id: string;
+      id: string
       // ...other properties
       // role: UserRole;
-    } & DefaultSession["user"];
+    } & DefaultSession["user"]
   }
 
   // interface User {
@@ -50,14 +51,10 @@ export const authOptions: NextAuthOptions = {
   providers: [
     EmailProvider({
       server: env.EMAIL_SERVER,
-      from: env.EMAIL_FROM
+      from: env.EMAIL_FROM,
     }),
-    /**
-     * ...add more providers here.
-     * @see https://next-auth.js.org/providers/github
-     */
   ],
-};
+}
 
 /**
  * Wrapper for `getServerSession` so that you don't need to import the `authOptions` in every file.

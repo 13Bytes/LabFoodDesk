@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 import { useForm, SubmitHandler } from "react-hook-form"
+import { time } from "console";
 
 const Me: NextPage = () => {
   const { data: sessionData } = useSession();
@@ -16,16 +17,11 @@ const Me: NextPage = () => {
   const { register: userFormRegister, handleSubmit: handleUserSubmit } = useForm<UserFormInput>()
 
   const onUserSubmit: SubmitHandler<UserFormInput> = async (data) => {
-    const user = updateUser.mutate(data)
-    console.log('newUser', user)
-    trpcUtils.user.getMe.setData(user, (data) => data)
+    console.log('updateUser')
+    const user = await updateUser.mutateAsync(data)
+    console.log('updateUser finished: newUser', user)
 
-    // !TODO: why doesn't user contain data from mutation?
-
-    //await trpcUtils.user.getMe.invalidate()
-    // console.log('invalidate1')
-    // await trpcUtils.user.getMe.refetch()
-    // console.log('invalidate2')
+    trpcUtils.user.getMe.setData(undefined, user)
   }
 
   return (
