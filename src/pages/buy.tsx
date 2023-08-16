@@ -1,18 +1,16 @@
 import { type NextPage } from "next"
-import { api } from "~/utils/api"
-import Link from "next/link"
-import Head from "next/head"
 import CenteredPage from "~/components/Layout/CenteredPage"
+import { api } from "~/utils/api"
 
 const BuyPage: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" })
-  const trcpExampleRequestUseAll = api.example.getAll.useQuery()
   const allItemsRequest = api.item.getAll.useQuery()
 
   return (
     <>
       <CenteredPage>
-        <div>all fancy products</div>
+        {allItemsRequest.data?.map((item) => (
+          <p key={item.id}>{item.name}</p>
+        ))}
       </CenteredPage>
     </>
   )

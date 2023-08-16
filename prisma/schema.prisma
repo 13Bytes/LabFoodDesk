@@ -14,22 +14,36 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+// -----------------------------------------------------------------------------
+// Business models
+model Item {
+    // items must be immutable and shouldn't be deleted
+    id          String        @id @default(cuid())
+    name        String
+    type        Category[]
+    price       Float
+    Transaction Transaction[]
+    is_active   Boolean       @default(true)
 }
 
-// -----------------------------------------------------------------------------
-model Item {
+model Category {
     id    String @id @default(cuid())
     name  String
-    type  String
-    price Float
+    items Item[]
+}
+
+model Transaction {
+    id        String   @id @default(cuid())
+    user      User     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+    userId    String
+    item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+    itemId    String
+    quantity  Int
+    createdAt DateTime @default(now())
+    type      Int      @default(0)      // 0: buy, 1: sell
 }
 
 // -----------------------------------------------------------------------------
-
 // Necessary for Next auth
 model Account {
     id                String  @id @default(cuid())
@@ -58,13 +72,17 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String        @id @default(cuid())
     name          String?
-    email         String?   @unique
+    email         String?       @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
+    //  ---
+    is_admin      Boolean       @default(false)
+    balance       Float         @default(0)
+    Transaction   Transaction[]
 }
 
 model VerificationToken {
