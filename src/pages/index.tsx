@@ -4,11 +4,12 @@ import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
+import CenteredPage from "~/components/Layout/CenteredPage"
 
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
-  const trcpExampleRequestUseAll = api.example.getAll.useQuery();
-  const allItemsRequest = api.item.getAll.useQuery();
+  const hello = api.example.hello.useQuery({ text: "from tRPC" })
+  const trcpExampleRequestUseAll = api.example.getAll.useQuery()
+  const allItemsRequest = api.item.getAll.useQuery()
 
   return (
     <>
@@ -16,7 +17,7 @@ const Home: NextPage = () => {
         <title>LabEats</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="bg flex min-h-screen flex-col items-center justify-center">
+      <CenteredPage>
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             <span className="primary text-primary">Lab</span> Eats
@@ -33,10 +34,10 @@ const Home: NextPage = () => {
             </p>
           </div>
         </div>
-      </main>
+      </CenteredPage>
     </>
-  );
-};
+  )
+}
 
 export default Home;
 
