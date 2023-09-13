@@ -4,6 +4,7 @@ import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
+  adminProcedure
 } from "~/server/api/trpc";
 
 // export const stockRouter = createTRPCRouter({
@@ -17,7 +18,7 @@ import {
 //   }),
 // });
 export const itemRouter = createTRPCRouter({
-  getAll: publicProcedure.query(({ ctx }) => {
+  getAll: adminProcedure.query(({ ctx }) => {
     return ctx.prisma.item.findMany();
   }),
 });

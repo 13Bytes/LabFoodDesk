@@ -35,7 +35,7 @@ const InventoryPage: NextPage = () => {
                   <div className="flex items-center space-x-3">
                     <div className="avatar">
                       <div className="mask mask-squircle h-12 w-12">
-                        <img src="/404.png" />
+                        {/* Empty icon */}
                       </div>
                     </div>
                     <div>
