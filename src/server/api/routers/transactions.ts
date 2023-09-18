@@ -26,23 +26,25 @@ export const transactionRouter = createTRPCRouter({
       const items = await ctx.prisma.transaction.findMany({
         take: pageSize + 1, // get an extra item at the end which we'll use as next cursor
         where: { userId: ctx.session.user.id },
+        include: {
+          item: true,
+        },
         skip: (page - 1) * pageSize,
         orderBy: {
           createdAt: "desc",
         },
-
       })
 
       // Last element is to check if list extends past current page
-      const nextPageExists = (items.length > pageSize)
-      if (nextPageExists){
-        items.pop()   
+      const nextPageExists = items.length > pageSize
+      if (nextPageExists) {
+        items.pop()
       }
 
       return {
         items,
         pageNumber: page,
-        nextPageExists
+        nextPageExists,
       }
     }),
 })

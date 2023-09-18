@@ -57,7 +57,7 @@ const AccountPage: NextPage = () => {
             {transactionData?.pages[page]?.items.map((transaction) => (
               <div>
                 <p>
-                  {transaction.itemId} wurde{" "}
+                  "{transaction.item.name}" wurde{" "}
                   {transaction.type == 0 ? "gekauft" : "verkauft"} am{" "}
                   {transaction.createdAt.toISOString()}
                 </p>
