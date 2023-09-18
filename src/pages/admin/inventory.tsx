@@ -1,4 +1,6 @@
+import { useQuery } from "@tanstack/react-query"
 import { type NextPage } from "next"
+import React from "react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 
@@ -59,5 +61,3 @@ const InventoryPage: NextPage = () => {
     </>
   )
 }
-
-export default InventoryPage

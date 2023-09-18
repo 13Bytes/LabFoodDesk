@@ -27,11 +27,9 @@ const Home: NextPage = () => {
               {hello.data ? hello.data.greeting : "Loading tRPC query..."}
             </p>
             <AuthButton />
-            <p className="text-red-400">
               {allItemsRequest.data?.map((item) => (
-                <p key={item.id}>{item.name}</p>
+                <p className="text-red-400" key={item.id}>{item.name}</p>
               ))}
-            </p>
           </div>
         </div>
       </CenteredPage>

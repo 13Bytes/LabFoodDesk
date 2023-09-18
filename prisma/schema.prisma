@@ -5,6 +5,10 @@ generator client {
     provider = "prisma-client-js"
 }
 
+generator zod {
+    provider = "npx zod-prisma-types"
+}
+
 datasource db {
     provider = "sqlite"
     // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
@@ -20,7 +24,7 @@ model Item {
     // items must be immutable and shouldn't be deleted
     id          String        @id @default(cuid())
     name        String
-    type        Category[]
+    categories  Category[]
     price       Float
     Transaction Transaction[]
     is_active   Boolean       @default(true)
@@ -34,13 +38,13 @@ model Category {
 
 model Transaction {
     id        String   @id @default(cuid())
-    user      User     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId    String
     item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
     itemId    String
     quantity  Int
     createdAt DateTime @default(now())
-    type      Int      @default(0)      // 0: buy, 1: sell
+    type      Int      @default(0) // 0: buy, 1: sell
 }
 
 // -----------------------------------------------------------------------------
@@ -80,7 +84,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     //  ---
-    is_admin      Boolean       @default(false)
+    isAdmin       Boolean       @default(false)
     balance       Float         @default(0)
     Transaction   Transaction[]
 }

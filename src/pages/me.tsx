@@ -1,14 +1,14 @@
-import { NextPage } from "next";
-import Head from "next/head";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { api } from "~/utils/api";
+import { NextPage } from "next"
+import Head from "next/head"
+import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { api } from "~/utils/api"
 import { useForm, SubmitHandler } from "react-hook-form"
-import { time } from "console";
+import { time } from "console"
 import CenteredPage from "~/components/Layout/CenteredPage"
 
 const Me: NextPage = () => {
-  const { data: sessionData } = useSession()
+  const { data: sessionData, update: updateSession } = useSession()
 
   const trpcUtils = api.useContext()
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
@@ -23,32 +23,34 @@ const Me: NextPage = () => {
     const user = await updateUser.mutateAsync(data)
     console.log("updateUser finished: newUser", user)
 
-    trpcUtils.user.getMe.setData(undefined, user)
+    await trpcUtils.user.getMe.setData(undefined, user)
+    updateSession()
   }
 
   return (
     <CenteredPage>
-      <h1 className="text-4xl">Me</h1>
-      {sessionData && JSON.stringify(sessionData)}
-
-      <h2 className="text-xl">user</h2>
-      {userData && JSON.stringify(userData)}
-
-      {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
-      <form onSubmit={handleUserSubmit(onUserSubmit)}>
+      <form onSubmit={handleUserSubmit(onUserSubmit)} className="gap-1">
+        <p className="font-semibold">Mein Username:</p>
         <input
           type="text"
           defaultValue={userData?.name || ""}
           {...userFormRegister("name", { required: true })}
           className="input-bordered input w-full max-w-xs"
         />
-        <input type="submit" />
+        <button className="btn" type="submit">
+          Speichern
+        </button>
       </form>
 
-      {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
-      <button className="btn" onClick={async () => { await trpcUtils.user.getMe.invalidate(); console.log('invalidate') }}>invalidate</button>
+      <div className="pt-10">
+        <p className="font-bold">Debugging sessionData</p>
+        {sessionData && JSON.stringify(sessionData)}
+
+        <p className="font-bold">Debugging userData</p>
+        {userData && JSON.stringify(userData)}
+      </div>
     </CenteredPage>
   )
 }
 
-export default Me;
+export default Me
