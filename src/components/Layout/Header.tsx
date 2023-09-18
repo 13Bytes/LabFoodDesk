@@ -12,7 +12,7 @@ export default function Header() {
         <Link href="/buy">Kaufen</Link>
       </li>
       <li>
-        <Link href="/groups">Gruppe</Link>
+        <Link href="/split">Split™️</Link>
       </li>
       <li>
         <Link href="/account">Konto</Link>

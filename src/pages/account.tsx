@@ -48,7 +48,7 @@ const AccountPage: NextPage = () => {
               Account von <span className="font-bold ">{userData?.name}</span>
             </h1>
             <p>
-              Guthaben: <span className="font-bold">{userData?.balance}€</span>
+              Guthaben: <span className={`font-bold ${(userData?.balance) && (userData?.balance > 0) ? 'text-green-600' : 'text-red-700'}`}>{userData?.balance}€</span>
             </p>
           </div>
 
