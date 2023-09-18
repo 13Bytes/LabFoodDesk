@@ -1,12 +1,5 @@
 import { z } from "zod"
 import {
-  ItemSchema,
-  ItemSelectSchema,
-  ItemFindUniqueArgsSchema,
-  ItemOrderByWithRelationInputSchema,
-} from "~/../prisma/generated/zod"
-
-import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,

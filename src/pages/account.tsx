@@ -1,27 +1,43 @@
 import { type NextPage } from "next"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 import { useSession } from "next-auth/react"
 import React from "react"
 
 const AccountPage: NextPage = () => {
-    const [page, setPage] = React.useState(0)
-    const { data: sessionData } = useSession()
-    
+  const [page, setPage] = React.useState(0)
+  const [maxPage, setMaxPage] = React.useState(Infinity)
+  const { data: sessionData } = useSession()
+
   const trpcUtils = api.useContext()
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
-  const { data: transactionData, isLoading: transactionIsLoading } =
-    api.transaction.getInfinite.useInfiniteQuery(
-      {
-        limit: 10,
+  const {
+    data: transactionData,
+    isLoading: transactionIsLoading,
+    fetchNextPage,
+    hasNextPage,
+  } = api.transaction.getMineInfinite.useInfiniteQuery(
+    {},
+    {
+      keepPreviousData: true,
+      getNextPageParam: (lastPage) => {
+        if (lastPage.nextPageExists) {
+          return lastPage.pageNumber + 1
+        } else {
+          return undefined
+        }
       },
-      {
-        keepPreviousData: true,
-        getNextPageParam: (lastPage:number) => lastPage.pageID + 1,
-        initialCursor: 1, // (optional)
-      }
-    )
+    }
+  )
+
+  useEffect(() => {
+    if (!hasNextPage) {
+      setMaxPage(page)
+    } else {
+      setMaxPage(Infinity)
+    }
+  }, [setMaxPage, hasNextPage])
 
   return (
     <>
@@ -36,15 +52,39 @@ const AccountPage: NextPage = () => {
             </p>
           </div>
 
-          <div className="pt-2 font-semibold">
-            <p>letzte Transaktionen:</p>
-            {transactionData?.map((transaction) => (
+          <div className="pt-2">
+            <p className="font-semibold">letzte Transaktionen:</p>
+            {transactionData?.pages[page]?.items.map((transaction) => (
               <div>
-                {transaction.itemId} wurde{" "}
-                {transaction.type == 0 ? "gekauft" : "verkauft"} am{" "}
-                {transaction.createdAt.toISOString()}
+                <p>
+                  {transaction.itemId} wurde{" "}
+                  {transaction.type == 0 ? "gekauft" : "verkauft"} am{" "}
+                  {transaction.createdAt.toISOString()}
+                </p>
               </div>
             ))}
+          </div>
+          <button />
+
+          <div className="join">
+            <button
+              className={`join-item btn ${page < 1 && "btn-disabled"}`}
+              onClick={() => setPage((prev) => prev - 1)}
+            >
+              «
+            </button>
+            <button className="join-item btn pointer-events-none">
+              Seite {page + 1}
+            </button>
+            <button
+              className={`join-item btn ${page >= maxPage && "btn-disabled"}`}
+              onClick={() => {
+                fetchNextPage()
+                setPage((prev) => prev + 1)
+              }}
+            >
+              »
+            </button>
           </div>
         </div>
       </CenteredPage>
