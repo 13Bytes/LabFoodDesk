@@ -31,13 +31,15 @@ const Me: NextPage = () => {
     <CenteredPage>
       <form onSubmit={handleUserSubmit(onUserSubmit)} className="gap-1">
         <p className="font-semibold">Mein Username:</p>
+        <div className="mt-1">
         <input
           type="text"
           defaultValue={userData?.name || ""}
           {...userFormRegister("name", { required: true })}
           className="input-bordered input w-full max-w-xs"
-        />
-        <button className="btn" type="submit">
+          />
+          </div>
+        <button className="btn mt-1" type="submit">
           Speichern
         </button>
       </form>
