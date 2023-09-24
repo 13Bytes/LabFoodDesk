@@ -61,3 +61,5 @@ const InventoryPage: NextPage = () => {
     </>
   )
 }
+
+export default InventoryPage

@@ -51,17 +51,19 @@ export const itemRouter = createTRPCRouter({
           id: input.productID,
         },
       })
+      const quantity = 1 // currently only single item purchases supported
 
       // atomic action:
       await prisma.$transaction([
         prisma.transaction.create({
           data: {
-            quantity: 1,
+            quantity: quantity,
             // userId: ctx.session.user.id,
             user: { connect: { id: ctx.session.user.id } },
             // itemId: product.id,
             item: { connect: { id: product.id } },
             type: 0,
+            totalAmount: product.price * quantity,
           },
         }),
         prisma.user.update({

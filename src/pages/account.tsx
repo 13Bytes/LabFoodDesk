@@ -4,6 +4,7 @@ import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 import { useSession } from "next-auth/react"
 import React from "react"
+import { Transaction } from "@prisma/client"
 
 const AccountPage: NextPage = () => {
   const [page, setPage] = React.useState(0)
@@ -39,6 +40,10 @@ const AccountPage: NextPage = () => {
     }
   }, [setMaxPage, hasNextPage])
 
+  function userIsTransactionDestination(transaction: Transaction): boolean {
+    return transaction.destinationUserId === userData?.id;
+  }
+
   return (
     <>
       <CenteredPage>
@@ -57,9 +62,12 @@ const AccountPage: NextPage = () => {
             {transactionData?.pages[page]?.items.map((transaction) => (
               <div>
                 <p>
-                  "{transaction.item.name}" wurde{" "}
-                  {transaction.type == 0 ? "gekauft" : "verkauft"} am{" "}
-                  {transaction.createdAt.toISOString()}
+                  "{transaction.item.name}" wurde
+                  {transaction.type == 0 && <span className="text-red-700"> gekauft</span>}
+                  {transaction.type == 1 && <span className="text-green-600"> verkauft</span> }
+                  {transaction.type == 2 && userIsTransactionDestination(transaction) &&  <span className="text-green-600"> überwiesen</span>}
+                  {transaction.type == 2 && !userIsTransactionDestination(transaction) &&  <span className="text-red-700"> überwiesen</span>}
+                  {" "} am {transaction.createdAt.toISOString()}
                 </p>
               </div>
             ))}
