@@ -26,7 +26,7 @@ export const transactionRouter = createTRPCRouter({
       const page = input.cursor ?? 1
       const items = await ctx.prisma.transaction.findMany({
         take: pageSize + 1, // get an extra item at the end which we'll use as next cursor
-        where: { OR: [{userId: ctx.session.user.id}, {destinationUserId: ctx.session.user.id}] },
+        where: { OR: [{userId: ctx.session.user.id}, {moneyDestinationUserId: ctx.session.user.id}] },
         include: {
           item: true,
         },

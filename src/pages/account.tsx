@@ -41,7 +41,7 @@ const AccountPage: NextPage = () => {
   }, [setMaxPage, hasNextPage])
 
   function userIsTransactionDestination(transaction: Transaction): boolean {
-    return transaction.destinationUserId === userData?.id;
+    return transaction.moneyDestinationUserId === userData?.id;
   }
 
   return (
@@ -62,7 +62,7 @@ const AccountPage: NextPage = () => {
             {transactionData?.pages[page]?.items.map((transaction) => (
               <div>
                 <p>
-                  "{transaction.item.name}" wurde
+                  "{transaction.item?.name}" wurde
                   {transaction.type == 0 && <span className="text-red-700"> gekauft</span>}
                   {transaction.type == 1 && <span className="text-green-600"> verkauft</span> }
                   {transaction.type == 2 && userIsTransactionDestination(transaction) &&  <span className="text-green-600"> überwiesen</span>}

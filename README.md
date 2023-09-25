@@ -2,6 +2,9 @@
 A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## Development
+This is a NextJS project. Some file-conventions apply.
+
+Start Developing:
 `npm run dev`
 
 Update types based on current schema:

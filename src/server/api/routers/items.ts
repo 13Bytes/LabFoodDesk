@@ -9,11 +9,10 @@ import { prisma } from "~/server/db"
 
 
 export const itemRouter = createTRPCRouter({
+
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.item.findMany()
   }),
-
-
 
   createItem: adminProcedure
     .input(
