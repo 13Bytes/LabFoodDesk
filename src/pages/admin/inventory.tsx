@@ -20,6 +20,7 @@ const InventoryPage: NextPage = () => {
     useForm<AddItemFormInput>()
   const onAddItemSubmit: SubmitHandler<AddItemFormInput> = async (data) => {
     await createItemRequest.mutateAsync(data)
+    setOpenAddItemModal(false)
   }
 
   const Legend = () => (
@@ -34,10 +35,10 @@ const InventoryPage: NextPage = () => {
 
   return (
     <>
-      <div className="flex flex-col p-3">
-        <div className="flex">
+      <div className="flex flex-col p-5">
+        <div className="flex ">
           <button
-            className="btn-square btn"
+            className="btn-square btn btn-primary"
             onClick={() => setOpenAddItemModal(true)}
           >
             <svg
@@ -111,24 +112,48 @@ const InventoryPage: NextPage = () => {
 
             <h3 className="text-lg font-bold">Neues Item</h3>
             <div className="py-4">
-              <form onSubmit={addItemSubmit(onAddItemSubmit)}>
-                <input
-                  type="text"
-                  {...addItemRegister("name", { required: true })}
-                  className="input-bordered input w-full max-w-xs"
-                />
-                <input
-                  type="number"
-                  {...addItemRegister("price", { required: true })}
-                  className="input-bordered input w-full max-w-xs"
-                />
-                <input
-                  type="text"
-                  {...addItemRegister("categories", { required: true })}
-                  className="input-bordered input w-full max-w-xs"
-                />
-                
-                <button className="btn mt-1" type="submit">
+              <form
+                onSubmit={addItemSubmit(onAddItemSubmit)}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="label">
+                    <span className="label-text text-base">Name</span>
+                  </label>
+                  <input
+                    type="text"
+                    {...addItemRegister("name", { required: true })}
+                    className="input-bordered input-primary input w-full max-w-md"
+                    placeholder="Name"
+                  />
+                </div>
+                <div>
+                  <label className="label">
+                    <span className="label-text text-base">Preis [€]</span>
+                  </label>
+                  <input
+                    type="number"
+                    {...addItemRegister("price", { required: true })}
+                    className="input-bordered input-primary input w-full max-w-md"
+                    placeholder="Preis"
+                  />
+                </div>
+                <div>
+                  <label className="label">
+                    <span className="label-text text-base">Categorien</span>
+                  </label>
+                  <input
+                    type="text"
+                    {...addItemRegister("categories",)}
+                    className="input-bordered input-primary input w-full max-w-md"
+                    placeholder="Categorie(n)"
+                  />
+                </div>
+
+                <button
+                  className="btn-primary btn-block btn mt-1"
+                  type="submit"
+                >
                   Item Anlegen
                 </button>
               </form>
