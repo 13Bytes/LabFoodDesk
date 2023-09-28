@@ -1,9 +1,11 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { User } from "@prisma/client";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
   type DefaultSession,
   type NextAuthOptions,
+  DefaultUser,
 } from "next-auth";
 import EmailProvider from "next-auth/providers/email";
 import { env } from "~/env.mjs";
@@ -25,6 +27,11 @@ declare module "next-auth" {
     } & DefaultSession["user"]
   }
 }
+declare module "next-auth" {
+  interface User extends DefaultUser {
+    isAdmin: boolean
+}
+}
 
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
@@ -38,7 +45,7 @@ export const authOptions: NextAuthOptions = {
       user: {
         ...session.user,
         id: user.id,
-        isAdmin: session.user.isAdmin,
+        isAdmin: user.isAdmin,
       },
     }),
   },
