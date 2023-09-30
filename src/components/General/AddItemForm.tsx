@@ -1,11 +1,7 @@
-import { useQuery } from "@tanstack/react-query"
-import { type NextPage } from "next"
-import React, { useEffect, useState } from "react"
-import CenteredPage from "~/components/Layout/CenteredPage"
-import { api } from "~/utils/api"
-import { useForm, SubmitHandler, Controller } from "react-hook-form"
+import { useEffect, useState } from "react"
+import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import Select from "react-select"
-import { PlusIcon } from "../Icons/PlusIcon"
+import { api } from "~/utils/api"
 
 type Props = {
   finishAction: () => void
@@ -69,7 +65,10 @@ const AddItemForm = (props: Props) => {
             <input
               type="number"
               step={0.01}
-              {...addItemRegister("price", { required: true, valueAsNumber: true }, )}
+              {...addItemRegister("price", {
+                required: true,
+                valueAsNumber: true,
+              })}
               className="input-bordered input-primary input w-full max-w-md"
               placeholder="Preis"
             />

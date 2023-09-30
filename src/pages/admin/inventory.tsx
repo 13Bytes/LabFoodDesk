@@ -1,12 +1,7 @@
-import { useQuery } from "@tanstack/react-query"
-import { type NextPage } from "next"
-import React, { useEffect, useState } from "react"
-import CenteredPage from "~/components/Layout/CenteredPage"
-import { api } from "~/utils/api"
-import { useForm, SubmitHandler } from "react-hook-form"
-import { MultiSelect } from "react-multi-select-component"
+import { useState } from "react"
 import AddItemForm from "~/components/General/AddItemForm"
-import  {CloseWindowIcon} from "~/components/Icons/CloseWindowIcon"
+import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
+import { api } from "~/utils/api"
 
 const InventoryPage = () => {
   const allItemsRequest = api.item.getAll.useQuery()
@@ -31,7 +26,7 @@ const InventoryPage = () => {
             className="btn-primary btn-square btn"
             onClick={() => setOpenAddItemModal(true)}
           >
-           <CloseWindowIcon />
+            <CloseWindowIcon />
           </button>
         </div>
         <div className="flex max-w-5xl grow flex-row items-center justify-center">

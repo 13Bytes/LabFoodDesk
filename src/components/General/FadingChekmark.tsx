@@ -1,7 +1,4 @@
-import { type NextPage } from "next"
-import { useEffect, useState } from "react"
-import React from "react"
-import { forwardRef, useRef, useImperativeHandle } from "react"
+import { forwardRef, useImperativeHandle, useState } from "react"
 
 export type AnimationHandle = {
   check: () => void
@@ -21,7 +18,11 @@ const FadingCheckmark = forwardRef<AnimationHandle, Props>(
     }))
 
     return (
-      <div className={`${isOpen ? "opacity-100" : "opacity-0"} transition-opacity  duration-500`}>
+      <div
+        className={`${
+          isOpen ? "opacity-100" : "opacity-0"
+        } transition-opacity  duration-500`}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
