@@ -1,34 +1,24 @@
 import { useQuery } from "@tanstack/react-query"
 import { type NextPage } from "next"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 import { useForm, SubmitHandler } from "react-hook-form"
+import { MultiSelect } from "react-multi-select-component"
+import AddItemForm from "~/components/General/AddItemForm"
+import  {CloseWindowIcon} from "~/components/Icons/CloseWindowIcon"
 
-const InventoryPage: NextPage = () => {
+const InventoryPage = () => {
   const allItemsRequest = api.item.getAll.useQuery()
-  const allCategoriesRequest = api.category.getAll.useQuery()
   const createItemRequest = api.item.createItem.useMutation()
   const [openAddItemModal, setOpenAddItemModal] = useState(false)
-
-  type AddItemFormInput = {
-    name: string
-    price: number
-    categories: string[]
-  }
-  const { register: addItemRegister, handleSubmit: addItemSubmit } =
-    useForm<AddItemFormInput>()
-  const onAddItemSubmit: SubmitHandler<AddItemFormInput> = async (data) => {
-    await createItemRequest.mutateAsync(data)
-    setOpenAddItemModal(false)
-  }
 
   const Legend = () => (
     <tr>
       <th></th>
       <th>Name</th>
-      <th>Price</th>
-      <th>Categories</th>
+      <th>Preis</th>
+      <th>Kategorie(n)</th>
       <th></th>
     </tr>
   )
@@ -38,23 +28,10 @@ const InventoryPage: NextPage = () => {
       <div className="flex flex-col p-5">
         <div className="flex ">
           <button
-            className="btn-square btn btn-primary"
+            className="btn-primary btn-square btn"
             onClick={() => setOpenAddItemModal(true)}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-6 w-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
+           <CloseWindowIcon />
           </button>
         </div>
         <div className="flex max-w-5xl grow flex-row items-center justify-center">
@@ -83,7 +60,7 @@ const InventoryPage: NextPage = () => {
                       </div>
                     </div>
                   </td>
-                  <td>{item.price}</td>
+                  <td>{item.price}€</td>
                   <td></td>
                   <th>
                     <button className="btn-ghost btn-xs btn">details</button>
@@ -109,55 +86,7 @@ const InventoryPage: NextPage = () => {
             >
               ✕
             </button>
-
-            <h3 className="text-lg font-bold">Neues Item</h3>
-            <div className="py-4">
-              <form
-                onSubmit={addItemSubmit(onAddItemSubmit)}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="label">
-                    <span className="label-text text-base">Name</span>
-                  </label>
-                  <input
-                    type="text"
-                    {...addItemRegister("name", { required: true })}
-                    className="input-bordered input-primary input w-full max-w-md"
-                    placeholder="Name"
-                  />
-                </div>
-                <div>
-                  <label className="label">
-                    <span className="label-text text-base">Preis [€]</span>
-                  </label>
-                  <input
-                    type="number"
-                    {...addItemRegister("price", { required: true })}
-                    className="input-bordered input-primary input w-full max-w-md"
-                    placeholder="Preis"
-                  />
-                </div>
-                <div>
-                  <label className="label">
-                    <span className="label-text text-base">Categorien</span>
-                  </label>
-                  <input
-                    type="text"
-                    {...addItemRegister("categories",)}
-                    className="input-bordered input-primary input w-full max-w-md"
-                    placeholder="Categorie(n)"
-                  />
-                </div>
-
-                <button
-                  className="btn-primary btn-block btn mt-1"
-                  type="submit"
-                >
-                  Item Anlegen
-                </button>
-              </form>
-            </div>
+            <AddItemForm finishAction={() => setOpenAddItemModal(false)} />
           </div>
         </dialog>
       </div>

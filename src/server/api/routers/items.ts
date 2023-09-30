@@ -35,7 +35,7 @@ export const itemRouter = createTRPCRouter({
         data: {
           name: input.name,
           price: input.price,
-          categories: {connect: categories},
+          categories: {connect: categories.map((category) => ({id: category.id}))},
           is_active: true,
         },
       })

@@ -1,20 +1,23 @@
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { useEffect, useRef, useState } from "react"
-import FadingCheckmark, { AnimationHandle } from "~/components/General/FadingChekmark"
+import FadingCheckmark, {
+  AnimationHandle,
+} from "~/components/General/FadingChekmark"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 
 const SplitPage: NextPage = () => {
   const allItemsRequest = api.item.getAll.useQuery()
   const allUserRequest = api.user.getAllUsers.useQuery()
+  const allBalancesRequest = api.user.getAllBalances.useQuery()
 
   const session = useSession()
   const [amount, setAmount] = useState<number>(1)
   const [selectedDestinationUser, setSelectedDestinationUser] =
     useState<string>()
   const [errorMessage, setErrorMessage] = useState("")
-  const checkboxRef = useRef<AnimationHandle>(null);
+  const checkboxRef = useRef<AnimationHandle>(null)
 
   const apiBuyOneItem = api.item.buyOneItem.useMutation()
   const apiSendmMoney = api.transaction.sendMoney.useMutation()
@@ -28,7 +31,7 @@ const SplitPage: NextPage = () => {
       })
       setAmount(1)
       setSelectedDestinationUser(undefined)
-      if(checkboxRef.current){
+      if (checkboxRef.current) {
         checkboxRef.current.check()
       }
     } else {
@@ -100,15 +103,34 @@ const SplitPage: NextPage = () => {
               Senden
             </button>
           </div>
-          
+
           <FadingCheckmark ref={checkboxRef} />
-
-
         </div>
-
         <p className="mt-3 text-lg font-bold text-error-content">
           {errorMessage}
         </p>
+
+        <h3 className="mt-10 self-start text-xl">Übersicht</h3>
+        <div className="flex flex-row flex-wrap items-center gap-1">
+          <div className="flex flex-row items-center overflow-x-auto">
+            <table className="table">
+              <tbody>
+                {allBalancesRequest.data?.map((user) => (
+                  <tr>
+                    <th>{user.name}</th>
+                    <td
+                      className={`${
+                        user.balance >= 0 ? "text-green-600" : "text-red-700"
+                      }`}
+                    >
+                      {user.balance}€
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </CenteredPage>
     </>
   )
