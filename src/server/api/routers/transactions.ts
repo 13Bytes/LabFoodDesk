@@ -50,7 +50,7 @@ export const transactionRouter = createTRPCRouter({
     }),
 
     sendMoney: protectedProcedure
-    .input(z.object({destinationUserId: z.string(), amount: z.number()}))
+    .input(z.object({destinationUserId: z.string(), amount: z.number(), note: z.string().optional()}))
     .mutation(async ({ ctx, input }) => {
       const destinationUser = await prisma.user.findUniqueOrThrow({where: {id: input.destinationUserId}})
        // atomic action:
@@ -61,7 +61,7 @@ export const transactionRouter = createTRPCRouter({
             type: 2,
             moneyDestination: {connect: {id: destinationUser.id}},
             totalAmount: input.amount,
-
+            note: input.note
           },
         }),
         prisma.user.update({

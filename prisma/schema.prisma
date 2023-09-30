@@ -45,6 +45,7 @@ model Transaction {
     //  --- only if transfer (type=2)
     moneyDestination       User?    @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
     moneyDestinationUserId String?
+    note                   String?
 }
 
 // -----------------------------------------------------------------------------
