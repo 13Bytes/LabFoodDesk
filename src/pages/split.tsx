@@ -1,7 +1,7 @@
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { useEffect, useRef, useState } from "react"
-import FadingCheckmark, { AnimationHandle } from "~/components/General/FadingChekmark"
+import ActionResponsePopup, { AnimationHandle } from "~/components/General/ActionResponsePopup"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 
@@ -9,6 +9,7 @@ const SplitPage: NextPage = () => {
   const allItemsRequest = api.item.getAll.useQuery()
   const allUserRequest = api.user.getAllUsers.useQuery()
   const allBalancesRequest = api.user.getAllBalances.useQuery()
+  const animationRef = useRef<AnimationHandle>(null)
 
   const session = useSession()
   const [amount, setAmount] = useState<number>(1)
@@ -28,11 +29,12 @@ const SplitPage: NextPage = () => {
         destinationUserId: selectedDestinationUser,
         note: note,
       })
-      setAmount(1)
-      setSelectedDestinationUser(undefined)
-      if (checkboxRef.current) {
-        checkboxRef.current.check()
+      if (animationRef.current) {
+        animationRef.current.success()
       }
+      setSelectedDestinationUser(undefined)
+      setAmount(1)
+      setNote("")
     } else {
       setErrorMessage("Bitte wähle einen Empfänger aus")
     }
@@ -99,14 +101,12 @@ const SplitPage: NextPage = () => {
                 Senden
               </button>
             </div>
-
-            <FadingCheckmark ref={checkboxRef} />
           </div>
           <p className="mt-3 text-lg font-bold text-error-content">{errorMessage}</p>
           <div className="flex">
             <input
               type="text"
-              className="input-bordered input mr-5 w-full"
+              className="input-bordered input w-full"
               value={note}
               placeholder="Anmerkung"
               onChange={(e) => setNote(e.target.value)}
@@ -120,7 +120,7 @@ const SplitPage: NextPage = () => {
             <table className="table">
               <tbody>
                 {allBalancesRequest.data?.map((user) => (
-                  <tr>
+                  <tr key={user.id}>
                     <th>{user.name}</th>
                     <td className={`${user.balance >= 0 ? "text-green-600" : "text-red-700"}`}>
                       {user.balance}€
@@ -132,6 +132,7 @@ const SplitPage: NextPage = () => {
           </div>
         </div>
       </CenteredPage>
+      <ActionResponsePopup ref={animationRef} />
     </>
   )
 }
