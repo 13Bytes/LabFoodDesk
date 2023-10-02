@@ -7,10 +7,6 @@ import { api } from "~/utils/api";
 import CenteredPage from "~/components/Layout/CenteredPage"
 
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" })
-  const trcpExampleRequestUseAll = api.example.getAll.useQuery()
-  const allItemsRequest = api.item.getAll.useQuery()
-
   return (
     <>
       <Head>

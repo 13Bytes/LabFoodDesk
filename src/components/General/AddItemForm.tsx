@@ -7,6 +7,8 @@ type Props = {
   finishAction: () => void
 }
 const AddItemForm = (props: Props) => {
+  const trpcUtils = api.useContext()
+
   const allCategoriesRequest = api.category.getAll.useQuery()
   const createItemRequest = api.item.createItem.useMutation()
 
@@ -35,6 +37,7 @@ const AddItemForm = (props: Props) => {
       categories: data.categories.map((category) => category.value),
     }
     await createItemRequest.mutateAsync(dataToSend)
+    await trpcUtils.item.getAll.invalidate()
     props.finishAction()
   }
 

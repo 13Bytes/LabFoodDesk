@@ -65,27 +65,39 @@ const AccountPage: NextPage = () => {
           </div>
 
           <div className="pt-2">
-            <p className="font-bold">letzte Transaktionen:</p>
-            {transactionData?.pages[page]?.items.map((transaction) => (
-              <div key={transaction.id}>
-                <p>
-                  <span className="font-semibold">{transaction.item?.name}</span> wurde
-                  {transaction.type == 0 && <span className="text-red-700"> gekauft</span>}
-                  {transaction.type == 1 && <span className="text-green-600"> verkauft</span>}
-                  {transaction.type == 2 && userIsTransactionDestination(transaction) && (
-                    <span className="text-green-600"> überwiesen</span>
-                  )}
-                  {transaction.type == 2 && !userIsTransactionDestination(transaction) && (
-                    <span className="text-red-700"> überwiesen</span>
-                  )}{" "}
-                  am {transaction.createdAt.toISOString()} für {transaction.totalAmount}€
-                </p>
-              </div>
-            ))}
+            <p className="font-extrabold">letzte Transaktionen:</p>
+            <div className="overflow-x-auto">
+              <table className="table">
+                <tbody>
+                  {transactionData?.pages[page]?.items.map((transaction) => (
+                    <tr>
+                      <td key={transaction.id}>
+                        <span className="font-bold">{transaction.totalAmount}€</span>
+                      </td>
+                      <td>
+                        <span className="pl-8 font-semibold">
+                          {transaction.item?.name || transaction.note}
+                        </span>{" "}
+                        wurde
+                        {transaction.type == 0 && <span className="text-red-700"> gekauft</span>}
+                        {transaction.type == 1 && <span className="text-green-600"> verkauft</span>}
+                        {transaction.type == 2 && userIsTransactionDestination(transaction) && (
+                          <span className="text-green-600"> überwiesen</span>
+                        )}
+                        {transaction.type == 2 && !userIsTransactionDestination(transaction) && (
+                          <span className="text-red-700"> überwiesen</span>
+                        )}{" "}
+                        am {transaction.createdAt.toISOString().split("T")[0]}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           <button />
 
-          <div className="join">
+          <div className="join mt-2">
             <button
               className={`join-item btn ${page < 1 && "btn-disabled"}`}
               onClick={() => setPage((prev) => prev - 1)}

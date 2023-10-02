@@ -22,10 +22,7 @@ const InventoryPage = () => {
     <>
       <div className="flex flex-col p-5">
         <div className="flex ">
-          <button
-            className="btn-primary btn-square btn"
-            onClick={() => setOpenAddItemModal(true)}
-          >
+          <button className="btn-primary btn-square btn" onClick={() => setOpenAddItemModal(true)}>
             <CloseWindowIcon />
           </button>
         </div>
@@ -46,9 +43,7 @@ const InventoryPage = () => {
                   <td>
                     <div className="flex items-center space-x-3">
                       <div className="avatar">
-                        <div className="mask mask-squircle h-12 w-12">
-                          {/* Empty icon */}
-                        </div>
+                        <div className="mask mask-squircle h-12 w-12">{/* Empty icon */}</div>
                       </div>
                       <div>
                         <div className="font-bold">{item.name}</div>
@@ -56,7 +51,7 @@ const InventoryPage = () => {
                     </div>
                   </td>
                   <td>{item.price}€</td>
-                  <td></td>
+                  <td>{item.categories.map((cat) => cat.name).join(", ")}</td>
                   <th>
                     <button className="btn-ghost btn-xs btn">details</button>
                   </th>
@@ -70,10 +65,7 @@ const InventoryPage = () => {
         </div>
 
         {/* Modal */}
-        <dialog
-          id="modal_1"
-          className={`modal ${openAddItemModal && "modal-open"}`}
-        >
+        <dialog id="modal_1" className={`modal ${openAddItemModal && "modal-open"}`}>
           <div className="modal-box">
             <button
               className="btn-ghost btn-sm btn-circle btn absolute right-2 top-2"
