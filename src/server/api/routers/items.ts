@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { id } from "~/helper/zodTypes"
 import {
   createTRPCRouter,
   publicProcedure,
@@ -7,9 +8,7 @@ import {
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
 
-
 export const itemRouter = createTRPCRouter({
-
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.item.findMany({ include: { categories: true } })
   }),
@@ -18,24 +17,26 @@ export const itemRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string(),
-        categories: z.array(z.string()),
+        categories: z.array(id),
         price: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-       const categories = await Promise.all( input.categories.map(async (categoryId) => {
-         return prisma.category.findUniqueOrThrow({
-           where: {
-             id: categoryId,
-           },
-         })
-       }))
+      const categories = await Promise.all(
+        input.categories.map(async (categoryId) => {
+          return prisma.category.findUniqueOrThrow({
+            where: {
+              id: categoryId,
+            },
+          })
+        })
+      )
 
       const item = await prisma.item.create({
         data: {
           name: input.name,
           price: input.price,
-          categories: {connect: categories.map((category) => ({id: category.id}))},
+          categories: { connect: categories.map((category) => ({ id: category.id })) },
           is_active: true,
         },
       })
@@ -43,7 +44,7 @@ export const itemRouter = createTRPCRouter({
     }),
 
   buyOneItem: protectedProcedure
-    .input(z.object({ productID: z.string() }))
+    .input(z.object({ productID: id }))
     .mutation(async ({ ctx, input }) => {
       const product = await prisma.item.findUniqueOrThrow({
         where: {

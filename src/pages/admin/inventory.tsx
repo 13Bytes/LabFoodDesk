@@ -53,7 +53,7 @@ const InventoryPage = () => {
                   <td>{item.price}€</td>
                   <td>{item.categories.map((cat) => cat.name).join(", ")}</td>
                   <th>
-                    <button className="btn-ghost btn-xs btn">details</button>
+                    <button className="btn-ghost btn-xs btn">Details</button>
                   </th>
                 </tr>
               ))}

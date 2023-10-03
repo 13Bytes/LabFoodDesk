@@ -94,6 +94,8 @@ const AddItemForm = (props: Props) => {
                   value={value}
                   name={name}
                   ref={ref}
+                  id="select_categories"
+                  key="select_categories_key"
                   styles={{
                     control: (baseStyles, state) => ({
                       ...baseStyles,

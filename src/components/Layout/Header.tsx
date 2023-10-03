@@ -12,6 +12,9 @@ export default function Header() {
         <Link href="/buy">Kaufen</Link>
       </li>
       <li>
+        <Link href="/grouporders">Gruppen-Kauf</Link>
+      </li>
+      <li>
         <Link href="/split">Split™️</Link>
       </li>
       <li>
@@ -66,10 +69,7 @@ export default function Header() {
             {navElements()}
           </ul>
         </div>
-        <Link
-          className="btn-ghost btn text-xl font-extrabold tracking-tight text-white"
-          href="/"
-        >
+        <Link className="btn-ghost btn text-xl font-extrabold tracking-tight text-white" href="/">
           <span className="primary text-primary">Lab</span> Eats
         </Link>
       </div>
@@ -80,17 +80,8 @@ export default function Header() {
       {/* UserAccount-Icon (top right) */}
       {loggedIn && (
         <div className="navbar-end">
-          {/* <Link className="placeholder avatar" href="/me">
-            <div className="w-12 rounded-full bg-neutral-focus text-neutral-content">
-              <span>{getUsernameLetters(sessionData)}</span>
-            </div>
-          </Link>
-           */}
           <div className="placeholder dropdown-end dropdown avatar">
-            <div
-              tabIndex={0}
-              className="w-12 rounded-full bg-neutral-focus text-neutral-content"
-            >
+            <div tabIndex={0} className="w-12 rounded-full bg-neutral-focus text-neutral-content">
               <span>{getUsernameLetters(sessionData)}</span>
             </div>
             <ul
@@ -103,9 +94,7 @@ export default function Header() {
                 </Link>
               </li>
               <li>
-                <a onClick={() => void signOut({ callbackUrl: "/" })}>
-                  Log OUT
-                </a>
+                <a onClick={() => void signOut({ callbackUrl: "/" })}>Log OUT</a>
               </li>
             </ul>
           </div>

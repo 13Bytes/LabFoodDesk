@@ -1,10 +1,7 @@
 import { z } from "zod"
+import { id } from "~/helper/zodTypes"
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "~/server/api/trpc"
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
 
 const pageSize = 20
@@ -26,7 +23,9 @@ export const transactionRouter = createTRPCRouter({
       const page = input.cursor ?? 1
       const items = await ctx.prisma.transaction.findMany({
         take: pageSize + 1, // get an extra item at the end which we'll use as next cursor
-        where: { OR: [{userId: ctx.session.user.id}, {moneyDestinationUserId: ctx.session.user.id}] },
+        where: {
+          OR: [{ userId: ctx.session.user.id }, { moneyDestinationUserId: ctx.session.user.id }],
+        },
         include: {
           item: true,
         },
@@ -49,19 +48,21 @@ export const transactionRouter = createTRPCRouter({
       }
     }),
 
-    sendMoney: protectedProcedure
-    .input(z.object({destinationUserId: z.string(), amount: z.number(), note: z.string().optional()}))
+  sendMoney: protectedProcedure
+    .input(z.object({ destinationUserId: id, amount: z.number(), note: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
-      const destinationUser = await prisma.user.findUniqueOrThrow({where: {id: input.destinationUserId}})
-       // atomic action:
-       await prisma.$transaction([
+      const destinationUser = await prisma.user.findUniqueOrThrow({
+        where: { id: input.destinationUserId },
+      })
+      // atomic action:
+      await prisma.$transaction([
         prisma.transaction.create({
           data: {
             user: { connect: { id: ctx.session.user.id } },
             type: 2,
-            moneyDestination: {connect: {id: destinationUser.id}},
+            moneyDestination: { connect: { id: destinationUser.id } },
             totalAmount: input.amount,
-            note: input.note
+            note: input.note,
           },
         }),
         prisma.user.update({
@@ -73,5 +74,5 @@ export const transactionRouter = createTRPCRouter({
           data: { balance: { increment: input.amount } },
         }),
       ])
-    })
+    }),
 })

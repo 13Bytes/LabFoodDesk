@@ -17,13 +17,35 @@ datasource db {
 // -----------------------------------------------------------------------------
 // Business models
 model Item {
-    // items must be immutable and shouldn't be deleted
-    id          String        @id @default(cuid())
-    name        String
-    categories  Category[]
-    price       Float
-    Transaction Transaction[]
-    is_active   Boolean       @default(true)
+    // items must be immutable and shouldn't be deleted (if transactions exists) 
+    // - create copy instead and set is_active=false
+    id              String        @id @default(cuid())
+    name            String
+    categories      Category[]
+    price           Float
+    Transaction     Transaction[]
+    is_active       Boolean       @default(true)
+    for_grouporders Boolean       @default(false)
+}
+
+model GroupOrder {
+    id                   String              @id @default(cuid())
+    name                 String?
+    orders               Transaction[]
+    ordersCloseAt        DateTime
+    aborted              Boolean             @default(false)
+    GroupOrderTemplate   GroupOrderTemplate? @relation(fields: [groupOrderTemplateId], references: [id])
+    groupOrderTemplateId String?
+}
+
+model GroupOrderTemplate {
+    id            String       @id @default(cuid())
+    name          String
+    weekday       Int //0:mon, ..., 6:sun
+    ordersCloseAt DateTime
+    repeatWeeks   Int          @default(1)
+    active        Boolean      @default(true)
+    GroupOrders   GroupOrder[]
 }
 
 model Category {
@@ -33,17 +55,19 @@ model Category {
 }
 
 model Transaction {
-    id                     String   @id @default(cuid())
-    user                   User     @relation("user", fields: [userId], references: [id], onDelete: Cascade)
+    id                     String      @id @default(cuid())
+    user                   User        @relation("user", fields: [userId], references: [id], onDelete: Cascade)
     userId                 String
-    item                   Item?    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+    item                   Item?       @relation(fields: [itemId], references: [id], onDelete: Cascade)
     itemId                 String?
     quantity               Int?
     totalAmount            Float
-    createdAt              DateTime @default(now())
-    type                   Int      @default(0) // 0: buy, 1: sell, 2: transfer
+    createdAt              DateTime    @default(now())
+    type                   Int         @default(0) // 0: buy, 1: sell, 2: transfer
+    GroupOrder             GroupOrder? @relation(fields: [groupOrderId], references: [id])
+    groupOrderId           String?
     //  --- only if transfer (type=2)
-    moneyDestination       User?    @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
+    moneyDestination       User?       @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
     moneyDestinationUserId String?
     note                   String?
 }
