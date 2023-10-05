@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react"
 import AddGrouporderForm from "~/components/General/AddGrouporderForm"
 import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
-import { weekdays } from "~/helper/globalTypes"
+import Modal from "~/components/Layout/Modal"
+import { localStringOptions, weekdays } from "~/helper/globalTypes"
 import { api } from "~/utils/api"
 
 const InventoryPage = () => {
@@ -125,14 +126,14 @@ const InventoryPage = () => {
                 {groupOrders?.pages[page]?.items.map((order) => (
                   <tr key={order.id}>
                     <td>
-                      <span className="font-bold">{order.ordersCloseAt.toDateString()}</span>
+                      <span className="font-bold">
+                        {order.ordersCloseAt.toLocaleDateString("de", localStringOptions)}
+                      </span>
                     </td>
                     <td>{order.name}</td>
                     <td>
                       {order.aborted && "❌"}
-                      {!order.aborted && order.ordersCloseAt > new Date()
-                        ? `➡️ ${order.ordersCloseAt.toDateString()}`
-                        : `✅ ${order.ordersCloseAt.toDateString()}`}
+                      {!order.aborted && order.ordersCloseAt > new Date() ? `📥` : `✅`}
                     </td>
                     <td>
                       {order.orders.map((order) => (
@@ -167,18 +168,9 @@ const InventoryPage = () => {
           </div>
         </div>
 
-        {/* Modal */}
-        <dialog id="modal_2" className={`modal ${addGrouporderModalOpen && "modal-open"}`}>
-          <div className="modal-box">
-            <button
-              className="btn-ghost btn-sm btn-circle btn absolute right-2 top-2"
-              onClick={() => setAddGrouporderModalOpen(false)}
-            >
-              ✕
-            </button>
-            <AddGrouporderForm finishAction={() => setAddGrouporderModalOpen(false)} />
-          </div>
-        </dialog>
+        <Modal setOpen={setAddGrouporderModalOpen} open={addGrouporderModalOpen}>
+          <AddGrouporderForm finishAction={() => setAddGrouporderModalOpen(false)} />
+        </Modal>
       </div>
     </>
   )

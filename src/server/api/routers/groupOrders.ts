@@ -20,6 +20,7 @@ export const grouporderRouter = createTRPCRouter({
       orderBy: {
         ordersCloseAt: "asc",
       },
+      include: { orders: { include: { user: { select: { id: true, name: true } } } } },
     })
     return result
   }),

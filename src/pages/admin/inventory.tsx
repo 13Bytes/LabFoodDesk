@@ -1,6 +1,7 @@
 import { useState } from "react"
 import AddItemForm from "~/components/General/AddItemForm"
 import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
+import Modal from "~/components/Layout/Modal"
 import { api } from "~/utils/api"
 
 const InventoryPage = () => {
@@ -64,18 +65,9 @@ const InventoryPage = () => {
           </table>
         </div>
 
-        {/* Modal */}
-        <dialog id="modal_1" className={`modal ${openAddItemModal && "modal-open"}`}>
-          <div className="modal-box">
-            <button
-              className="btn-ghost btn-sm btn-circle btn absolute right-2 top-2"
-              onClick={() => setOpenAddItemModal(false)}
-            >
-              ✕
-            </button>
-            <AddItemForm finishAction={() => setOpenAddItemModal(false)} />
-          </div>
-        </dialog>
+        <Modal open={openAddItemModal} setOpen={setOpenAddItemModal}>
+          <AddItemForm finishAction={() => setOpenAddItemModal(false)} />
+        </Modal>
       </div>
     </>
   )

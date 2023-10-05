@@ -23,6 +23,7 @@ const AddItemForm = (props: Props) => {
     name: string
     price: number
     categories: { label: string; value: string }[]
+    for_grouporders: boolean
   }
 
   const {
@@ -107,6 +108,17 @@ const AddItemForm = (props: Props) => {
                   }}
                 />
               )}
+            />
+          </div>
+          <div>
+            <label className="label">
+              <span className="label-text text-base">Für Gruppenkäufe</span>
+            </label>
+            <input
+              type="checkbox"
+              {...addItemRegister("for_grouporders", {
+                required: true,
+              })}
             />
           </div>
 

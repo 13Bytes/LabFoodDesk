@@ -43,6 +43,13 @@ export const itemRouter = createTRPCRouter({
       return item
     }),
 
+  getGroupBuyOptions: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.item.findMany({
+      where: { for_grouporders: true, is_active: true },
+      include: { categories: true },
+    })
+  }),
+
   buyOneItem: protectedProcedure
     .input(z.object({ productID: id }))
     .mutation(async ({ ctx, input }) => {

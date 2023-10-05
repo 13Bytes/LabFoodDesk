@@ -1,6 +1,7 @@
 import { type NextPage } from "next"
 import { useRef, useState } from "react"
 import ActionResponsePopup, { AnimationHandle } from "~/components/General/ActionResponsePopup"
+import ItemCard from "~/components/General/ItemCard"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 
@@ -44,24 +45,7 @@ const BuyPage: NextPage = () => {
 
         <div className="flex flex-row flex-wrap items-center justify-start gap-2 sm:p-4 md:p-7">
           {displayedItems?.map((item) => (
-            <div className="card card-compact w-72 bg-base-300 shadow-sm" key={item.id}>
-              <div className="card-body">
-                <div className="flex flex-row justify-between">
-                  <h2 className="card-title mr-6">{item.name}</h2>
-                  <div className="flex flex-col items-end self-center ">
-                    {item.categories.map((cat) => (
-                      <div className="badge badge-outline">{cat.name}</div>
-                    ))}
-                  </div>
-                </div>
-                <span className="text-base font-bold">{item.price}€</span>
-                <div className="card-actions flex flex-row justify-end">
-                  <button className="btn-primary btn self-end" onClick={() => buyAction(item.id)}>
-                    Kaufen
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ItemCard item={item} buyAction={buyAction} />
           ))}
         </div>
       </div>

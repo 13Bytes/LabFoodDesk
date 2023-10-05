@@ -1,6 +1,7 @@
 import { Session } from "next-auth"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
+import { getUsernameLetters } from "~/helper/generalFunctions"
 
 export default function Header() {
   const { data: sessionData } = useSession()
@@ -22,24 +23,6 @@ export default function Header() {
       </li>
     </>
   )
-
-  const getUsernameLetters = (sessionData: Session | null) => {
-    const name = sessionData?.user?.name
-    if (name) {
-      const nameSegments = name.trim().split(" ")
-
-      let firstLetter = ""
-      let secondLetter = ""
-      if (nameSegments.length >= 1) {
-        firstLetter = nameSegments[0]![0] || ""
-      }
-      if (nameSegments.length >= 2) {
-        secondLetter = nameSegments[nameSegments.length - 1]![0] || ""
-      }
-      return (firstLetter + secondLetter).toUpperCase()
-    }
-    return "?"
-  }
 
   return (
     <div className="navbar bg-base-100">
@@ -82,7 +65,7 @@ export default function Header() {
         <div className="navbar-end">
           <div className="placeholder dropdown-end dropdown avatar">
             <div tabIndex={0} className="w-12 rounded-full bg-neutral-focus text-neutral-content">
-              <span>{getUsernameLetters(sessionData)}</span>
+              <span>{getUsernameLetters(sessionData?.user?.name)}</span>
             </div>
             <ul
               tabIndex={0}
