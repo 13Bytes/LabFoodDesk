@@ -76,6 +76,38 @@ export const grouporderRouter = createTRPCRouter({
     return item
   }),
 
+  buyGroupOrderItem: protectedProcedure
+    .input(
+      z.object({
+        groupId: id,
+        items: z.array(id),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
+        where: { id: input.groupId },
+      })
+      const items = await Promise.all(
+        input.items.map((item) => ctx.prisma.item.findUniqueOrThrow({ where: { id: item } }))
+      )
+      const totalPrice = items.reduce((acc, item) => acc + item.price, 0)
+
+      await prisma.$transaction([
+        ... items.map(item =>  prisma.transaction.create({
+          data: {
+            quantity: 1,
+            user: { connect: { id: ctx.session.user.id } },
+            item: { connect: { id: item.id } },
+            type: 0,
+            totalAmount: item.price,
+          }})),
+        prisma.user.update({
+          where: { id: ctx.session.user.id },
+          data: { balance: { decrement: totalPrice } },
+        }),
+      ])
+    }),
+
   getAllTemplates: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.prisma.groupOrderTemplate.findMany({ where: { active: true } })
     return result

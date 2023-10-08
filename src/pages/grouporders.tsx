@@ -1,3 +1,4 @@
+import { group } from "console"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
@@ -13,37 +14,42 @@ import { api } from "~/utils/api"
 const GroupOrders: NextPage = () => {
   const groupOrderRequest = api.groupOrders.getRelevant.useQuery()
   const groupOrderItems = api.item.getGroupBuyOptions.useQuery()
+  const buyItemRequest = api.groupOrders.buyGroupOrderItem.useMutation() 
   const sessionUser = useSession().data?.user
   const animationRef = useRef<AnimationHandle>(null)
 
   const [openBuyModal, setOpenBuyModal] = useState(false)
-  const [setselectedGroupOrder, setSetselectedGroupOrder] = useState<string>()
+  const [selectedGroupOrder, setSetselectedGroupOrder] = useState<string>()
 
   const joinGroupOrder = (groupOrderID: string) => {
     setSetselectedGroupOrder(groupOrderID)
     setOpenBuyModal(true)
-
-    // if (animationRef.current) {
-    //   animationRef.current.failure()
-    // }
+  }
+  
+  const buyItemInGroupOrder = async (groupId: string, itemID: string) => {
+    await buyItemRequest.mutateAsync({ groupId, items: [itemID] })
+    setOpenBuyModal(false)
+    if (animationRef.current) {
+        animationRef.current.success()
+      }
   }
 
   return (
     <>
       <CenteredPage>
         <div className="container">
-          {groupOrderRequest.data?.map((order) => (
+          {groupOrderRequest.data?.map((group) => (
             <div className="card mb-5 max-w-5xl bg-base-200 p-3">
               <div className="flex  flex-col justify-start gap-1 p-1">
                 <div className="flex flex-row items-end justify-between">
                   <h1 className="text-2xl font-bold">
-                    {order.ordersCloseAt.toLocaleString("de", localStringOptions)}
+                    {group.ordersCloseAt.toLocaleString("de", localStringOptions)}
                   </h1>
-                  <p className="mr-5">{order.name}</p>
+                  <p className="mr-5">{group.name}</p>
                 </div>
 
                 <div>
-                  {order.orders.map((o) => (
+                  {group.orders.map((o) => (
                     <div className="w-12 rounded-full bg-neutral-focus text-neutral-content">
                       <span>{getUsernameLetters(o.user.name)}</span>
                     </div>
@@ -51,8 +57,8 @@ const GroupOrders: NextPage = () => {
                 </div>
 
                 <div>
-                  <button className="btn-primary btn mt-7" onClick={() => joinGroupOrder(order.id)}>
-                    {order.orders.some((order) => order.userId === sessionUser?.id)
+                  <button className="btn-primary btn mt-7" onClick={() => joinGroupOrder(group.id)}>
+                    {group.orders.some((order) => order.userId === sessionUser?.id)
                       ? "Bestellung erweitern"
                       : "Bestellung beitreten"}
                   </button>
@@ -63,10 +69,12 @@ const GroupOrders: NextPage = () => {
         </div>
       </CenteredPage>
 
-      <Modal setOpen={setOpenBuyModal} open={openBuyModal}>
-        {groupOrderItems.data?.map((item) => (
-          <ItemCard item={item} buyAction={() => {}} />
-        ))}
+      <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-9/12 !max-w-5xl pr-10">
+        <div className="flex flex-row flex-wrap gap-4">
+          {groupOrderItems.data?.map((item) => (
+            <ItemCard item={item} buyAction={() => buyItemInGroupOrder(selectedGroupOrder!, item.id)} />
+          ))}
+        </div>
       </Modal>
 
       <ActionResponsePopup ref={animationRef} />
