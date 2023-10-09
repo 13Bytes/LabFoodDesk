@@ -6,7 +6,7 @@ import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 
 const BuyPage: NextPage = () => {
-  const allItemsRequest = api.item.getAll.useQuery()
+  const allItemsRequest = api.item.getBuyable.useQuery()
   const [searchString, setSearchString] = useState("")
   const animationRef = useRef<AnimationHandle>(null)
 

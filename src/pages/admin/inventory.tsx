@@ -14,6 +14,7 @@ const InventoryPage = () => {
       <th></th>
       <th>Name</th>
       <th>Preis</th>
+      <th>Gruppe</th>
       <th>Kategorie(n)</th>
       <th></th>
     </tr>
@@ -43,15 +44,16 @@ const InventoryPage = () => {
                   </th>
                   <td>
                     <div className="flex items-center space-x-3">
-                      <div className="avatar">
-                        <div className="mask mask-squircle h-12 w-12">{/* Empty icon */}</div>
-                      </div>
+                      {/* <div className="avatar">
+                        <div className="mask mask-squircle h-12 w-12">ICON</div>
+                      </div> */}
                       <div>
                         <div className="font-bold">{item.name}</div>
                       </div>
                     </div>
                   </td>
                   <td>{item.price}€</td>
+                  <td>{item.for_grouporders? "Gruppe": "Einzel"}</td>
                   <td>{item.categories.map((cat) => cat.name).join(", ")}</td>
                   <th>
                     <button className="btn-ghost btn-xs btn">Details</button>

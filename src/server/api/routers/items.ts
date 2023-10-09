@@ -12,6 +12,10 @@ export const itemRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.item.findMany({ include: { categories: true } })
   }),
+  
+  getBuyable: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.item.findMany({ where:{is_active: true, for_grouporders: false}, include: { categories: true } })
+  }),
 
   createItem: adminProcedure
     .input(

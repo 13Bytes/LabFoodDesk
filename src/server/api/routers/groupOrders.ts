@@ -98,6 +98,7 @@ export const grouporderRouter = createTRPCRouter({
             quantity: 1,
             user: { connect: { id: ctx.session.user.id } },
             item: { connect: { id: item.id } },
+            GroupOrder: { connect: { id: group.id } },
             type: 0,
             totalAmount: item.price,
           }})),

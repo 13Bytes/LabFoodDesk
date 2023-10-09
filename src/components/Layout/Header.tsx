@@ -19,8 +19,26 @@ export default function Header() {
         <Link href="/split">Split™️</Link>
       </li>
       <li>
+        <Link href="/top-up">Aufladen</Link>
+      </li>
+      <li>
         <Link href="/account">Konto</Link>
       </li>
+      {sessionData?.user.isAdmin && (
+        <li>
+          <details tabIndex={0}>
+            <summary tabIndex={0}>Admin</summary>
+            <ul>
+              <li>
+                <Link href="/admin/inventory">Inventar</Link>
+              </li>
+              <li>
+                <Link href="/admin/grouporders">Gruppenbestellungen</Link>
+              </li>
+            </ul>
+          </details>
+        </li>
+      )}
     </>
   )
 
