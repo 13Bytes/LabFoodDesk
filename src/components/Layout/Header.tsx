@@ -1,6 +1,7 @@
 import { Session } from "next-auth"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
+import { getUsernameLetters } from "~/helper/generalFunctions"
 
 export default function Header() {
   const { data: sessionData } = useSession()
@@ -12,31 +13,34 @@ export default function Header() {
         <Link href="/buy">Kaufen</Link>
       </li>
       <li>
+        <Link href="/grouporders">Gruppen-Kauf</Link>
+      </li>
+      <li>
         <Link href="/split">Split™️</Link>
+      </li>
+      <li>
+        <Link href="/top-up">Aufladen</Link>
       </li>
       <li>
         <Link href="/account">Konto</Link>
       </li>
+      {sessionData?.user.isAdmin && (
+        <li>
+          <details tabIndex={0}>
+            <summary tabIndex={0}>Admin</summary>
+            <ul>
+              <li>
+                <Link href="/admin/inventory">Inventar</Link>
+              </li>
+              <li>
+                <Link href="/admin/grouporders">Gruppenbestellungen</Link>
+              </li>
+            </ul>
+          </details>
+        </li>
+      )}
     </>
   )
-
-  const getUsernameLetters = (sessionData: Session | null) => {
-    const name = sessionData?.user?.name
-    if (name) {
-      const nameSegments = name.trim().split(" ")
-
-      let firstLetter = ""
-      let secondLetter = ""
-      if (nameSegments.length >= 1) {
-        firstLetter = nameSegments[0]![0] || ""
-      }
-      if (nameSegments.length >= 2) {
-        secondLetter = nameSegments[nameSegments.length - 1]![0] || ""
-      }
-      return (firstLetter + secondLetter).toUpperCase()
-    }
-    return "?"
-  }
 
   return (
     <div className="navbar bg-base-100">
@@ -66,10 +70,7 @@ export default function Header() {
             {navElements()}
           </ul>
         </div>
-        <Link
-          className="btn-ghost btn text-xl font-extrabold tracking-tight text-white"
-          href="/"
-        >
+        <Link className="btn-ghost btn text-xl font-extrabold tracking-tight text-white" href="/">
           <span className="primary text-primary">Lab</span> Eats
         </Link>
       </div>
@@ -80,18 +81,9 @@ export default function Header() {
       {/* UserAccount-Icon (top right) */}
       {loggedIn && (
         <div className="navbar-end">
-          {/* <Link className="placeholder avatar" href="/me">
-            <div className="w-12 rounded-full bg-neutral-focus text-neutral-content">
-              <span>{getUsernameLetters(sessionData)}</span>
-            </div>
-          </Link>
-           */}
           <div className="placeholder dropdown-end dropdown avatar">
-            <div
-              tabIndex={0}
-              className="w-12 rounded-full bg-neutral-focus text-neutral-content"
-            >
-              <span>{getUsernameLetters(sessionData)}</span>
+            <div tabIndex={0} className="w-12 rounded-full bg-neutral-focus text-neutral-content">
+              <span>{getUsernameLetters(sessionData?.user?.name)}</span>
             </div>
             <ul
               tabIndex={0}
@@ -103,9 +95,7 @@ export default function Header() {
                 </Link>
               </li>
               <li>
-                <a onClick={() => void signOut({ callbackUrl: "/" })}>
-                  Log OUT
-                </a>
+                <a onClick={() => void signOut({ callbackUrl: "/" })}>Log OUT</a>
               </li>
             </ul>
           </div>
