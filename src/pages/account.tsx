@@ -70,11 +70,11 @@ const AccountPage: NextPage = () => {
               <table className="table">
                 <tbody>
                   {transactionData?.pages[page]?.items.map((transaction) => (
-                    <tr>
-                      <td key={transaction.id}>
+                    <tr key={transaction.id}>
+                      <td key={`${transaction.id}-td1`}>
                         <span className="font-bold">{transaction.totalAmount}€</span>
                       </td>
-                      <td>
+                      <td key={`${transaction.id}-td2`}>
                         <span className="pl-8 font-semibold">
                           {transaction.item?.name || transaction.note}
                         </span>{" "}
@@ -99,17 +99,18 @@ const AccountPage: NextPage = () => {
 
           <div className="join mt-2">
             <button
-              className={`join-item btn ${page < 1 && "btn-disabled"}`}
+              className={`join-item btn ${page < 1 ? "btn-disabled": ""}`}
               onClick={() => setPage((prev) => prev - 1)}
             >
               «
             </button>
             <button className="join-item btn pointer-events-none">Seite {page + 1}</button>
             <button
-              className={`join-item btn ${page >= maxPage && "btn-disabled"}`}
+              className={`join-item btn ${page >= maxPage ? "btn-disabled": ""}`}
               onClick={() => {
-                fetchNextPage()
+                void fetchNextPage()
                 setPage((prev) => prev + 1)
+                return 
               }}
             >
               »

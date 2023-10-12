@@ -64,7 +64,7 @@ export const grouporderRouter = createTRPCRouter({
       })
     }
 
-    let payload = {
+    const payload = {
       name: input.name,
       ordersCloseAt: input.ordersCloseAt,
     }

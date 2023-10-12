@@ -39,7 +39,7 @@ const GroupOrders: NextPage = () => {
       <CenteredPage>
         <div className="container">
           {groupOrderRequest.data?.map((group) => (
-            <div className="card mb-5 max-w-5xl bg-base-200 p-3">
+            <div key={group.id} className="card mb-5 max-w-5xl bg-base-200 p-3">
               <div className="flex  flex-col justify-start gap-1 p-1">
                 <div className="flex flex-row items-end justify-between">
                   <h1 className="text-2xl font-bold">
@@ -50,7 +50,7 @@ const GroupOrders: NextPage = () => {
 
                 <div className="flex flex-row flex-wrap gap-2">
                   {group.orders.map((o) => (
-                    <div className="tooltip tooltip-top" data-tip={o.user.name}>
+                    <div key={o.id} className="tooltip tooltip-top" data-tip={o.user.name}>
                       <div className="placeholder avatar">
                         <div className="w-12 rounded-full bg-neutral-focus text-neutral-content">
                           <span>{getUsernameLetters(o.user.name)}</span>
@@ -77,8 +77,9 @@ const GroupOrders: NextPage = () => {
         <div className="flex flex-row flex-wrap gap-4">
           {groupOrderItems.data?.map((item) => (
             <ItemCard
+              key={item.id}
               item={item}
-              buyAction={() => buyItemInGroupOrder(selectedGroupOrder!, item.id)}
+              buyAction={() => void buyItemInGroupOrder(selectedGroupOrder!, item.id)}
             />
           ))}
         </div>

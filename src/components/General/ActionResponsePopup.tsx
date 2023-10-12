@@ -5,9 +5,7 @@ export type AnimationHandle = {
   failure: () => void
 }
 
-type Props = {}
-
-const ActionResponsePopup = forwardRef<AnimationHandle, Props>(function ActionResponsePopup(
+const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionResponsePopup(
   props,
   ref
 ) {

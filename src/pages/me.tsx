@@ -1,11 +1,9 @@
 import { NextPage } from "next"
-import Head from "next/head"
-import Link from "next/link"
 import { useSession } from "next-auth/react"
-import { api } from "~/utils/api"
-import { useForm, SubmitHandler } from "react-hook-form"
-import { time } from "console"
+import type { SubmitHandler } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import CenteredPage from "~/components/Layout/CenteredPage"
+import { api } from "~/utils/api"
 
 const Me: NextPage = () => {
   const { data: sessionData, update: updateSession } = useSession()
@@ -15,30 +13,30 @@ const Me: NextPage = () => {
   const updateUser = api.user.updateMe.useMutation()
 
   type UserFormInput = { name: string }
-  const { register: userFormRegister, handleSubmit: handleUserSubmit } =
-    useForm<UserFormInput>()
+  const { register: userFormRegister, handleSubmit: handleUserSubmit } = useForm<UserFormInput>()
 
   const onUserSubmit: SubmitHandler<UserFormInput> = async (data) => {
     console.log("updateUser")
     const user = await updateUser.mutateAsync(data)
     console.log("updateUser finished: newUser", user)
 
-    await trpcUtils.user.getMe.setData(undefined, user)
-    updateSession()
+    trpcUtils.user.getMe.setData(undefined, user)
+    await updateSession()
+    return
   }
 
   return (
     <CenteredPage>
-      <form onSubmit={handleUserSubmit(onUserSubmit)} className="gap-1">
+      <form onSubmit={(_event) => void handleUserSubmit(onUserSubmit)} className="gap-1">
         <p className="font-semibold">Mein Username:</p>
         <div className="mt-1">
-        <input
-          type="text"
-          defaultValue={userData?.name || ""}
-          {...userFormRegister("name", { required: true })}
-          className="input-bordered input w-full max-w-xs"
+          <input
+            type="text"
+            defaultValue={userData?.name || ""}
+            {...userFormRegister("name", { required: true })}
+            className="input-bordered input w-full max-w-xs"
           />
-          </div>
+        </div>
         <button className="btn mt-1" type="submit">
           Speichern
         </button>

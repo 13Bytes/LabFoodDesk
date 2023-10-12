@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import { Controller, SubmitHandler, useForm } from "react-hook-form"
+import type { SubmitHandler } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import Select from "react-select"
 import { api } from "~/utils/api"
 
@@ -50,7 +51,7 @@ const AddItemForm = (props: Props) => {
     <>
       <h3 className="text-lg font-bold">Neues Item</h3>
       <div className="py-4">
-        <form onSubmit={addItemSubmit(onAddItemSubmit)} className="space-y-4">
+        <form onSubmit={(_event) => void addItemSubmit(onAddItemSubmit)} className="space-y-4">
           <div>
             <label className="label">
               <span className="label-text text-base">Name</span>
@@ -87,7 +88,6 @@ const AddItemForm = (props: Props) => {
               defaultValue={[]}
               render={({ field: { onChange, onBlur, value, name, ref } }) => (
                 <Select
-                  // @ts-ignore
                   options={options}
                   onChange={onChange}
                   isMulti={true}

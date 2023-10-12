@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react"
-import { Controller, SubmitHandler, useForm } from "react-hook-form"
-import Select from "react-select"
+import type { SubmitHandler } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { weekdays } from "~/helper/globalTypes"
 import { api } from "~/utils/api"
@@ -35,7 +34,7 @@ const AddGrouporderTemplateForm = (props: Props) => {
     <>
       <h3 className="text-lg font-bold">Neues Item</h3>
       <div className="py-4">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={(event) => void handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="label">
               <span className="label-text text-base">Name</span>
@@ -53,7 +52,7 @@ const AddGrouporderTemplateForm = (props: Props) => {
             </label>
             <select className="select-bordered select w-full max-w-xs" {...register("weekday")}>
               {weekdays.map((day, index) => (
-                <option value={index}>{day}</option>
+                <option key={index} value={index}>{day}</option>
               ))}
             </select>
           </div>

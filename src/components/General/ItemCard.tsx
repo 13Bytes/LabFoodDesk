@@ -15,7 +15,7 @@ const ItemCard = ({ item, buyAction }: Props) => {
           <h2 className="card-title mr-6">{item.name}</h2>
           <div className="flex flex-col items-end self-center ">
             {item.categories.map((cat) => (
-              <div className="badge badge-outline">{cat.name}</div>
+              <div key={cat.id} className="badge badge-outline">{cat.name}</div>
             ))}
           </div>
         </div>

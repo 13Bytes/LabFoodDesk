@@ -45,7 +45,7 @@ const BuyPage: NextPage = () => {
 
         <div className="flex flex-row flex-wrap items-center justify-start gap-2 sm:p-4 md:p-7">
           {displayedItems?.map((item) => (
-            <ItemCard item={item} buyAction={buyAction} />
+            <ItemCard key={item.id} item={item} buyAction={buyAction} />
           ))}
         </div>
       </div>

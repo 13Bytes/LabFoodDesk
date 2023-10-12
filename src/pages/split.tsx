@@ -95,7 +95,7 @@ const SplitPage: NextPage = () => {
 
             <div>
               <button
-                className={`btn ml-5 ${!selectedDestinationUser && "btn-disabled"}`}
+                className={`btn ml-5 ${!selectedDestinationUser ? "btn-disabled" : ""}`}
                 onClick={() => sendMoneyAction()}
               >
                 Senden

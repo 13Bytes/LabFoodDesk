@@ -137,7 +137,7 @@ const InventoryPage = () => {
                     </td>
                     <td>
                       {order.orders.map((order) => (
-                        <span>{order.user.name}</span>
+                        <span key={order.id}>{order.user.name}</span>
                       ))}
                     </td>
                   </tr>
@@ -150,16 +150,16 @@ const InventoryPage = () => {
           </div>
           <div className="join mt-2">
             <button
-              className={`join-item btn ${page < 1 && "btn-disabled"}`}
+              className={`join-item btn ${page < 1 ? "btn-disabled" : ""}`}
               onClick={() => setPage((prev) => prev - 1)}
             >
               «
             </button>
             <button className="join-item btn pointer-events-none">Seite {page + 1}</button>
             <button
-              className={`join-item btn ${page >= maxPage && "btn-disabled"}`}
+              className={`join-item btn ${page >= maxPage ? "btn-disabled": ""}`}
               onClick={() => {
-                fetchNextPage()
+                void fetchNextPage()
                 setPage((prev) => prev + 1)
               }}
             >
