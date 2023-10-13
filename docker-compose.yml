@@ -11,17 +11,8 @@ services:
     working_dir: /app
     ports:
       - "3000:3000"
-    image: t3-app
+    image: lab-eats
     environment:
       - DATABASE_URL=database_url_goes_here
-  db:
-    restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile-db
-    volumes:
-        - postgres_data:/var/lib/postgresql/data/
-    env_file:
-        - ./.env
 volumes: 
-  postgres_data: 
+  postgres_data:
