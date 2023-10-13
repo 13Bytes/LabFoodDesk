@@ -2,16 +2,17 @@ version: "3.9"
 services:
   app:
     restart: always
-    platform: "linux/amd64"
     build:
       context: .
       dockerfile: Dockerfile-app
-      args:
-        NEXT_PUBLIC_CLIENTVAR: "clientvar"
+      # args:
+      #   NEXT_PUBLIC_CLIENTVAR: "clientvar"
     working_dir: /app
     ports:
       - "3000:3000"
     image: lab-eats
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=database_url_goes_here
 volumes: 

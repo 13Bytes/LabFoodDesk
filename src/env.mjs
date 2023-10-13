@@ -43,8 +43,7 @@ const processEnv = {
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   EMAIL_SERVER: process.env.EMAIL_SERVER,
-  EMAIL_FROM: process.env.EMAIL_FROM,
-  // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+  EMAIL_FROM: process.env.EMAIL_FROM
 };
 
 // Don't touch the part below
