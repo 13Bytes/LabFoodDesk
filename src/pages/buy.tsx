@@ -1,7 +1,7 @@
 import { type NextPage } from "next"
 import { useRef, useState } from "react"
 import ActionResponsePopup, { AnimationHandle } from "~/components/General/ActionResponsePopup"
-import ItemCard from "~/components/General/ItemCard"
+import BuyItemCard from "~/components/General/BuyItemCard"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 
@@ -45,7 +45,7 @@ const BuyPage: NextPage = () => {
 
         <div className="flex flex-row flex-wrap items-center justify-start gap-2 sm:p-4 md:p-7">
           {displayedItems?.map((item) => (
-            <ItemCard key={item.id} item={item} buyAction={buyAction} />
+            <BuyItemCard key={item.id} item={item} buyAction={buyAction} />
           ))}
         </div>
       </div>

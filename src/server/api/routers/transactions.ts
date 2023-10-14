@@ -3,6 +3,7 @@ import { id } from "~/helper/zodTypes"
 
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
+import { checkAccountBacking } from "~/server/helper/dbCallHelper"
 
 const pageSize = 20
 export const transactionRouter = createTRPCRouter({
@@ -54,6 +55,10 @@ export const transactionRouter = createTRPCRouter({
       const destinationUser = await prisma.user.findUniqueOrThrow({
         where: { id: input.destinationUserId },
       })
+
+      const user = await ctx.prisma.user.findUniqueOrThrow({where: {id: ctx.session.user.id}})
+      checkAccountBacking(user, input.amount)
+      
       // atomic action:
       await prisma.$transaction([
         prisma.transaction.create({

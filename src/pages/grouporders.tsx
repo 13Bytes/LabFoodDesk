@@ -1,9 +1,11 @@
+import { User } from "@prisma/client"
 import { group } from "console"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
 import ActionResponsePopup, { AnimationHandle } from "~/components/General/ActionResponsePopup"
-import ItemCard from "~/components/General/ItemCard"
+import BuyItemCard from "~/components/General/BuyItemCard"
+import ItemCard from "~/components/General/temCard"
 
 import CenteredPage from "~/components/Layout/CenteredPage"
 import Modal from "~/components/Layout/Modal"
@@ -12,9 +14,13 @@ import { localStringOptions } from "~/helper/globalTypes"
 import { api } from "~/utils/api"
 
 const GroupOrders: NextPage = () => {
+  const trpcUtils = api.useContext()
+
   const groupOrderRequest = api.groupOrders.getRelevant.useQuery()
-  const groupOrderItems = api.item.getGroupBuyOptions.useQuery()
+  const groupOrderItems = api.item.getGroupBuyItems.useQuery()
+  const groupOrderPocurementItems = api.item.getGroupBuyProcurementItems.useQuery()
   const buyItemRequest = api.groupOrders.buyGroupOrderItem.useMutation()
+  const procureItemRequest = api.groupOrders.procureGroupOrderItem.useMutation()
   const sessionUser = useSession().data?.user
   const animationRef = useRef<AnimationHandle>(null)
 
@@ -26,12 +32,21 @@ const GroupOrders: NextPage = () => {
     setOpenBuyModal(true)
   }
 
-  const buyItemInGroupOrder = async (groupId: string, itemID: string) => {
-    await buyItemRequest.mutateAsync({ groupId, items: [itemID] })
+  const buyItemInGroupOrder = async (
+    groupId: string,
+    itemID: string,
+    type: "procurement" | "order"
+  ) => {
+    if (type === "order") {
+      await buyItemRequest.mutateAsync({ groupId, items: [itemID] })
+    } else if (type === "procurement") {
+      await procureItemRequest.mutateAsync({ groupId, items: [itemID] })
+    }
     setOpenBuyModal(false)
     if (animationRef.current) {
       animationRef.current.success()
     }
+    await trpcUtils.groupOrders.invalidate()
   }
 
   return (
@@ -49,20 +64,15 @@ const GroupOrders: NextPage = () => {
                 </div>
 
                 <div className="flex flex-row flex-wrap gap-2">
-                  {group.orders.map((o) => (
-                    <div key={o.id} className="tooltip tooltip-top" data-tip={o.user.name}>
-                      <div className="placeholder avatar">
-                        <div className="w-12 rounded-full bg-neutral-focus text-neutral-content">
-                          <span>{getUsernameLetters(o.user.name)}</span>
-                        </div>
-                      </div>
-                    </div>
+                  {[...group.orders, ...group.procurementWishes].map((o) => (
+                    <UserItem key={o.id} orderId={o.id} userName={o.user.name} />
                   ))}
                 </div>
 
                 <div>
                   <button className="btn-primary btn mt-7" onClick={() => joinGroupOrder(group.id)}>
-                    {group.orders.some((order) => order.userId === sessionUser?.id)
+                    {group.orders.some((order) => order.userId === sessionUser?.id) ||
+                    group.procurementWishes.some((wish) => wish.userId === sessionUser?.id)
                       ? "Bestellung erweitern"
                       : "Bestellung beitreten"}
                   </button>
@@ -75,11 +85,23 @@ const GroupOrders: NextPage = () => {
 
       <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-9/12 !max-w-5xl pr-10">
         <div className="flex flex-row flex-wrap gap-4">
-          {groupOrderItems.data?.map((item) => (
+          {groupOrderPocurementItems.data?.map((item) => (
             <ItemCard
+              id={item.id}
+              key={item.id}
+              name={item.name}
+              categories={item.categories}
+              buttonName="Wünschen"
+              buyAction={() =>
+                void buyItemInGroupOrder(selectedGroupOrder!, item.id, "procurement")
+              }
+            />
+          ))}
+          {groupOrderItems.data?.map((item) => (
+            <BuyItemCard
               key={item.id}
               item={item}
-              buyAction={() => void buyItemInGroupOrder(selectedGroupOrder!, item.id)}
+              buyAction={() => void buyItemInGroupOrder(selectedGroupOrder!, item.id, "order")}
             />
           ))}
         </div>
@@ -87,6 +109,18 @@ const GroupOrders: NextPage = () => {
 
       <ActionResponsePopup ref={animationRef} />
     </>
+  )
+}
+
+const UserItem = (props: { orderId: string; userName: string | null }) => {
+  return (
+    <div key={props.orderId} className="tooltip tooltip-top" data-tip={props.userName}>
+      <div className="placeholder avatar">
+        <div className="w-12 rounded-full bg-neutral-focus text-neutral-content">
+          <span>{getUsernameLetters(props.userName)}</span>
+        </div>
+      </div>
+    </div>
   )
 }
 

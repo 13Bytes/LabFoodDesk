@@ -3,11 +3,15 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
+import type { Overwrite } from "@trpc/server"
+import CategorySelector from "../FormElements/CategorySelector"
+
 
 export const validationSchema = z.object({
   name: z.string().optional(),
   ordersCloseAt: z.date(),
   groupOrderTemplate: id.optional(),
+  categories: z.array(id)
 })
 
 type Props = {
@@ -16,13 +20,19 @@ type Props = {
 const AddGrouporderForm = (props: Props) => {
   const trpcUtils = api.useContext()
   const createGrouporder = api.groupOrders.create.useMutation()
+  const allCategoriesRequest = api.category.getAll.useQuery()
 
-  type AddGrouporderFormInput = z.infer<typeof validationSchema>
+  type AddGrouporderInput = z.infer<typeof validationSchema>
+  type AddGrouporderFormInput = Overwrite<AddGrouporderInput, { categories: { label: string; value: string }[] }>
 
-  const { register, handleSubmit } = useForm<AddGrouporderFormInput>()
+  const { register, handleSubmit, control } = useForm<AddGrouporderFormInput>()
 
   const onSubmit: SubmitHandler<AddGrouporderFormInput> = async (data) => {
-    await createGrouporder.mutateAsync(data)
+    const dataToSend = {
+      ...data,
+      categories: data.categories.map((category) => category.value),
+    }
+    await createGrouporder.mutateAsync(dataToSend)
     await trpcUtils.groupOrders.invalidate()
     props.finishAction()
   }
@@ -52,6 +62,12 @@ const AddGrouporderForm = (props: Props) => {
               {...register("ordersCloseAt", { required: true, valueAsDate: true })}
               className="input-bordered input-primary input w-full max-w-md"
             />
+          </div>
+          <div>
+            <label className="label">
+              <span className="label-text text-base">Categorien</span>
+            </label>
+            <CategorySelector control={control} categories={allCategoriesRequest.data}  />
           </div>
 
           <button className="btn-primary btn-block btn mt-1" type="submit">

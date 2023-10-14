@@ -23,7 +23,7 @@ export default function Header() {
       <li>
         <Link href="/account">Konto</Link>
       </li>
-      {sessionData?.user.isAdmin && (
+      {sessionData?.user.is_admin && (
         <li>
           <details tabIndex={0}>
             <summary tabIndex={0}>Admin</summary>

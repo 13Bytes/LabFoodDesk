@@ -14,29 +14,31 @@ const SplitPage: NextPage = () => {
   const trpcUtils = api.useContext()
 
   const session = useSession()
-  const [amount, setAmount] = useState<number>(1)
-  const [note, setNote] = useState("")
+  const [amountRec, setAmountRec] = useState<number>(1)
+  const [amountSend, setAmountSend] = useState<number>(1)
+  const [noteRec, setNoteRec] = useState("")
+  const [noteSend, setNoteSend] = useState("")
   const [selectedDestinationUser, setSelectedDestinationUser] = useState<string>()
   const [errorMessage, setErrorMessage] = useState("")
   const checkboxRef = useRef<AnimationHandle>(null)
 
   const apiBuyOneItem = api.item.buyOneItem.useMutation()
-  const apiSendmMoney = api.transaction.sendMoney.useMutation()
+  const apiSendMoney = api.transaction.sendMoney.useMutation()
 
   const sendMoneyAction = async () => {
     if (selectedDestinationUser) {
       setErrorMessage("")
-      await apiSendmMoney.mutateAsync({
-        amount: amount,
+      await apiSendMoney.mutateAsync({
+        amount: amountSend,
         destinationUserId: selectedDestinationUser,
-        note: note,
+        note: noteSend,
       })
       if (animationRef.current) {
         animationRef.current.success()
       }
       setSelectedDestinationUser(undefined)
-      setAmount(1)
-      setNote("")
+      setAmountSend(1)
+      setNoteSend("")
       await trpcUtils.user.getAllBalances.invalidate()
     } else {
       setErrorMessage("Bitte wähle einen Empfänger aus")
@@ -50,8 +52,7 @@ const SplitPage: NextPage = () => {
   return (
     <>
       <CenteredPage>
-        <h3 className="self-start text-xl">Geld senden</h3>
-
+        <h3 className="self-start text-xl mt-12">Geld senden</h3>
         <div className="card card-body mt-2 bg-base-300 shadow-sm">
           <div className="flex flex-row flex-wrap items-center gap-1">
             <div className="flex flex-row items-center">
@@ -59,17 +60,17 @@ const SplitPage: NextPage = () => {
                 <input
                   type="number"
                   className="input-bordered input w-20"
-                  value={amount}
+                  value={amountSend}
                   min={0}
                   step={0.01}
-                  onChange={(e) => setAmount(parseFloat(e.target.value))}
+                  onChange={(e) => setAmountSend(parseFloat(e.target.value))}
                 />
               </div>
               <div className="ml-1">€</div>
             </div>
 
             <div className="mx-1">
-              von <span className="font-bold">{session.data?.user.name}</span> an
+              von <span className="font-bold">dir</span> an
             </div>
 
             <div className="">
@@ -105,19 +106,19 @@ const SplitPage: NextPage = () => {
               </button>
             </div>
           </div>
-          <p className="mt-3 text-lg font-bold text-error-content">{errorMessage}</p>
+          <p className="text-lg font-bold text-error-content">{errorMessage}</p>
           <div className="flex">
             <input
               type="text"
               className="input-bordered input w-full"
-              value={note}
+              value={noteSend}
               placeholder="Anmerkung"
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) => setNoteSend(e.target.value)}
             />
           </div>
         </div>
 
-        <h3 className="mt-10 self-start text-xl">Übersicht</h3>
+        <h3 className="mt-12 self-start text-xl">Übersicht</h3>
         <div className="flex flex-row flex-wrap items-center gap-1">
           <div className="flex flex-row items-center overflow-x-auto">
             <table className="table">

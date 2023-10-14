@@ -28,12 +28,35 @@ model Item {
     for_grouporders Boolean       @default(false)
 }
 
+model ProcurementItem {
+    // items must be immutable and shouldn't be deleted (if transactions exists) 
+    // - create copy instead and set is_active=false
+    id              String            @id @default(cuid())
+    name            String
+    categories      Category[]
+    is_active       Boolean           @default(true)
+    ProcurementWish ProcurementWish[]
+}
+
+model ProcurementWish {
+    id           String            @id @default(cuid())
+    user         User              @relation(fields: [userId], references: [id])
+    userId       String
+    items        ProcurementItem[]
+    createdAt    DateTime          @default(now())
+    GroupOrder   GroupOrder?       @relation(fields: [groupOrderId], references: [id])
+    groupOrderId String?
+}
+
 model GroupOrder {
     id                   String              @id @default(cuid())
     name                 String?
     orders               Transaction[]
+    procurementWishes    ProcurementWish[]
     ordersCloseAt        DateTime
     aborted              Boolean             @default(false)
+    categories           Category[] // only show items from this categories
+    categoryId           String?
     GroupOrderTemplate   GroupOrderTemplate? @relation(fields: [groupOrderTemplateId], references: [id])
     groupOrderTemplateId String?
 }
@@ -49,9 +72,13 @@ model GroupOrderTemplate {
 }
 
 model Category {
-    id    String @id @default(cuid())
-    name  String
-    items Item[]
+    id                String           @id @default(cuid())
+    name              String
+    items             Item[]
+    // Backlinks
+    GroupOrders       GroupOrder[]
+    ProcurementItem   ProcurementItem? @relation(fields: [procurementItemId], references: [id])
+    procurementItemId String?
 }
 
 model Transaction {
@@ -101,18 +128,21 @@ model Session {
 }
 
 model User {
-    id                      String        @id @default(cuid())
+    id                      String            @id @default(cuid())
     name                    String?
-    email                   String?       @unique
+    email                   String?           @unique
     emailVerified           DateTime?
     image                   String?
     accounts                Account[]
     sessions                Session[]
     //  ---
-    isAdmin                 Boolean       @default(false)
-    balance                 Float         @default(0)
-    transactions            Transaction[] @relation("user")
-    is_transfer_destiantion Transaction[] @relation("moneyDestination")
+    is_active               Boolean           @default(true)
+    is_admin                Boolean           @default(false)
+    allowOverdraw           Boolean           @default(false)
+    balance                 Float             @default(0)
+    transactions            Transaction[]     @relation("user")
+    is_transfer_destiantion Transaction[]     @relation("moneyDestination")
+    ProcurementWish         ProcurementWish[]
 }
 
 model VerificationToken {

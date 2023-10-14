@@ -6,6 +6,8 @@ A tool to manage (food)(orders) in the Aerospace Lab.
 - Geld überziehen von admins
 - Gruppenbestellungen betrag im Nachhinein eingeben
 - Logs wer was eingetragen hat
+#### Nice Improveents:
+- the check if account is covered is prone to simultaneous requests (the actual credit of course not)
 
 
 ## Development

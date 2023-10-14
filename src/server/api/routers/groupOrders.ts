@@ -6,6 +6,9 @@ import { prisma } from "~/server/db"
 import { validationSchema as groupOrderValidationSchema } from "~/components/General/AddGrouporderForm"
 import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/General/AddGrouporderTemplateForm"
 import dayjs from "dayjs"
+import { checkAccountBacking, verifyAllCategories } from "~/server/helper/dbCallHelper"
+import { TRPCError } from "@trpc/server"
+import { itemRouter } from "./items"
 
 const pageSize = 20
 export const grouporderRouter = createTRPCRouter({
@@ -20,7 +23,10 @@ export const grouporderRouter = createTRPCRouter({
       orderBy: {
         ordersCloseAt: "asc",
       },
-      include: { orders: { include: { user: { select: { id: true, name: true } } } } },
+      include: { 
+        orders: { include: { user: { select: { id: true, name: true } } } },
+        procurementWishes: {include: {user: {select: {id: true, name: true}}}}
+      },
     })
     return result
   }),
@@ -63,10 +69,12 @@ export const grouporderRouter = createTRPCRouter({
         },
       })
     }
+    const categories = await verifyAllCategories(input.categories)
 
     const payload = {
       name: input.name,
       ordersCloseAt: input.ordersCloseAt,
+      categories: { connect: categories.map((c) => ({ id: c.id })) || [] },
     }
     const item = await prisma.groupOrder.create({
       data: !!groupOrderTemplate
@@ -91,22 +99,58 @@ export const grouporderRouter = createTRPCRouter({
         input.items.map((item) => ctx.prisma.item.findUniqueOrThrow({ where: { id: item } }))
       )
       const totalPrice = items.reduce((acc, item) => acc + item.price, 0)
+      const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
+      checkAccountBacking(user, totalPrice)
 
       await prisma.$transaction([
-        ... items.map(item =>  prisma.transaction.create({
-          data: {
-            quantity: 1,
-            user: { connect: { id: ctx.session.user.id } },
-            item: { connect: { id: item.id } },
-            GroupOrder: { connect: { id: group.id } },
-            type: 0,
-            totalAmount: item.price,
-          }})),
+        ...items.map((item) =>
+          prisma.transaction.create({
+            data: {
+              quantity: 1,
+              user: { connect: { id: ctx.session.user.id } },
+              item: { connect: { id: item.id } },
+              GroupOrder: { connect: { id: group.id } },
+              type: 0,
+              totalAmount: item.price,
+            },
+          })
+        ),
         prisma.user.update({
           where: { id: ctx.session.user.id },
           data: { balance: { decrement: totalPrice } },
         }),
       ])
+    }),
+
+  procureGroupOrderItem: protectedProcedure
+    .input(
+      z.object({
+        groupId: id,
+        items: z.array(id),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
+        where: { id: input.groupId },
+      })
+      const items = await Promise.all(
+        input.items.map((item) =>
+          ctx.prisma.procurementItem.findUniqueOrThrow({ where: { id: item } })
+        )
+      )
+
+      const requiredBacking = items.length * 5 // secure 5€ per item
+      const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
+      checkAccountBacking(user, requiredBacking)
+
+      const procWish = await prisma.procurementWish.create({
+        data: {
+          user: { connect: { id: ctx.session.user.id } },
+          GroupOrder: { connect: { id: group.id } },
+          items: { connect: items.map((itm) => ({ id: itm.id })) },
+        },
+      })
+      return procWish
     }),
 
   getAllTemplates: protectedProcedure.query(async ({ ctx }) => {

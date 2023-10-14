@@ -7,7 +7,7 @@ interface Props {
   buyAction: (itemID: string) => void
 }
 
-const ItemCard = ({ item, buyAction }: Props) => {
+const BuyItemCard = ({ item, buyAction }: Props) => {
   return (
     <div className="card-compact card w-72 bg-base-300 shadow-sm" key={item.id}>
       <div className="card-body">
@@ -30,4 +30,4 @@ const ItemCard = ({ item, buyAction }: Props) => {
   )
 }
 
-export default ItemCard
+export default BuyItemCard
