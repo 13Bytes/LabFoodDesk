@@ -88,7 +88,7 @@ const GroupOrders: NextPage = () => {
                   <h1 className="text-2xl font-bold">
                     {group.ordersCloseAt.toLocaleString("de", localStringOptions)}
                   </h1>
-                  <p className="mr-5">{group.name}</p>
+                  <p className="mr-5 font-bold text-lg">{group.name}</p>
                 </div>
 
                 <div className="flex flex-row flex-wrap gap-2">
@@ -97,13 +97,18 @@ const GroupOrders: NextPage = () => {
                   ))}
                 </div>
 
-                <div>
+                <div className="flex flex-row  justify-between">
                   <button className="btn-primary btn mt-7" onClick={() => joinGroupOrder(group.id)}>
                     {group.orders.some((order) => order.userId === sessionUser?.id) ||
                     group.procurementWishes.some((wish) => wish.userId === sessionUser?.id)
                       ? "Bestellung erweitern"
                       : "Bestellung beitreten"}
                   </button>
+                  { new Date() > group.ordersCloseAt && sessionUser?.is_admin &&
+                    <button className="btn-warning btn mt-7" onClick={() => {}}>
+                    Beenden
+                  </button>
+                  }
                 </div>
               </div>
             </div>
