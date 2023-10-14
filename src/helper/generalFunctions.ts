@@ -1,5 +1,3 @@
-import { Session } from "next-auth"
-
 export const getUsernameLetters = (name: string | undefined | null) => {
   if (name) {
     const nameSegments = name.trim().split(" ")

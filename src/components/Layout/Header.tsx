@@ -1,4 +1,3 @@
-import { Session } from "next-auth"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { getUsernameLetters } from "~/helper/generalFunctions"

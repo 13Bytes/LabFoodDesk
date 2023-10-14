@@ -23,6 +23,7 @@ export const itemRouter = createTRPCRouter({
         name: z.string(),
         categories: z.array(id),
         price: z.number(),
+        for_grouporders: z.boolean().optional().default(false)
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -42,6 +43,7 @@ export const itemRouter = createTRPCRouter({
           price: input.price,
           categories: { connect: categories.map((category) => ({ id: category.id })) },
           is_active: true,
+          for_grouporders: input.for_grouporders
         },
       })
       return item

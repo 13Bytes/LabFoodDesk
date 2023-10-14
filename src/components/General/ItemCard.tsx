@@ -1,4 +1,4 @@
-import { Category, Item } from "@prisma/client"
+import type { Category, Item } from "@prisma/client"
 
 interface Props {
   item: Item & {

@@ -11,6 +11,8 @@ const SplitPage: NextPage = () => {
   const allBalancesRequest = api.user.getAllBalances.useQuery()
   const animationRef = useRef<AnimationHandle>(null)
 
+  const trpcUtils = api.useContext()
+
   const session = useSession()
   const [amount, setAmount] = useState<number>(1)
   const [note, setNote] = useState("")
@@ -21,10 +23,10 @@ const SplitPage: NextPage = () => {
   const apiBuyOneItem = api.item.buyOneItem.useMutation()
   const apiSendmMoney = api.transaction.sendMoney.useMutation()
 
-  const sendMoneyAction = () => {
+  const sendMoneyAction = async () => {
     if (selectedDestinationUser) {
       setErrorMessage("")
-      apiSendmMoney.mutate({
+      await apiSendmMoney.mutateAsync({
         amount: amount,
         destinationUserId: selectedDestinationUser,
         note: note,
@@ -35,6 +37,7 @@ const SplitPage: NextPage = () => {
       setSelectedDestinationUser(undefined)
       setAmount(1)
       setNote("")
+      await trpcUtils.user.getAllBalances.invalidate()
     } else {
       setErrorMessage("Bitte wähle einen Empfänger aus")
     }

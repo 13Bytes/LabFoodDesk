@@ -27,7 +27,7 @@ const Me: NextPage = () => {
 
   return (
     <CenteredPage>
-      <form onSubmit={(_event) => void handleUserSubmit(onUserSubmit)} className="gap-1">
+      <form onSubmit={handleUserSubmit(onUserSubmit)} className="gap-1">
         <p className="font-semibold">Mein Username:</p>
         <div className="mt-1">
           <input

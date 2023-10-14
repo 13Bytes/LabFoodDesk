@@ -6,7 +6,6 @@ import { api } from "~/utils/api"
 
 const InventoryPage = () => {
   const allItemsRequest = api.item.getAll.useQuery()
-  const createItemRequest = api.item.createItem.useMutation()
   const [openAddItemModal, setOpenAddItemModal] = useState(false)
 
   const Legend = () => (

@@ -1,10 +1,9 @@
+import { Transaction } from "@prisma/client"
 import { type NextPage } from "next"
-import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
+import React, { useEffect } from "react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
-import { useSession } from "next-auth/react"
-import React from "react"
-import { Transaction } from "@prisma/client"
 
 const AccountPage: NextPage = () => {
   const [page, setPage] = React.useState(0)
@@ -41,7 +40,7 @@ const AccountPage: NextPage = () => {
   }, [setMaxPage, hasNextPage])
 
   function userIsTransactionDestination(transaction: Transaction): boolean {
-    return transaction.moneyDestinationUserId === userData?.id;
+    return transaction.moneyDestinationUserId === userData?.id
   }
 
   return (
@@ -99,18 +98,18 @@ const AccountPage: NextPage = () => {
 
           <div className="join mt-2">
             <button
-              className={`join-item btn ${page < 1 ? "btn-disabled": ""}`}
+              className={`join-item btn ${page < 1 ? "btn-disabled" : ""}`}
               onClick={() => setPage((prev) => prev - 1)}
             >
               «
             </button>
             <button className="join-item btn pointer-events-none">Seite {page + 1}</button>
             <button
-              className={`join-item btn ${page >= maxPage ? "btn-disabled": ""}`}
+              className={`join-item btn ${page >= maxPage ? "btn-disabled" : ""}`}
               onClick={() => {
                 void fetchNextPage()
                 setPage((prev) => prev + 1)
-                return 
+                return
               }}
             >
               »

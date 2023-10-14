@@ -51,7 +51,7 @@ const AddItemForm = (props: Props) => {
     <>
       <h3 className="text-lg font-bold">Neues Item</h3>
       <div className="py-4">
-        <form onSubmit={(_event) => void addItemSubmit(onAddItemSubmit)} className="space-y-4">
+        <form onSubmit={addItemSubmit(onAddItemSubmit)} className="space-y-4">
           <div>
             <label className="label">
               <span className="label-text text-base">Name</span>
@@ -98,7 +98,7 @@ const AddItemForm = (props: Props) => {
                   id="select_categories"
                   key="select_categories_key"
                   styles={{
-                    control: (baseStyles, state) => ({
+                    control: (baseStyles, _props) => ({
                       ...baseStyles,
                       backgroundColor: "transparent",
                       borderColor: "#6419E6",
@@ -116,9 +116,7 @@ const AddItemForm = (props: Props) => {
             </label>
             <input
               type="checkbox"
-              {...addItemRegister("for_grouporders", {
-                required: true,
-              })}
+              {...addItemRegister("for_grouporders")}
             />
           </div>
 

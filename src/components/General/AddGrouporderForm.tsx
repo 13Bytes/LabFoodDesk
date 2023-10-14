@@ -31,7 +31,7 @@ const AddGrouporderForm = (props: Props) => {
     <>
       <h3 className="text-lg font-bold">Neuer Gruppen-Kauf</h3>
       <div className="py-4">
-        <form onSubmit={(_event) => void handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="label">
               <span className="label-text text-base">Beschreibung</span>
