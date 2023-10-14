@@ -16,17 +16,22 @@ const BuyPage: NextPage = () => {
 
   const apiBuyOneItem = api.item.buyOneItem.useMutation()
   const buyAction = (itemID: string) => {
-    try {
-      apiBuyOneItem.mutate({ productID: itemID })
-      if (animationRef.current) {
-        animationRef.current.success()
-      }
-    } catch (error) {
-      console.error(error)
-      if (animationRef.current) {
-        animationRef.current.failure()
-      }
-    }
+      apiBuyOneItem.mutate(
+        { productID: itemID },
+        {
+          onError: (error) => {
+            console.error(error)
+            if (animationRef.current) {
+              animationRef.current.failure()
+            }
+          },
+          onSuccess: () => {
+            if (animationRef.current) {
+              animationRef.current.success()
+            }
+          }
+        }
+      )
   }
 
   return (

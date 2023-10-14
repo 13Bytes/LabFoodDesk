@@ -1,4 +1,5 @@
 import { User } from "@prisma/client"
+import { TRPCClientErrorLike } from "@trpc/client"
 import { group } from "console"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
@@ -38,14 +39,41 @@ const GroupOrders: NextPage = () => {
     type: "procurement" | "order"
   ) => {
     if (type === "order") {
-      await buyItemRequest.mutateAsync({ groupId, items: [itemID] })
+      await buyItemRequest.mutateAsync(
+        { groupId, items: [itemID] },
+        {
+          onError: (error) => {
+            console.error(error)
+            if (animationRef.current) {
+              animationRef.current.failure()
+            }
+          },
+          onSuccess: () => {
+            if (animationRef.current) {
+              animationRef.current.success()
+            }
+          },
+        }
+      )
     } else if (type === "procurement") {
-      await procureItemRequest.mutateAsync({ groupId, items: [itemID] })
+      await procureItemRequest.mutateAsync(
+        { groupId, items: [itemID] },
+        {
+          onError: (error) => {
+            console.error(error)
+            if (animationRef.current) {
+              animationRef.current.failure()
+            }
+          },
+          onSuccess: () => {
+            if (animationRef.current) {
+              animationRef.current.success()
+            }
+          },
+        }
+      )
     }
     setOpenBuyModal(false)
-    if (animationRef.current) {
-      animationRef.current.success()
-    }
     await trpcUtils.groupOrders.invalidate()
   }
 

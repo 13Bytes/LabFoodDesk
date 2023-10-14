@@ -28,18 +28,30 @@ const SplitPage: NextPage = () => {
   const sendMoneyAction = async () => {
     if (selectedDestinationUser) {
       setErrorMessage("")
-      await apiSendMoney.mutateAsync({
-        amount: amountSend,
-        destinationUserId: selectedDestinationUser,
-        note: noteSend,
-      })
-      if (animationRef.current) {
-        animationRef.current.success()
-      }
-      setSelectedDestinationUser(undefined)
-      setAmountSend(1)
-      setNoteSend("")
-      await trpcUtils.user.getAllBalances.invalidate()
+      await apiSendMoney.mutateAsync(
+        {
+          amount: amountSend,
+          destinationUserId: selectedDestinationUser,
+          note: noteSend,
+        },
+        {
+          onError: (error) => {
+            console.error(error)
+            if (animationRef.current) {
+              animationRef.current.failure()
+            }
+          },
+          onSuccess: () => {
+            if (animationRef.current) {
+              animationRef.current.success()
+            }
+            setSelectedDestinationUser(undefined)
+            setAmountSend(1)
+            setNoteSend("")
+            trpcUtils.user.getAllBalances.invalidate()
+          },
+        }
+      )
     } else {
       setErrorMessage("Bitte wähle einen Empfänger aus")
     }
@@ -52,7 +64,7 @@ const SplitPage: NextPage = () => {
   return (
     <>
       <CenteredPage>
-        <h3 className="self-start text-xl mt-12">Geld senden</h3>
+        <h3 className="mt-12 self-start text-xl">Geld senden</h3>
         <div className="card card-body mt-2 bg-base-300 shadow-sm">
           <div className="flex flex-row flex-wrap items-center gap-1">
             <div className="flex flex-row items-center">

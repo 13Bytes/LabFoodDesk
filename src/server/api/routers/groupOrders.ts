@@ -100,7 +100,7 @@ export const grouporderRouter = createTRPCRouter({
       )
       const totalPrice = items.reduce((acc, item) => acc + item.price, 0)
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
-      checkAccountBacking(user, totalPrice)
+      await checkAccountBacking(user, totalPrice)
 
       await prisma.$transaction([
         ...items.map((item) =>
@@ -141,7 +141,7 @@ export const grouporderRouter = createTRPCRouter({
 
       const requiredBacking = items.length * 5 // secure 5€ per item
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
-      checkAccountBacking(user, requiredBacking)
+      await checkAccountBacking(user, requiredBacking)
 
       const procWish = await prisma.procurementWish.create({
         data: {

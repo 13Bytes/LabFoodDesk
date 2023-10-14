@@ -108,7 +108,7 @@ export const itemRouter = createTRPCRouter({
       
       const totalPrice = product.price * quantity
       const user = await ctx.prisma.user.findUniqueOrThrow({where: {id: ctx.session.user.id}})
-      checkAccountBacking(user, product.price * totalPrice)
+      await checkAccountBacking(user, totalPrice)
 
       // atomic action:
       await prisma.$transaction([

@@ -57,8 +57,8 @@ export const transactionRouter = createTRPCRouter({
       })
 
       const user = await ctx.prisma.user.findUniqueOrThrow({where: {id: ctx.session.user.id}})
-      checkAccountBacking(user, input.amount)
-      
+      await checkAccountBacking(user, input.amount)
+
       // atomic action:
       await prisma.$transaction([
         prisma.transaction.create({
