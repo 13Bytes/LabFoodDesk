@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react"
 import { useEffect, useRef, useState } from "react"
 import ActionResponsePopup, { AnimationHandle } from "~/components/General/ActionResponsePopup"
 import CenteredPage from "~/components/Layout/CenteredPage"
+import SendMoney from "~/components/SendMoney"
 import { api } from "~/utils/api"
 
 const SplitPage: NextPage = () => {
@@ -65,70 +66,7 @@ const SplitPage: NextPage = () => {
     <>
       <CenteredPage>
         <h3 className="mt-12 self-start text-xl">Geld senden</h3>
-        <div className="card card-body mt-2 bg-base-300 shadow-sm">
-          <div className="flex flex-row flex-wrap items-center gap-1">
-            <div className="flex flex-row items-center">
-              <div className="form-control flex">
-                <input
-                  type="number"
-                  className="input-bordered input w-20"
-                  value={amountSend}
-                  min={0}
-                  step={0.01}
-                  onChange={(e) => setAmountSend(parseFloat(e.target.value))}
-                />
-              </div>
-              <div className="ml-1">€</div>
-            </div>
-
-            <div className="mx-1">
-              von <span className="font-bold">dir</span> an
-            </div>
-
-            <div className="">
-              <select
-                className="select-bordered select w-full max-w-xs font-bold "
-                value={
-                  !!(selectedDestinationUser && allUserRequest.data)
-                    ? allUserRequest.data.find((user) => user.id === selectedDestinationUser)!.name!
-                    : "Auswählen:"
-                }
-                onChange={(e) => {
-                  setSelectedDestinationUser(e.target.options[e.target.selectedIndex]?.id)
-                }}
-              >
-                <option className="disabled">Auswählen:</option>
-                {allUserRequest.data?.map((user) => {
-                  if (user.id !== session.data?.user.id)
-                    return (
-                      <option id={user.id} className="">
-                        {user.name}
-                      </option>
-                    )
-                })}
-              </select>
-            </div>
-
-            <div>
-              <button
-                className={`btn ml-5 ${!selectedDestinationUser ? "btn-disabled" : ""}`}
-                onClick={() => sendMoneyAction()}
-              >
-                Senden
-              </button>
-            </div>
-          </div>
-          <p className="text-lg font-bold text-error-content">{errorMessage}</p>
-          <div className="flex">
-            <input
-              type="text"
-              className="input-bordered input w-full"
-              value={noteSend}
-              placeholder="Anmerkung"
-              onChange={(e) => setNoteSend(e.target.value)}
-            />
-          </div>
-        </div>
+        <SendMoney />
 
         <h3 className="mt-12 self-start text-xl">Übersicht</h3>
         <div className="flex flex-row flex-wrap items-center gap-1">

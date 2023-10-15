@@ -27,6 +27,10 @@ export const userRouter = createTRPCRouter({
   getAllUsers: protectedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany({ select: { name: true, id: true } })
   }),
+
+  getAllUsersWithAllowOverdraw: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.user.findMany({ where: {allowOverdraw: true}, select: { name: true, id: true } })
+  }),
   
   getAllBalances: protectedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany({ select: { name: true, id: true, balance: true } })
