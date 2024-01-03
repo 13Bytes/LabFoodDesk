@@ -11,6 +11,8 @@ const InventoryPage = () => {
   const [openAddItemModal, setOpenAddItemModal] = useState(false)
   const [openAddProcurementItemModal, setOpenAddProcurementItemModal] = useState(false)
 
+  const trpcUtils = api.useContext()
+
   const Legend = () => (
     <tr>
       <th></th>
@@ -29,7 +31,6 @@ const InventoryPage = () => {
       <th></th>
     </tr>
   )
-
 
   return (
     <>
@@ -64,7 +65,7 @@ const InventoryPage = () => {
                     </div>
                   </td>
                   <td>{item.price}€</td>
-                  <td>{item.for_grouporders? "Gruppe": "Einzel"}</td>
+                  <td>{item.for_grouporders ? "Gruppe" : "Einzel"}</td>
                   <td>{item.categories.map((cat) => cat.name).join(", ")}</td>
                   <th>
                     <button className="btn-ghost btn-xs btn">Details</button>
@@ -78,8 +79,8 @@ const InventoryPage = () => {
           </table>
         </div>
 
-        <div className="flex gap-3 mt-10">
-        <button className="btn-primary btn" onClick={() => setOpenAddProcurementItemModal(true)}>
+        <div className="mt-10 flex gap-3">
+          <button className="btn-primary btn" onClick={() => setOpenAddProcurementItemModal(true)}>
             <CloseWindowIcon /> Vorbesteller-Item
           </button>
         </div>
@@ -124,7 +125,12 @@ const InventoryPage = () => {
           <AddItemForm finishAction={() => setOpenAddItemModal(false)} />
         </Modal>
         <Modal open={openAddProcurementItemModal} setOpen={setOpenAddProcurementItemModal}>
-          <AddProcurementItemForm finishAction={() => setOpenAddProcurementItemModal(false)} />
+          <AddProcurementItemForm
+            finishAction={() => {
+              setOpenAddProcurementItemModal(false)
+              trpcUtils.item.getAllProcurementItems.invalidate()
+            }}
+          />
         </Modal>
       </div>
     </>

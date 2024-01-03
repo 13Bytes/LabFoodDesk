@@ -132,8 +132,8 @@ const InventoryPage = () => {
                     </td>
                     <td>{order.name}</td>
                     <td>
-                      {order.aborted && "❌"}
-                      {!order.aborted && order.ordersCloseAt > new Date() ? `📥` : `✅`}
+                      {order.status === 99 && "❌"}
+                      {order.status !== 99 && order.ordersCloseAt > new Date() ? `📥` : `✅`}
                     </td>
                     <td>
                       {order.orders.map((order) => (

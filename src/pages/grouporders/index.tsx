@@ -4,6 +4,7 @@ import { group } from "console"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
+import GroupOrderDetailView from "~/components/FormElements/GroupOrderDetailView"
 import ActionResponsePopup, { AnimationHandle } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
 import ItemCard from "~/components/General/temCard"
@@ -18,10 +19,12 @@ const GroupOrders: NextPage = () => {
   const trpcUtils = api.useContext()
 
   const groupOrderRequest = api.groupOrders.getRelevant.useQuery()
+  const groupOrdersInProgress = api.groupOrders.getInProgress.useQuery()
   const groupOrderItems = api.item.getGroupBuyItems.useQuery()
   const groupOrderPocurementItems = api.item.getGroupBuyProcurementItems.useQuery()
   const buyItemRequest = api.groupOrders.buyGroupOrderItem.useMutation()
   const procureItemRequest = api.groupOrders.procureGroupOrderItem.useMutation()
+  const stopOrderRequest = api.groupOrders.stopOrders.useMutation()
   const sessionUser = useSession().data?.user
   const animationRef = useRef<AnimationHandle>(null)
 
@@ -66,7 +69,7 @@ const GroupOrders: NextPage = () => {
             }
           },
           onSuccess: () => {
-            if (animationRef.current) {
+            if(animationRef.current){
               animationRef.current.success()
             }
           },
@@ -81,6 +84,12 @@ const GroupOrders: NextPage = () => {
     <>
       <CenteredPage>
         <div className="container">
+          {groupOrdersInProgress.data?.map((group) => (
+           <GroupOrderDetailView key={group.id} group={group} />
+          ))}
+        </div>
+
+        <div className="container">
           {groupOrderRequest.data?.map((group) => (
             <div key={group.id} className="card mb-5 max-w-5xl bg-base-200 p-3">
               <div className="flex  flex-col justify-start gap-1 p-1">
@@ -88,7 +97,7 @@ const GroupOrders: NextPage = () => {
                   <h1 className="text-2xl font-bold">
                     {group.ordersCloseAt.toLocaleString("de", localStringOptions)}
                   </h1>
-                  <p className="mr-5 font-bold text-lg">{group.name}</p>
+                  <p className="mr-5 text-lg font-bold">{group.name}</p>
                 </div>
 
                 <div className="flex flex-row flex-wrap gap-2">
@@ -98,17 +107,23 @@ const GroupOrders: NextPage = () => {
                 </div>
 
                 <div className="flex flex-row  justify-between">
-                  <button className="btn-primary btn mt-7" onClick={() => joinGroupOrder(group.id)}>
+                  <button className="btn-primary btn btn-sm mt-7" onClick={() => joinGroupOrder(group.id)}>
                     {group.orders.some((order) => order.userId === sessionUser?.id) ||
                     group.procurementWishes.some((wish) => wish.userId === sessionUser?.id)
                       ? "Bestellung erweitern"
                       : "Bestellung beitreten"}
                   </button>
-                  { new Date() > group.ordersCloseAt && sessionUser?.is_admin &&
-                    <button className="btn-warning btn mt-7" onClick={() => {}}>
-                    Beenden
-                  </button>
-                  }
+                  {new Date() > group.ordersCloseAt && sessionUser?.is_admin && (
+                    <button
+                      className="btn-warning btn mt-7"
+                      onClick={() => {
+                        stopOrderRequest.mutate({ groupId: group.id })
+                        trpcUtils.groupOrders.invalidate()
+                      }}
+                    >
+                      Beenden
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

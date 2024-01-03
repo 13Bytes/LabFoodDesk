@@ -54,7 +54,8 @@ model GroupOrder {
     orders               Transaction[]
     procurementWishes    ProcurementWish[]
     ordersCloseAt        DateTime
-    aborted              Boolean             @default(false)
+    ordersClosedAt       DateTime?
+    status               Int                 @default(0) // 0: open, 5: incoming orders stoped, 6: orders fulfilled, 99: aborted (orders not fulfilled)
     categories           Category[] // only show items from this categories
     categoryId           String?
     GroupOrderTemplate   GroupOrderTemplate? @relation(fields: [groupOrderTemplateId], references: [id])
