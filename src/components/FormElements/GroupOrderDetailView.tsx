@@ -42,29 +42,33 @@ const GroupOrderDetailView = (props: Props) => {
                 </tbody>
               </table>
             </div>
-            <div className="flex justify-end">
-              <button className="btn-primary btn-sm btn">Abrechnen</button>
-            </div>
+
+            {group.orders.length >= 1 && (
+              <div className="mt-5">
+                <h2 className="font-bold">Gekaufte Einzel-Artikel</h2>
+                <div className="flex flex-row flex-wrap gap-2">
+                  <table className="table">
+                    <tbody>
+                      {group.orders.map((o) => (
+                        <tr key={o.id}>
+                          <th>{o.user?.name}</th>
+                          <td>{o.item?.name}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
 
-          <h1>DEBUG</h1>
+          <div className="divider"></div> 
+          <h1 className="text-lg font-bold">Gruppen-Artikel Abrechnung</h1>
           <GroupOrderSplit group={group} />
 
-          {group.orders.length >= 1 && <div className="mt-5">
-            <h2 className="font-bold">Weitere gekaufte Artikel</h2>
-            <div className="flex flex-row flex-wrap gap-2">
-              <table className="table">
-                <tbody>
-                  {group.orders.map((o) => (
-                    <tr key={o.id}>
-                      <th>{o.user?.name}</th>
-                      <td>{o.item?.name}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>}
+          <div className="flex justify-end">
+            <button className="btn-primary btn-sm btn">Abrechnen</button>
+          </div>
 
           {/* <div className="flex flex-row  justify-between">
             <button className="btn-primary btn mt-7" onClick={() => {}}>
