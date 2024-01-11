@@ -7,6 +7,7 @@ import { id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import CategorySelector from "../FormElements/CategorySelector"
 import type { Overwrite } from "@trpc/server"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 
 export const validationSchema = z.object({
@@ -29,7 +30,9 @@ const AddProcurementItemForm = (props: Props) => {
     register: addItemRegister,
     handleSubmit: addItemSubmit,
     control,
-  } = useForm<AddProcurementItemForm>()
+  } = useForm<AddProcurementItemForm>({
+    resolver: zodResolver(validationSchema),
+})
 
   const onAddItemSubmit: SubmitHandler<AddProcurementItemForm> = async (data) => {
     const dataToSend = {

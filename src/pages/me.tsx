@@ -16,9 +16,7 @@ const Me: NextPage = () => {
   const { register: userFormRegister, handleSubmit: handleUserSubmit } = useForm<UserFormInput>()
 
   const onUserSubmit: SubmitHandler<UserFormInput> = async (data) => {
-    console.log("updateUser")
     const user = await updateUser.mutateAsync(data)
-    console.log("updateUser finished: newUser", user)
 
     trpcUtils.user.getMe.setData(undefined, user)
     await updateSession()

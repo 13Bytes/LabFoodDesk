@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { weekdays } from "~/helper/globalTypes"
 import { api } from "~/utils/api"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 export const validationSchema = z.object({
   name: z.string(),
@@ -21,7 +22,7 @@ const AddGrouporderTemplateForm = (props: Props) => {
   type AddGrouporderFormInput = z.infer<typeof validationSchema>
 
   const { register, handleSubmit } = useForm<AddGrouporderFormInput>({
-    // resolver: zodResolver(validationSchema),
+    resolver: zodResolver(validationSchema),
   })
 
   const onSubmit: SubmitHandler<AddGrouporderFormInput> = async (data) => {
