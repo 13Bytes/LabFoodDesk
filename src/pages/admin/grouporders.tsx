@@ -132,8 +132,10 @@ const InventoryPage = () => {
                     </td>
                     <td>{order.name}</td>
                     <td>
+                      {order.status === 0 && "📥"}
+                      {order.status === 5 && "💸"}
+                      {order.status === 6 && "☑️"}
                       {order.status === 99 && "❌"}
-                      {order.status !== 99 && order.ordersCloseAt > new Date() ? `📥` : `✅`}
                     </td>
                     <td>
                       {order.orders.map((order) => (

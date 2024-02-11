@@ -24,7 +24,7 @@ const TopUp: NextPage = () => {
               <div className="alert alert-info">
                 <InfoIcon />
                 <span>
-                  Du kannst einem der folgenden Nutzern Geld geben und diese schreiben es dir dann gut
+                  Du kannst einem der folgenden tollen Menschen Geld geben (und diese schreiben es dir dann gut)
                 </span>
               </div>
             </div>

@@ -66,10 +66,6 @@ const GroupOrderDetailView = (props: Props) => {
           <h1 className="text-lg font-bold">Gruppen-Artikel Abrechnung</h1>
           <GroupOrderSplit group={group} />
 
-          <div className="flex justify-end">
-            <button className="btn-primary btn-sm btn">Abrechnen</button>
-          </div>
-
           {/* <div className="flex flex-row  justify-between">
             <button className="btn-primary btn mt-7" onClick={() => {}}>
               "Button"

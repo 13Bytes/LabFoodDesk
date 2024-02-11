@@ -213,6 +213,11 @@ const GroupOrderSplit = (props: Props) => {
           </tbody>
         </table>
       </div>
+      <div className="flex justify-end">
+        <button className="btn-primary btn-sm btn mr-4 mt-1" onClick={() => {}}>
+          Abrechnen
+        </button>
+      </div>
     </div>
   )
 }
