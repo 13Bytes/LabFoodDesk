@@ -75,7 +75,7 @@ const AccountPage: NextPage = () => {
                       </td>
                       <td key={`${transaction.id}-td2`}>
                         <span className="pl-8 font-semibold">
-                          {transaction.item?.name || transaction.note}
+                          {transaction.items.join(', ') || transaction.note}
                         </span>{" "}
                         wurde
                         {transaction.type == 0 && <span className="text-red-700"> gekauft</span>}

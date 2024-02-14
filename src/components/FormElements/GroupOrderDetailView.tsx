@@ -52,7 +52,7 @@ const GroupOrderDetailView = (props: Props) => {
                       {group.orders.map((o) => (
                         <tr key={o.id}>
                           <th>{o.user?.name}</th>
-                          <td>{o.item?.name}</td>
+                          <td>{o.items.map(item => item.name)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -65,12 +65,6 @@ const GroupOrderDetailView = (props: Props) => {
           <div className="divider"></div> 
           <h1 className="text-lg font-bold">Gruppen-Artikel Abrechnung</h1>
           <GroupOrderSplit group={group} />
-
-          {/* <div className="flex flex-row  justify-between">
-            <button className="btn-primary btn mt-7" onClick={() => {}}>
-              "Button"
-            </button>
-          </div> */}
         </div>
       </div>
     </div>

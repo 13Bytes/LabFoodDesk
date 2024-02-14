@@ -1,7 +1,7 @@
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { useEffect, useRef, useState } from "react"
-import ActionResponsePopup, { AnimationHandle } from "~/components/General/ActionResponsePopup"
+import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import SendMoney from "~/components/SendMoney"
 import { api } from "~/utils/api"
@@ -38,14 +38,10 @@ const SplitPage: NextPage = () => {
         {
           onError: (error) => {
             console.error(error)
-            if (animationRef.current) {
-              animationRef.current.failure()
-            }
+            animate(animationRef, "failure")
           },
           onSuccess: () => {
-            if (animationRef.current) {
-              animationRef.current.success()
-            }
+            animate(animationRef, "success")
             setSelectedDestinationUser(undefined)
             setAmountSend(1)
             setNoteSend("")

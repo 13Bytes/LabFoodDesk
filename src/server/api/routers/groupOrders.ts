@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { id } from "~/helper/zodTypes"
+import { Tid, id } from "~/helper/zodTypes"
 
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
@@ -9,7 +9,7 @@ import dayjs from "dayjs"
 import { checkAccountBacking, verifyAllCategories } from "~/server/helper/dbCallHelper"
 import { TRPCError } from "@trpc/server"
 import { itemRouter } from "./items"
-import { ProcurementItem } from "@prisma/client"
+import { type ProcurementItem } from "@prisma/client"
 
 const pageSize = 20
 export const grouporderRouter = createTRPCRouter({
@@ -43,7 +43,7 @@ export const grouporderRouter = createTRPCRouter({
         ordersCloseAt: "asc",
       },
       include: {
-        orders: { include: { user: { select: { id: true, name: true } }, item: true } },
+        orders: { include: { user: { select: { id: true, name: true } }, items: true } },
         procurementWishes: { include: { user: { select: { id: true, name: true } }, items: true } },
       },
     })
@@ -125,9 +125,8 @@ export const grouporderRouter = createTRPCRouter({
         ...items.map((item) =>
           prisma.transaction.create({
             data: {
-              quantity: 1,
               user: { connect: { id: ctx.session.user.id } },
-              item: { connect: { id: item.id } },
+              items: { connect: [{ id: item.id }] },
               GroupOrder: { connect: { id: group.id } },
               type: 0,
               totalAmount: item.price,
@@ -188,38 +187,46 @@ export const grouporderRouter = createTRPCRouter({
     return updatedGroup
   }),
 
-  close: adminProcedure.input(z.object({ groupId: id })).mutation(async ({ ctx, input }) => {
-    const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
-      where: { id: input.groupId },
-      include: { orders: true, procurementWishes: { include: { items: true } } },
-    })
+  close: adminProcedure
+    .input(z.object({ groupId: id, split: z.record(z.number()) }))
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
+        where: { id: input.groupId },
+        include: { orders: true, procurementWishes: { include: { items: true } } },
+      })
 
-    type extendedProcurementWish = (typeof group.procurementWishes)[number] & {
-      item: ProcurementItem
-    }
-    const transcationDrafts: extendedProcurementWish[] = []
-    for (const wish of group.procurementWishes) {
-      for (const item of wish.items) {
-        transcationDrafts.push({ ...wish, item: item })
+      type extendedProcurementWish = (typeof group.procurementWishes)[number] & {
+        items: ProcurementItem[]
       }
-    }
 
-    // atomic action:
-    await prisma.$transaction([
-      ...transcationDrafts.map((wish) =>
-        prisma.transaction.create({
-          data: {
-            quantity: 1,
-            user: { connect: { id: wish.userId } },
-            item: { connect: { id: wish.item.id } },
-            GroupOrder: { connect: { id: group.id } },
-            type: 0,
-            totalAmount: 424242424242, // TODO: calculate price from inserted price
-          },
-        })
-      ),
-    ])
-  }),
+      const userProcurementWishes: { [key: Tid]: typeof group.procurementWishes } = {}
+      for (const wish of group.procurementWishes) {
+        if (Object.keys(userProcurementWishes).includes(wish.userId)) {
+          userProcurementWishes[wish.userId]!.push(wish)
+        } else {
+          userProcurementWishes[wish.userId] = [wish]
+        }
+      }
+
+      // atomic action:
+      await prisma.$transaction([
+        ...Object.entries(userProcurementWishes).map(([userId, wishs]) => {
+          const items = wishs.reduce(
+            (acc, wish) => [...acc, ...wish.items],
+            [] as ProcurementItem[]
+          )
+          return prisma.transaction.create({
+            data: {
+              user: { connect: { id: userId } },
+              items: { connect: items.map((wish) => ({ id: wish.id })) },
+              GroupOrder: { connect: { id: group.id } },
+              type: 0,
+              totalAmount: input.split[userId]?? 0,
+            },
+          })
+        }),
+      ])
+    }),
 
   getAllTemplates: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.prisma.groupOrderTemplate.findMany({ where: { active: true } })

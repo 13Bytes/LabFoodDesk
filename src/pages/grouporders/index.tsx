@@ -5,7 +5,7 @@ import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
 import GroupOrderDetailView from "~/components/FormElements/GroupOrderDetailView"
-import ActionResponsePopup, { AnimationHandle } from "~/components/General/ActionResponsePopup"
+import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
 import ItemCard from "~/components/General/temCard"
 
@@ -47,14 +47,10 @@ const GroupOrders: NextPage = () => {
         {
           onError: (error) => {
             console.error(error)
-            if (animationRef.current) {
-              animationRef.current.failure()
-            }
+            animate(animationRef, "failure")
           },
           onSuccess: () => {
-            if (animationRef.current) {
-              animationRef.current.success()
-            }
+            animate(animationRef, "success")
           },
         }
       )
@@ -64,14 +60,10 @@ const GroupOrders: NextPage = () => {
         {
           onError: (error) => {
             console.error(error)
-            if (animationRef.current) {
-              animationRef.current.failure()
-            }
+            animate(animationRef, "failure")
           },
           onSuccess: () => {
-            if(animationRef.current){
-              animationRef.current.success()
-            }
+            animate(animationRef, "success")
           },
         }
       )

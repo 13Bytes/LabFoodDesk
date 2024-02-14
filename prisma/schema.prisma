@@ -23,7 +23,7 @@ model Item {
     name            String
     categories      Category[]
     price           Float
-    Transaction     Transaction[]
+    transactions    Transaction[]
     is_active       Boolean       @default(true)
     for_grouporders Boolean       @default(false)
 }
@@ -86,9 +86,7 @@ model Transaction {
     id                     String      @id @default(cuid())
     user                   User        @relation("user", fields: [userId], references: [id], onDelete: Cascade)
     userId                 String
-    item                   Item?       @relation(fields: [itemId], references: [id], onDelete: Cascade)
-    itemId                 String?
-    quantity               Int?
+    items                  Item[]
     totalAmount            Float
     createdAt              DateTime    @default(now())
     type                   Int         @default(0) // 0: buy, 1: sell, 2: transfer

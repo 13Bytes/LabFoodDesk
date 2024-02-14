@@ -1,8 +1,22 @@
-import { forwardRef, useImperativeHandle, useState } from "react"
+import { RefObject, forwardRef, useImperativeHandle, useState } from "react"
 
 export type AnimationHandle = {
   success: () => void
   failure: () => void
+}
+
+type Status = "failure" | "success"
+
+export const animate = (handle: RefObject<AnimationHandle>, status: Status) => {
+  if(!handle.current){
+    return
+  }
+  if (status === "success") {
+    handle.current.success()
+  } 
+  else if (status === "failure") {
+    handle.current.failure()
+  }
 }
 
 const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionResponsePopup(
@@ -10,7 +24,7 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
   ref
 ) {
   const [isOpen, setIsOpen] = useState(false)
-  const [status, setStatus] = useState<"failure" | "success">("success")
+  const [status, setStatus] = useState<Status>("success")
 
   useImperativeHandle(ref, () => ({
     success() {

@@ -104,9 +104,8 @@ export const itemRouter = createTRPCRouter({
           id: input.productID,
         },
       })
-      const quantity = 1 // currently only single item purchases supported
       
-      const totalPrice = product.price * quantity
+      const totalPrice = product.price
       const user = await ctx.prisma.user.findUniqueOrThrow({where: {id: ctx.session.user.id}})
       await checkAccountBacking(user, totalPrice)
 
@@ -114,11 +113,10 @@ export const itemRouter = createTRPCRouter({
       await prisma.$transaction([
         prisma.transaction.create({
           data: {
-            quantity: quantity,
             // userId: ctx.session.user.id,
             user: { connect: { id: ctx.session.user.id } },
             // itemId: product.id,
-            item: { connect: { id: product.id } },
+            items: { connect: [{ id: product.id }] },
             type: 0,
             totalAmount: totalPrice,
           },
