@@ -3,9 +3,11 @@ A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## ToDo
 - Ofensteuer (und andere Buffer für zB Spezi)
-- Gruppenbestellungen betrag im Nachhinein eingeben
 - Logs wer was eingetragen hat
 - Items bearbeiten / löschen
+- Gruppenbestellung bearbeiten
+- Gruppen-Wiederholungen
+    - cron-trigger an endpoint?
 #### Nice Improveents:
 - the check if account is covered is prone to simultaneous requests (the actual credit of course not)
 
