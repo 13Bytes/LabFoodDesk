@@ -1,9 +1,12 @@
 import { type NextPage } from "next"
 import { signIn, signOut, useSession } from "next-auth/react"
+import { AuthButton } from "~/components/General/AuthButton"
 
 import CenteredPage from "~/components/Layout/CenteredPage"
 
 const Home: NextPage = () => {
+  const { data: sessionData } = useSession()
+  
   return (
     <>
       <CenteredPage>
@@ -13,7 +16,9 @@ const Home: NextPage = () => {
           </h1>
           <div className="flex flex-col items-center gap-2">
             <p className="text-2xl text-white">Wilkommen bei LabEats!</p>
+            {!sessionData &&
             <AuthButton />
+            }
           </div>
         </div>
       </CenteredPage>
@@ -23,17 +28,4 @@ const Home: NextPage = () => {
 
 export default Home
 
-const AuthButton = () => {
-  const { data: sessionData } = useSession()
 
-  return (
-    <div className="mt-3 flex flex-col items-center justify-center gap-4">
-      <button
-        className="btn-info btn"
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
-      >
-        {sessionData ? "Abmelden" : "Anmelden"}
-      </button>
-    </div>
-  )
-}

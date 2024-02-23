@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { id } from "~/helper/zodTypes"
+import { Tid, id } from "~/helper/zodTypes"
 
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
@@ -9,13 +9,14 @@ import dayjs from "dayjs"
 import { checkAccountBacking, verifyAllCategories } from "~/server/helper/dbCallHelper"
 import { TRPCError } from "@trpc/server"
 import { itemRouter } from "./items"
-import { ProcurementItem } from "@prisma/client"
+import { type ProcurementItem } from "@prisma/client"
 
 const pageSize = 20
 export const grouporderRouter = createTRPCRouter({
   getRelevant: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.prisma.groupOrder.findMany({
       where: {
+        status: 0,
         ordersCloseAt: {
           gte: dayjs().subtract(2, "days").toDate(),
           lte: dayjs().add(14, "days").toDate(),
@@ -36,15 +37,34 @@ export const grouporderRouter = createTRPCRouter({
   getInProgress: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.prisma.groupOrder.findMany({
       where: {
-        ordersClosedAt: { gte: dayjs().subtract(2, "days").toDate() },
         status: 5, // incomming orders closed
       },
       orderBy: {
         ordersCloseAt: "asc",
       },
       include: {
-        orders: { include: { user: { select: { id: true, name: true } }, item: true } },
+        orders: { include: { user: { select: { id: true, name: true } }, items: true } },
         procurementWishes: { include: { user: { select: { id: true, name: true } }, items: true } },
+      },
+    })
+    return result
+  }),
+
+  getLatelyClosed: protectedProcedure.query(async ({ ctx }) => {
+    const result = await ctx.prisma.groupOrder.findMany({
+      where: {
+        status: {gt: 5}, // closed, aborted, ...
+        ordersClosedAt: {
+          gte: dayjs().subtract(14, "days").toDate(),
+        },
+      },
+      orderBy: {
+        ordersCloseAt: "asc",
+      },
+      include: {
+        orders: { include: { user: { select: { id: true, name: true } }, items: true, procurementItems: true } },
+        procurementWishes: { include: { user: { select: { id: true, name: true } }, items: true } },
+        closedBy: { select: { id: true, name: true } },
       },
     })
     return result
@@ -125,10 +145,9 @@ export const grouporderRouter = createTRPCRouter({
         ...items.map((item) =>
           prisma.transaction.create({
             data: {
-              quantity: 1,
               user: { connect: { id: ctx.session.user.id } },
-              item: { connect: { id: item.id } },
-              GroupOrder: { connect: { id: group.id } },
+              items: { connect: [{ id: item.id }] },
+              groupOrder: { connect: { id: group.id } },
               type: 0,
               totalAmount: item.price,
             },
@@ -188,38 +207,53 @@ export const grouporderRouter = createTRPCRouter({
     return updatedGroup
   }),
 
-  close: adminProcedure.input(z.object({ groupId: id })).mutation(async ({ ctx, input }) => {
-    const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
-      where: { id: input.groupId },
-      include: { orders: true, procurementWishes: { include: { items: true } } },
-    })
+  close: adminProcedure
+    .input(z.object({ groupId: id, split: z.record(z.number()) }))
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
+        where: { id: input.groupId },
+        include: { orders: true, procurementWishes: { include: { items: true } } },
+      })
 
-    type extendedProcurementWish = (typeof group.procurementWishes)[number] & {
-      item: ProcurementItem
-    }
-    const transcationDrafts: extendedProcurementWish[] = []
-    for (const wish of group.procurementWishes) {
-      for (const item of wish.items) {
-        transcationDrafts.push({ ...wish, item: item })
+      if (group.status !== 5) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Orders are not closed yet / or already have been closed" })
       }
-    }
 
-    // atomic action:
-    await prisma.$transaction([
-      ...transcationDrafts.map((wish) =>
-        prisma.transaction.create({
-          data: {
-            quantity: 1,
-            user: { connect: { id: wish.userId } },
-            item: { connect: { id: wish.item.id } },
-            GroupOrder: { connect: { id: group.id } },
-            type: 0,
-            totalAmount: 424242424242, // TODO: calculate price from inserted price
-          },
-        })
-      ),
-    ])
-  }),
+      const userProcurementWishes: { [key: Tid]: typeof group.procurementWishes } = {}
+      for (const wish of group.procurementWishes) {
+        if (Object.keys(userProcurementWishes).includes(wish.userId)) {
+          userProcurementWishes[wish.userId]!.push(wish)
+        } else {
+          userProcurementWishes[wish.userId] = [wish]
+        }
+      }
+      
+      // atomic action:
+      await prisma.$transaction([
+        ...Object.entries(userProcurementWishes).map(([userId, wishs]) => {
+          const items = wishs.reduce(
+            (acc, wish) => [...acc, ...wish.items],
+            [] as ProcurementItem[]
+          )
+          const wishIdObjects = [...items.map((wish) => ({ id: wish.id }))]
+
+          return prisma.transaction.create({
+            data: {
+              user: { connect: { id: userId } },
+              // no "regular" items
+              procurementItems: { connect:  wishIdObjects},
+              groupOrder: { connect: { id: group.id } },
+              type: 0,
+              totalAmount: input.split[userId] ?? 0,
+            },
+          })
+        }),
+        prisma.groupOrder.update({
+          where: { id: group.id },
+          data: { status: 6, closedBy: { connect: { id: ctx.session.user.id } } },
+        }),
+      ])
+    }),
 
   getAllTemplates: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.prisma.groupOrderTemplate.findMany({ where: { active: true } })

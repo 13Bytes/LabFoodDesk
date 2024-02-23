@@ -3,18 +3,24 @@ import type { inferRouterOutputs } from "@trpc/server"
 import { ChangeEvent, useEffect, useState } from "react"
 import { Tid } from "~/helper/zodTypes"
 import type { AppRouter } from "../../server/api/root"
+import { api } from "~/utils/api"
+import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
+import { useRef } from "react"
 
 type RouterOutput = inferRouterOutputs<AppRouter>
+
+type UserItemList = {
+  [key: string]: { items: ProcurementItem[]; username: string }
+}
 
 type Props = {
   group: RouterOutput["groupOrders"]["getInProgress"][number]
 }
-type UserItemList = {
-  [key: string]: { items: ProcurementItem[]; username: string }
-}
 const GroupOrderSplit = (props: Props) => {
   const { group } = props
 
+  const trpcUtils = api.useContext()
+  
   const [itemList, setItemList] = useState<ProcurementItem[]>([])
   const [userItemList, setUserItemList] = useState<UserItemList>({})
   const [userSplit, setUserSplit] = useState<{
@@ -26,6 +32,7 @@ const GroupOrderSplit = (props: Props) => {
   const [userCost, setUserCost] = useState<{
     [key: Tid]: number
   }>()
+  const animationRef = useRef<AnimationHandle>(null)
 
   // restructure data from group into costDistribution and itemList
   useEffect(() => {
@@ -142,83 +149,111 @@ const GroupOrderSplit = (props: Props) => {
       ? Object.values(userSplit).every((user) => user.overwritenUserExpences !== undefined)
       : false
 
-  return (
-    <div className="container">
-      <label className="form-control w-full max-w-xs">
-        <div className="label">
-          <span className="label-text">Kosten Gesammt</span>
-        </div>
-        {!allUsersOverwritten && (
-          <input
-            type="number"
-            step={0.01}
-            min={0}
-            onChange={typeTotalAmount}
-            placeholder="Gesammter Betrag"
-            className={`input-bordered input input-sm  w-full max-w-xs ${
-              Number.isNaN(totalAmount) && "input-error"
-            }`}
-          />
-        )}
-        {allUsersOverwritten && (
-          <p className="w-full text-warning">
-            Kosten verändert!: {Object.values(userCost ?? {}).reduce((acc, user) => acc + user, 0)}
-          </p>
-        )}
-      </label>
+  const closeGroupOrderRequest = api.groupOrders.close.useMutation()
+  const closeGroupOrder = () => {
+    if (userCost === undefined) {
+      animate(animationRef, "failure")
+      return
+    }
+    closeGroupOrderRequest.mutate(
+      {
+        groupId: group.id,
+        split: userCost ?? {},
+      },
+      {
+        onError: (error) => {
+          console.error(error)
+          animate(animationRef, "failure")
+        },
+        onSuccess: () => {
+          animate(animationRef, "success")
+        },
+      }
+    )
+    setTimeout(() => trpcUtils.groupOrders.invalidate(), 50)
+  }
 
-      <div className="overflow-x-auto">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Gerichte</th>
-              <th>Kosten</th>
-              <th>Kosten anpassen</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(userItemList).map(([userID, data]) => (
-              <tr key={userID}>
-                <th>{data.username}</th>
-                <td>
-                  {data.items.map((item, key) => (
-                    <p key={key}>{item.name}</p>
-                  ))}
-                </td>
-                <td>
-                  {userSplit?.[userID]?.overwritenUserExpences === undefined && (
+  return (
+    <>
+      <div className="container">
+        <label className="form-control w-full max-w-xs">
+          <div className="label">
+            <span className="label-text">Kosten Gesammt</span>
+          </div>
+          {!allUsersOverwritten && (
+            <input
+              type="number"
+              step={0.01}
+              min={0}
+              onChange={typeTotalAmount}
+              placeholder="Gesammter Betrag"
+              className={`input-bordered input input-sm  w-full max-w-xs ${
+                Number.isNaN(totalAmount) && "input-error"
+              }`}
+            />
+          )}
+          {allUsersOverwritten && (
+            <p className="w-full text-warning">
+              Kosten verändert!:{" "}
+              {Object.values(userCost ?? {}).reduce((acc, user) => acc + user, 0)}
+            </p>
+          )}
+        </label>
+
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Gerichte</th>
+                <th>Kosten</th>
+                <th>Kosten anpassen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(userItemList).map(([userID, data]) => (
+                <tr key={userID}>
+                  <th>{data.username}</th>
+                  <td>
+                    {data.items.map((item, key) => (
+                      <p key={key}>{item.name}</p>
+                    ))}
+                  </td>
+                  <td>
+                    {userSplit?.[userID]?.overwritenUserExpences === undefined && (
+                      <input
+                        type="number"
+                        disabled
+                        value={userCost?.[userID]?.toFixed(2)}
+                        className={`input-bordered input input-sm w-full max-w-xs ${
+                          userSplit?.[userID]?.overwritenUserExpences === undefined && "red"
+                        }`}
+                      />
+                    )}
+                  </td>
+                  <td>
                     <input
                       type="number"
-                      disabled
-                      value={userCost?.[userID]?.toFixed(2)}
-                      className={`input-bordered input input-sm w-full max-w-xs ${
-                        userSplit?.[userID]?.overwritenUserExpences === undefined && "red"
-                      }`}
+                      step={0.01}
+                      min={0}
+                      value={userSplit?.[userID]?.overwritenUserExpences || ""}
+                      onChange={(e) => overwritenUserExpences(e, userID)}
+                      className="input-bordered input input-sm w-full max-w-xs"
                     />
-                  )}
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    step={0.01}
-                    min={0}
-                    value={userSplit?.[userID]?.overwritenUserExpences || ""}
-                    onChange={(e) => overwritenUserExpences(e, userID)}
-                    className="input-bordered input input-sm w-full max-w-xs"
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex justify-end">
+          <button className="btn-primary btn-sm btn mr-4 mt-1" onClick={closeGroupOrder}>
+            Abrechnen
+          </button>
+        </div>
       </div>
-      <div className="flex justify-end">
-        <button className="btn-primary btn-sm btn mr-4 mt-1" onClick={() => {}}>
-          Abrechnen
-        </button>
-      </div>
-    </div>
+      <ActionResponsePopup ref={animationRef} />
+    </>
   )
 }
 

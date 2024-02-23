@@ -30,8 +30,8 @@ const TopUp: NextPage = () => {
             </div>
             <div>
               <ul className="mt-6 list-none">
-                {userWithAllowOverdrawRequest.data?.map((user) => (
-                  <li>
+                {userWithAllowOverdrawRequest.data?.map((user, index) => (
+                  <li key={index}>
                     an <span className="font-bold">{user.name}</span>
                   </li>
                 ))}

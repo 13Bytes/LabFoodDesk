@@ -1,6 +1,6 @@
 import { type NextPage } from "next"
 import { useRef, useState } from "react"
-import ActionResponsePopup, { AnimationHandle } from "~/components/General/ActionResponsePopup"
+import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
@@ -21,14 +21,10 @@ const BuyPage: NextPage = () => {
         {
           onError: (error) => {
             console.error(error)
-            if (animationRef.current) {
-              animationRef.current.failure()
-            }
+            animate(animationRef, "failure")
           },
           onSuccess: () => {
-            if (animationRef.current) {
-              animationRef.current.success()
-            }
+            animate(animationRef, "success")
           }
         }
       )
