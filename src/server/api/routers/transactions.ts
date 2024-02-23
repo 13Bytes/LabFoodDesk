@@ -29,6 +29,7 @@ export const transactionRouter = createTRPCRouter({
         },
         include: {
           items: true,
+          procurementItems: true,
         },
         skip: (page - 1) * pageSize,
         orderBy: {

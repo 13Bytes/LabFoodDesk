@@ -35,6 +35,7 @@ model ProcurementItem {
     name            String
     categories      Category[]
     is_active       Boolean           @default(true)
+    transactions    Transaction[]
     ProcurementWish ProcurementWish[]
 }
 
@@ -55,6 +56,8 @@ model GroupOrder {
     procurementWishes    ProcurementWish[]
     ordersCloseAt        DateTime
     ordersClosedAt       DateTime?
+    closedBy             User?               @relation(fields: [closedById], references: [id])
+    closedById           String?
     status               Int                 @default(0) // 0: open, 5: incoming orders stoped, 6: orders fulfilled, 99: aborted (orders not fulfilled)
     categories           Category[] // only show items from this categories
     categoryId           String?
@@ -83,17 +86,18 @@ model Category {
 }
 
 model Transaction {
-    id                     String      @id @default(cuid())
-    user                   User        @relation("user", fields: [userId], references: [id], onDelete: Cascade)
+    id                     String            @id @default(cuid())
+    user                   User              @relation("user", fields: [userId], references: [id], onDelete: Cascade)
     userId                 String
     items                  Item[]
+    procurementItems       ProcurementItem[]
     totalAmount            Float
-    createdAt              DateTime    @default(now())
-    type                   Int         @default(0) // 0: buy, 1: sell, 2: transfer
-    GroupOrder             GroupOrder? @relation(fields: [groupOrderId], references: [id])
+    createdAt              DateTime          @default(now())
+    type                   Int               @default(0) // 0: buy, 1: sell, 2: transfer
+    groupOrder             GroupOrder?       @relation(fields: [groupOrderId], references: [id])
     groupOrderId           String?
     //  --- only if transfer (type=2)
-    moneyDestination       User?       @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
+    moneyDestination       User?             @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
     moneyDestinationUserId String?
     note                   String?
 }
@@ -142,6 +146,7 @@ model User {
     transactions            Transaction[]     @relation("user")
     is_transfer_destiantion Transaction[]     @relation("moneyDestination")
     ProcurementWish         ProcurementWish[]
+    GroupOrder              GroupOrder[]
 }
 
 model VerificationToken {

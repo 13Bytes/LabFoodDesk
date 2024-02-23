@@ -3,6 +3,7 @@ import { TRPCClientErrorLike } from "@trpc/client"
 import { group } from "console"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
+import Link from "next/link"
 import { useRef, useState } from "react"
 import GroupOrderDetailView from "~/components/FormElements/GroupOrderDetailView"
 import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
@@ -110,7 +111,7 @@ const GroupOrders: NextPage = () => {
                       className="btn-warning btn mt-7"
                       onClick={() => {
                         stopOrderRequest.mutate({ groupId: group.id })
-                        trpcUtils.groupOrders.invalidate()
+                        setTimeout(() => trpcUtils.groupOrders.invalidate(), 50)
                       }}
                     >
                       Beenden
@@ -121,6 +122,11 @@ const GroupOrders: NextPage = () => {
             </div>
           ))}
         </div>
+
+        <div className="container ">
+        <Link href="/grouporders/history" role="button" className="btn btn-ghost">History</Link>
+        </div>
+
       </CenteredPage>
 
       <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-9/12 !max-w-5xl pr-10">

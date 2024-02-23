@@ -9,6 +9,7 @@ import { api } from "~/utils/api"
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server"
 import type { AppRouter } from "../../server/api/root"
 import GroupOrderSplit from "./GroupOrderSplit"
+import { localStringOptions } from "~/helper/globalTypes"
 
 type RouterOutput = inferRouterOutputs<AppRouter>
 
@@ -24,6 +25,9 @@ const GroupOrderDetailView = (props: Props) => {
         <div className="flex  flex-col justify-start gap-1 p-1">
           <div className="flex flex-row items-end justify-between">
             <h1 className="text-2xl font-bold">{group.name}</h1>
+            <p className="text-md font-bold">
+                    {group.ordersCloseAt.toLocaleString("de", localStringOptions)}
+            </p>
           </div>
 
           <div>

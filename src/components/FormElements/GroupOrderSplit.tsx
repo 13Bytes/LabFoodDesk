@@ -19,6 +19,8 @@ type Props = {
 const GroupOrderSplit = (props: Props) => {
   const { group } = props
 
+  const trpcUtils = api.useContext()
+  
   const [itemList, setItemList] = useState<ProcurementItem[]>([])
   const [userItemList, setUserItemList] = useState<UserItemList>({})
   const [userSplit, setUserSplit] = useState<{
@@ -168,6 +170,7 @@ const GroupOrderSplit = (props: Props) => {
         },
       }
     )
+    setTimeout(() => trpcUtils.groupOrders.invalidate(), 50)
   }
 
   return (
