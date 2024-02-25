@@ -76,13 +76,24 @@ model GroupOrderTemplate {
 }
 
 model Category {
-    id                String           @id @default(cuid())
-    name              String
-    items             Item[]
-    // Backlinks
-    GroupOrders       GroupOrder[]
-    ProcurementItem   ProcurementItem? @relation(fields: [procurementItemId], references: [id])
-    procurementItemId String?
+    id                  String           @id @default(cuid())
+    name                String
+    items               Item[]
+    markupDescription   String?
+    markupPercentage    Float?
+    markupFixed         Float?
+    markupDestination   ClearingAccount? @relation(fields: [markupDestinationId], references: [id], onDelete: NoAction)
+    GroupOrders         GroupOrder[]
+    ProcurementItem     ProcurementItem? @relation(fields: [procurementItemId], references: [id])
+    markupDestinationId String?
+    procurementItemId   String?
+}
+
+model ClearingAccount {
+    id       String     @id @default(cuid())
+    name     String
+    balance  Float      @default(0)
+    Category Category[]
 }
 
 model Transaction {

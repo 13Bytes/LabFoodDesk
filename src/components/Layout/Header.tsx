@@ -34,6 +34,9 @@ export default function Header() {
               <li>
                 <Link href="/admin/grouporders">Gruppenbestellungen</Link>
               </li>
+              <li>
+                <Link href="/admin/categories">Kategorien</Link>
+              </li>
             </ul>
           </details>
         </li>

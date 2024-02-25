@@ -74,9 +74,10 @@ const SendMoney = (props: Props) => {
             von <span className="font-bold">dir</span> an
           </div>
 
-          <div className="">
+          <div>
             <select
               className="select-bordered select w-full max-w-xs font-bold "
+              id="sel-dest-user"
               value={
                 !!(selectedDestinationUser && allUserRequest.data)
                   ? allUserRequest.data.find((user) => user.id === selectedDestinationUser)!.name!
@@ -86,11 +87,11 @@ const SendMoney = (props: Props) => {
                 setSelectedDestinationUser(e.target.options[e.target.selectedIndex]?.id)
               }}
             >
-              <option className="disabled">Auswählen:</option>
+              <option key="dis" className="disabled">Auswählen:</option>
               {allUserRequest.data?.map((user) => {
                 if (user.id !== session.data?.user.id)
                   return (
-                    <option id={user.id} className="">
+                    <option id={user.id} key={user.id} className="">
                       {user.name}
                     </option>
                   )

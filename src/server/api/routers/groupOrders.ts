@@ -55,11 +55,11 @@ export const grouporderRouter = createTRPCRouter({
       where: {
         status: {gt: 5}, // closed, aborted, ...
         ordersClosedAt: {
-          gte: dayjs().subtract(14, "days").toDate(),
+          gte: dayjs().subtract(21, "days").toDate(),
         },
       },
       orderBy: {
-        ordersCloseAt: "asc",
+        ordersCloseAt: "desc",
       },
       include: {
         orders: { include: { user: { select: { id: true, name: true } }, items: true, procurementItems: true } },
