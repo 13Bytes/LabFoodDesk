@@ -1,15 +1,12 @@
 import { useState } from "react"
 import AddCategoryForm from "~/components/General/AddCategoryForm"
-import AddItemForm from "~/components/General/AddItemForm"
-import AddProcurementItemForm from "~/components/General/AddProcurementItemForm"
 import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
 import Modal from "~/components/Layout/Modal"
 import { api } from "~/utils/api"
-import AddClearingAccountForm from "./AddClearingAccountForm"
 
-const ClearingAccountOverview = () => {
-  const allItemsRequest = api.clearingAccount.getAll.useQuery()
-  const [openAddItemModal, setOpenAddItemModal] = useState(false)
+const CategoryOverview = () => {
+  const allCategoriesRequest = api.category.getAll.useQuery()
+  const [openAddCategoryModal, setOpenAddCategoryModal] = useState(false)
 
   const trpcUtils = api.useContext()
 
@@ -17,17 +14,17 @@ const ClearingAccountOverview = () => {
     <tr>
       <th></th>
       <th>Name</th>
-      <th>Kontostand</th>
+      <th>Aufpreis %</th>
+      <th>Aufpreis €</th>
       <th></th>
     </tr>
   )
 
   return (
     <>
-      <div className="flex flex-col p-5">
         <div className="flex gap-3">
-          <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
-            <CloseWindowIcon /> Verrechnungskonto
+          <button className="btn-primary btn" onClick={() => setOpenAddCategoryModal(true)}>
+            <CloseWindowIcon /> Kategorie
           </button>
         </div>
         <div className="flex max-w-5xl grow flex-row items-center justify-center">
@@ -37,7 +34,7 @@ const ClearingAccountOverview = () => {
               <Legend />
             </thead>
             <tbody>
-              {allItemsRequest.data?.map((item) => (
+              {allCategoriesRequest.data?.map((item) => (
                 <tr key={item.id}>
                   <th>
                     <label>
@@ -52,7 +49,10 @@ const ClearingAccountOverview = () => {
                     </div>
                   </td>
                   <td>
-                      <div className="font-bold">{item.balance}€</div>
+                     {item.markupPercentage?? 0}%
+                  </td>
+                  <td>
+                     {item.markupFixed?? 0}€
                   </td>
                   <th>
                     <button className="btn-ghost btn-xs btn">Details</button>
@@ -66,12 +66,11 @@ const ClearingAccountOverview = () => {
           </table>
         </div>
 
-        <Modal open={openAddItemModal} setOpen={setOpenAddItemModal}>
-          <AddClearingAccountForm finishAction={() => setOpenAddItemModal(false)} />
+        <Modal open={openAddCategoryModal} setOpen={setOpenAddCategoryModal}>
+          <AddCategoryForm finishAction={() => setOpenAddCategoryModal(false)} />
         </Modal>
-      </div>
     </>
   )
 }
 
-export default ClearingAccountOverview
+export default CategoryOverview

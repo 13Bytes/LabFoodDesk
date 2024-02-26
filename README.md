@@ -3,8 +3,9 @@ A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## ToDo
 - Ofensteuer (und andere Buffer für zB Spezi)
+- Error-Messages zu allen Forms adden
+- Items bearbeiten / löschen überall
 - Logs wer was eingetragen hat
-- Items bearbeiten / löschen
 - Gruppenbestellung bearbeiten
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?

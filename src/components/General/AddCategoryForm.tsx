@@ -7,7 +7,7 @@ import { api } from "~/utils/api"
 export const addCategoryValidationSchem = z.object({
   name: z.string(),
   markupDescription: z.string().optional(),
-  markupPercentage: z.number().min(0).max(1).optional(),
+  markupPercentage: z.number().min(0).max(100).optional(),
   markupFixed: z.number().nonnegative().optional(),
   markupDestination: z.string().optional(),
 })
@@ -55,16 +55,14 @@ const AddCategoryForm = (props: Props) => {
             />
           </div>
 
-          <div className="divider"></div> 
+          <div className="divider"></div>
           <div>
             <p className="font-semibold">Aufpreis (wenn vorhanden)</p>
           </div>
 
           <div>
             <label className="label">
-              <span className="label-text text-base">
-                Beschreibung für Aufpreis
-              </span>
+              <span className="label-text text-base">Beschreibung für Aufpreis</span>
             </label>
             <input
               type="text"
@@ -78,12 +76,12 @@ const AddCategoryForm = (props: Props) => {
             </label>
             <input
               type="number"
-              step={0.01}
+              step={1}
               min={0}
-              max={1}
-              {...addItemRegister("markupPercentage")}
-              className="input-bordered input-primary input w-full max-w-md"
+              max={300}
               defaultValue={0}
+              {...addItemRegister("markupPercentage", { valueAsNumber: true })}
+              className="input-bordered input-primary input w-full max-w-md"
             />
           </div>
           <div>
@@ -94,7 +92,7 @@ const AddCategoryForm = (props: Props) => {
               type="number"
               step={0.01}
               min={0}
-              {...addItemRegister("markupFixed")}
+              {...addItemRegister("markupFixed", { valueAsNumber: true })}
               className="input-bordered input-primary input w-full max-w-md"
               defaultValue={0}
             />
@@ -103,12 +101,14 @@ const AddCategoryForm = (props: Props) => {
             <label className="label">
               <span className="label-text text-base">Verrechnungkonto für Aufpreis</span>
             </label>
-            <select className="select-bordered select">
-              <option disabled selected>
+            <select className="select-bordered select" defaultValue={""}>
+              <option key="disbld" value="">
                 Auswählen:
               </option>
               {clearingAccounts.map((account) => (
-                <option id={account.id}>{account.name}</option>
+                <option key={account.id} id={account.id}>
+                  {account.name}
+                </option>
               ))}
             </select>
           </div>

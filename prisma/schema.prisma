@@ -77,11 +77,11 @@ model GroupOrderTemplate {
 
 model Category {
     id                  String           @id @default(cuid())
-    name                String
+    name                String           @unique
     items               Item[]
     markupDescription   String?
-    markupPercentage    Float?
-    markupFixed         Float?
+    markupPercentage    Int? // integer ->  [%] = value/100
+    markupFixed         Float? // in €
     markupDestination   ClearingAccount? @relation(fields: [markupDestinationId], references: [id], onDelete: NoAction)
     GroupOrders         GroupOrder[]
     ProcurementItem     ProcurementItem? @relation(fields: [procurementItemId], references: [id])
