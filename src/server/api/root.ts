@@ -4,6 +4,7 @@ import { grouporderRouter } from "./routers/groupOrders"
 import { itemRouter } from "./routers/items"
 import { transactionRouter } from "./routers/transactions"
 import { userRouter } from "./routers/user"
+import { clearingAccountRouter } from "./routers/clearingAccounts"
 
 /**
  * This is the primary router for your server.
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   transaction: transactionRouter,
   groupOrders: grouporderRouter,
   category: categoryRouter,
+  clearingAccount: clearingAccountRouter,
 })
 
 // export type definition of API

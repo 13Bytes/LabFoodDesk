@@ -1,4 +1,6 @@
 import { z } from "zod"
+import { addCategoryValidationSchem } from "~/components/General/AddCategoryForm"
+import { Prisma } from '@prisma/client'
 
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc"
 
@@ -8,4 +10,13 @@ export const categoryRouter = createTRPCRouter({
       include: {},
     })
   }),
+
+  createCategory: protectedProcedure.input(addCategoryValidationSchem).mutation(async ({ ctx, input }) => {
+    const {markupDestination, ...correctedData} = input
+    
+   ctx.prisma.category.create({data: {
+    markupDestination: markupDestination != undefined ? {connect: {id: markupDestination}} : undefined,
+    ...correctedData
+  }})
+  })
 })

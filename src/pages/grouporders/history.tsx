@@ -10,7 +10,7 @@ import ActionResponsePopup, {
   animate,
 } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
-import ItemCard from "~/components/General/temCard"
+import ItemCard from "~/components/General/ItemCard"
 
 import CenteredPage from "~/components/Layout/CenteredPage"
 import Modal from "~/components/Layout/Modal"
