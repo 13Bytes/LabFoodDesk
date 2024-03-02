@@ -1,17 +1,16 @@
 import { useState } from "react"
-import AddCategoryForm from "~/components/General/AddCategoryForm"
-import AddItemForm from "~/components/General/AddItemForm"
-import AddProcurementItemForm from "~/components/General/AddProcurementItemForm"
 import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
 import Modal from "~/components/Layout/Modal"
+import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
-import AddClearingAccountForm from "./AddClearingAccountForm"
+import ClearingAccountForm from "./ClearingAccountForm"
 
 const ClearingAccountOverview = () => {
   const allItemsRequest = api.clearingAccount.getAll.useQuery()
   const [openAddItemModal, setOpenAddItemModal] = useState(false)
 
   const trpcUtils = api.useContext()
+  const [selectedAccount, setSetselectedAccount] = useState<Tid>()
 
   const Legend = () => (
     <tr>
@@ -52,10 +51,18 @@ const ClearingAccountOverview = () => {
                     </div>
                   </td>
                   <td>
-                      <div className="font-bold">{item.balance}€</div>
+                    <div className="font-bold">{item.balance}€</div>
                   </td>
                   <th>
-                    <button className="btn-ghost btn-xs btn">Details</button>
+                    <button
+                      className="btn-ghost btn-xs btn"
+                      onClick={() => {
+                        setSetselectedAccount(item.id)
+                        setOpenAddItemModal(true)
+                      }}
+                    >
+                      Details
+                    </button>
                   </th>
                 </tr>
               ))}
@@ -67,7 +74,13 @@ const ClearingAccountOverview = () => {
         </div>
 
         <Modal open={openAddItemModal} setOpen={setOpenAddItemModal}>
-          <AddClearingAccountForm finishAction={() => setOpenAddItemModal(false)} />
+          <ClearingAccountForm
+            finishAction={() => {
+              setOpenAddItemModal(false)
+              setSetselectedAccount(undefined)
+            }}
+            id={selectedAccount}
+          />
         </Modal>
       </div>
     </>

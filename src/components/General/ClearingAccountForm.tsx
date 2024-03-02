@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 export const validationSchema = z.object({
@@ -10,10 +11,16 @@ export const validationSchema = z.object({
 
 type Props = {
   finishAction: () => void
+  id?: Tid
 }
-const AddClearingAccountForm = (props: Props) => {
+const ClearingAccountForm = (props: Props) => {
   const trpcUtils = api.useContext()
   const createRequest = api.clearingAccount.create.useMutation()
+  const updateRequest = api.clearingAccount.update.useMutation()
+  const clearingAccount = api.clearingAccount.get.useQuery(
+    { id: props.id ?? "-" },
+    { enabled: !!props.id }
+  )
 
   type FormType = z.infer<typeof validationSchema>
 
@@ -21,13 +28,19 @@ const AddClearingAccountForm = (props: Props) => {
     register: addItemRegister,
     handleSubmit: addItemSubmit,
     control,
+    reset,
   } = useForm<FormType>({
     resolver: zodResolver(validationSchema),
   })
 
   const onSubmit: SubmitHandler<FormType> = async (data) => {
-    await createRequest.mutateAsync(data)
+    if (!!props.id) {
+      await updateRequest.mutateAsync({ id: props.id, ...data })
+    } else {
+      await createRequest.mutateAsync(data)
+    }
     await trpcUtils.clearingAccount.invalidate()
+    reset()
     props.finishAction()
   }
 
@@ -43,13 +56,14 @@ const AddClearingAccountForm = (props: Props) => {
             <input
               type="text"
               {...addItemRegister("name")}
+              defaultValue={clearingAccount.data?.name ?? ""}
               className="input-bordered input-primary input w-full max-w-md"
               placeholder="Name"
             />
           </div>
 
           <button className="btn-primary btn-block btn mt-1" type="submit">
-            Anlegen
+            {!!props.id ? "Aktualisieren" : "Anlegen"}
           </button>
         </form>
       </div>
@@ -57,4 +71,4 @@ const AddClearingAccountForm = (props: Props) => {
   )
 }
 
-export default AddClearingAccountForm
+export default ClearingAccountForm
