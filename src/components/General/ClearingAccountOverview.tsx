@@ -4,13 +4,25 @@ import Modal from "~/components/Layout/Modal"
 import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import ClearingAccountForm from "./ClearingAccountForm"
+import { toggleElementInArray } from "~/helper/generalFunctions"
+import { TrashIcon } from "../Icons/TrashIcon"
 
 const ClearingAccountOverview = () => {
   const allItemsRequest = api.clearingAccount.getAll.useQuery()
+  const deleteRequest = api.clearingAccount.delete.useMutation()
   const [openAddItemModal, setOpenAddItemModal] = useState(false)
 
   const trpcUtils = api.useContext()
-  const [selectedAccount, setSetselectedAccount] = useState<Tid>()
+  const [detailView, setDetailView] = useState<Tid>()
+  const [checked, setChecked] = useState<Tid[]>([])
+
+  const deleteSelected = async () => { 
+    await Promise.all(checked.map(async (id) => {
+     return deleteRequest.mutateAsync({ id })
+    }))
+    setChecked([])
+    await trpcUtils.clearingAccount.invalidate()
+  }
 
   const Legend = () => (
     <tr>
@@ -23,11 +35,16 @@ const ClearingAccountOverview = () => {
 
   return (
     <>
-      <div className="flex flex-col p-5">
-        <div className="flex gap-3">
+      <div className="flex flex-col p-5  max-w-5xl ">
+        <div className="flex gap-3 justify-between align-bottom">
           <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
             <CloseWindowIcon /> Verrechnungskonto
           </button>
+          {checked.length > 0 && 
+          <button className="btn-error btn btn-sm" onClick={() => deleteSelected()}>
+            <TrashIcon />
+          </button>
+          }
         </div>
         <div className="flex max-w-5xl grow flex-row items-center justify-center">
           <table className="table">
@@ -40,7 +57,12 @@ const ClearingAccountOverview = () => {
                 <tr key={item.id}>
                   <th>
                     <label>
-                      <input type="checkbox" className="checkbox" />
+                      <input
+                        type="checkbox"
+                        className="checkbox"
+                        checked={checked.includes(item.id)}
+                        onClick={() => setChecked((old) => toggleElementInArray(old, item.id))}
+                      />
                     </label>
                   </th>
                   <td>
@@ -57,7 +79,7 @@ const ClearingAccountOverview = () => {
                     <button
                       className="btn-ghost btn-xs btn"
                       onClick={() => {
-                        setSetselectedAccount(item.id)
+                        setDetailView(item.id)
                         setOpenAddItemModal(true)
                       }}
                     >
@@ -77,9 +99,9 @@ const ClearingAccountOverview = () => {
           <ClearingAccountForm
             finishAction={() => {
               setOpenAddItemModal(false)
-              setSetselectedAccount(undefined)
+              setDetailView(undefined)
             }}
-            id={selectedAccount}
+            id={detailView}
           />
         </Modal>
       </div>

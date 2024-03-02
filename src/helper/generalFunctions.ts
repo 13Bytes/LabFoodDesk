@@ -14,3 +14,11 @@ export const getUsernameLetters = (name: string | undefined | null) => {
   }
   return "?"
 }
+
+export const toggleElementInArray = <T>(array: T[], value: T) => {
+  if (array.includes(value)) {
+    return array.filter((item) => item !== value)
+  } else {
+    return [...array, value]
+  }
+}

@@ -1,18 +1,17 @@
-import { z } from "zod"
+import { TRPCError } from "@trpc/server"
+import { validationSchema as clearingAccountValidationSchema } from "~/components/General/ClearingAccountForm"
+import { id, idObj } from "~/helper/zodTypes"
 import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
   adminProcedure,
+  createTRPCRouter,
+  protectedProcedure
 } from "~/server/api/trpc"
-import { validationSchema as clearingAccountValidationSchema }  from "~/components/General/ClearingAccountForm"
-import { id } from "~/helper/zodTypes"
 
 export const clearingAccountRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.clearingAccount.findMany()
   }),
-  get: adminProcedure.input(z.object({id: id})).query(async ({ ctx, input }) => {
+  get: adminProcedure.input(idObj).query(async ({ ctx, input }) => {
     const account =  ctx.prisma.clearingAccount.findFirstOrThrow({ where: { id: input.id }})
     return account
   }),
@@ -20,6 +19,16 @@ export const clearingAccountRouter = createTRPCRouter({
   create: adminProcedure.input(clearingAccountValidationSchema).mutation(async ({ ctx, input }) => {
     const account = await ctx.prisma.clearingAccount.create({ data: input })
     return account
+  }),
+  delete: adminProcedure.input(idObj).mutation(async ({ ctx, input }) => {
+    const account = await ctx.prisma.clearingAccount.findUniqueOrThrow({ where: { id: input.id }})
+    if(account.balance != 0){
+      throw new TRPCError({code:"CONFLICT" , message: "Account has a balance and can't be deleted"})
+    } 
+    else{
+      await ctx.prisma.clearingAccount.delete({ where: { id: input.id }})
+      return true
+    }
   }),
 
   update: adminProcedure.input(clearingAccountValidationSchema.extend({id: id})).mutation(async ({ ctx, input }) => {
