@@ -108,12 +108,10 @@ export const grouporderRouter = createTRPCRouter({
         },
       })
     }
-    const categories = await verifyAllCategories(input.categories)
 
     const payload = {
       name: input.name,
       ordersCloseAt: input.ordersCloseAt,
-      categories: { connect: categories.map((c) => ({ id: c.id })) || [] },
     }
     const item = await prisma.groupOrder.create({
       data: !!groupOrderTemplate
