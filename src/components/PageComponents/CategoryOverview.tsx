@@ -102,7 +102,7 @@ const ClearingAccountOverview = () => {
           </table>
         </div>
 
-        <Modal open={openAddItemModal} setOpen={setOpenAddItemModal}>
+        <Modal open={openAddItemModal} setOpen={setOpenAddItemModal} closeFunctionCall={() => setDetailView(undefined)}>
           <CategoryForm
             finishAction={() => {
               setOpenAddItemModal(false)

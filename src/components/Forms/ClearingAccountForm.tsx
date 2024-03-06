@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useEffect } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -23,6 +24,10 @@ const ClearingAccountForm = (props: Props) => {
   )
 
   type FormType = z.infer<typeof validationSchema>
+
+  useEffect(() => {
+    reset()
+  }, [props.id])
 
   const {
     register: addItemRegister,

@@ -39,8 +39,13 @@ const CategoryForm = (props: Props) => {
   })
 
   useEffect(() => {
+    reset()
+    setValue("name", category.data?.name ?? "")
     setValue("markupDestination", category.data?.markupDestinationId ?? "")
-  },[category.data?.markupDestinationId])
+    setValue("markupPercentage", category.data?.markupPercentage ?? 0)
+    setValue("markupFixed", category.data?.markupFixed ?? 0)
+    setValue("markupDescription", category.data?.markupDescription ?? "")
+  },[category.data, props.id??''])
 
   const onSubmit: SubmitHandler<AddCategoryInput> = async (data) => {
     if (!!props.id) {
@@ -64,8 +69,7 @@ const CategoryForm = (props: Props) => {
             </label>
             <input
               type="text"
-              {...addItemRegister("name")}
-              defaultValue={category.data?.name ?? ""}
+              {...addItemRegister("name")}  
               className="input-bordered input-primary input w-full max-w-md"
               placeholder="Name"
             />
@@ -83,7 +87,6 @@ const CategoryForm = (props: Props) => {
             <input
               type="text"
               {...addItemRegister("markupDescription")}
-              defaultValue={category.data?.markupDescription ?? ""}
               className="input-bordered input-primary input w-full max-w-md"
             />
           </div>
@@ -96,7 +99,6 @@ const CategoryForm = (props: Props) => {
               step={1}
               min={0}
               max={300}
-              defaultValue={category.data?.markupPercentage ?? 0}
               {...addItemRegister("markupPercentage", { valueAsNumber: true })}
               className="input-bordered input-primary input w-full max-w-md"
             />
@@ -111,7 +113,6 @@ const CategoryForm = (props: Props) => {
               min={0}
               {...addItemRegister("markupFixed", { valueAsNumber: true })}
               className="input-bordered input-primary input w-full max-w-md"
-              defaultValue={category.data?.markupFixed ?? 0}
             />
           </div>
           <div>
@@ -121,7 +122,6 @@ const CategoryForm = (props: Props) => {
             <select
               className="select-bordered select"
               {...addItemRegister("markupDestination")}
-              defaultValue={""}
             >
               <option key="disbld" value="">
                 Auswählen:
