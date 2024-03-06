@@ -1,7 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useEffect } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 export const addCategoryValidationSchem = z.object({
@@ -14,13 +16,15 @@ export const addCategoryValidationSchem = z.object({
 
 type Props = {
   finishAction: () => void
+  id?: Tid
 }
-const AddCategoryForm = (props: Props) => {
+const CategoryForm = (props: Props) => {
   const trpcUtils = api.useContext()
-  const createCategroyRequest = api.category.createCategory.useMutation()
-  const allClearingAccountsRequest = api.clearingAccount.getAll.useQuery()
+  const createRequest = api.category.create.useMutation()
+  const updateRequest = api.category.update.useMutation()
+  const category = api.category.get.useQuery({ id: props.id ?? "-" }, { enabled: !!props.id })
 
-  const clearingAccounts = allClearingAccountsRequest.data ?? []
+  const clearingAccounts = api.clearingAccount.getAll.useQuery().data ?? []
 
   type AddCategoryInput = z.infer<typeof addCategoryValidationSchem>
 
@@ -28,13 +32,24 @@ const AddCategoryForm = (props: Props) => {
     register: addItemRegister,
     handleSubmit: addItemSubmit,
     control,
+    reset,
+    setValue
   } = useForm<AddCategoryInput>({
     resolver: zodResolver(addCategoryValidationSchem),
   })
 
-  const onAddItemSubmit: SubmitHandler<AddCategoryInput> = async (data) => {
-    await createCategroyRequest.mutateAsync(data)
+  useEffect(() => {
+    setValue("markupDestination", category.data?.markupDestinationId ?? "")
+  },[category.data?.markupDestinationId])
+
+  const onSubmit: SubmitHandler<AddCategoryInput> = async (data) => {
+    if (!!props.id) {
+      await updateRequest.mutateAsync({ id: props.id, ...data })
+    } else {
+      await createRequest.mutateAsync(data)
+    }
     await trpcUtils.category.invalidate()
+    reset()
     props.finishAction()
   }
 
@@ -42,7 +57,7 @@ const AddCategoryForm = (props: Props) => {
     <>
       <h3 className="text-lg font-bold">Neue Kategorie</h3>
       <div className="py-4">
-        <form onSubmit={addItemSubmit(onAddItemSubmit)} className="space-y-4">
+        <form onSubmit={addItemSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="label">
               <span className="label-text text-base">Name</span>
@@ -50,6 +65,7 @@ const AddCategoryForm = (props: Props) => {
             <input
               type="text"
               {...addItemRegister("name")}
+              defaultValue={category.data?.name ?? ""}
               className="input-bordered input-primary input w-full max-w-md"
               placeholder="Name"
             />
@@ -67,6 +83,7 @@ const AddCategoryForm = (props: Props) => {
             <input
               type="text"
               {...addItemRegister("markupDescription")}
+              defaultValue={category.data?.markupDescription ?? ""}
               className="input-bordered input-primary input w-full max-w-md"
             />
           </div>
@@ -79,7 +96,7 @@ const AddCategoryForm = (props: Props) => {
               step={1}
               min={0}
               max={300}
-              defaultValue={0}
+              defaultValue={category.data?.markupPercentage ?? 0}
               {...addItemRegister("markupPercentage", { valueAsNumber: true })}
               className="input-bordered input-primary input w-full max-w-md"
             />
@@ -94,19 +111,23 @@ const AddCategoryForm = (props: Props) => {
               min={0}
               {...addItemRegister("markupFixed", { valueAsNumber: true })}
               className="input-bordered input-primary input w-full max-w-md"
-              defaultValue={0}
+              defaultValue={category.data?.markupFixed ?? 0}
             />
           </div>
           <div>
             <label className="label">
               <span className="label-text text-base">Verrechnungkonto für Aufpreis</span>
             </label>
-            <select className="select-bordered select" defaultValue={""}>
+            <select
+              className="select-bordered select"
+              {...addItemRegister("markupDestination")}
+              defaultValue={""}
+            >
               <option key="disbld" value="">
                 Auswählen:
               </option>
               {clearingAccounts.map((account) => (
-                <option key={account.id} id={account.id}>
+                <option key={account.id} value={account.id}>
                   {account.name}
                 </option>
               ))}
@@ -114,7 +135,7 @@ const AddCategoryForm = (props: Props) => {
           </div>
 
           <button className="btn-primary btn-block btn mt-1" type="submit">
-            Kategorie Anlegen
+            {!!props.id ? "Aktualisieren" : "Anlegen"}
           </button>
         </form>
       </div>
@@ -122,4 +143,4 @@ const AddCategoryForm = (props: Props) => {
   )
 }
 
-export default AddCategoryForm
+export default CategoryForm

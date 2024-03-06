@@ -2,7 +2,7 @@ import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { InfoIcon } from "~/components/Icons/InfoIcon"
 import CenteredPage from "~/components/Layout/CenteredPage"
-import SendMoney from "~/components/SendMoney"
+import SendMoney from "~/components/PageComponents/SendMoney"
 import { api } from "~/utils/api"
 
 const TopUp: NextPage = () => {

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { addCategoryValidationSchem } from "~/components/General/AddCategoryForm"
+import { addCategoryValidationSchem } from "~/components/Forms/CategoryForm"
 import { Prisma } from "@prisma/client"
 
 import {
@@ -8,30 +8,86 @@ import {
   protectedProcedure,
   adminProcedure,
 } from "~/server/api/trpc"
+import { id, idObj } from "~/helper/zodTypes"
 
 export const categoryRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.category.findMany({
-      include: {},
+      where: { is_active: true },
     })
   }),
 
-  createCategory: adminProcedure
-    .input(addCategoryValidationSchem)
+  get: protectedProcedure.input(idObj).query(({ ctx, input }) => {
+    return ctx.prisma.category.findUniqueOrThrow({
+      where: { id: input.id },
+      // include: { markupDestination: true },
+    })
+  }),
+
+  create: adminProcedure.input(addCategoryValidationSchem).mutation(async ({ ctx, input }) => {
+    console.log(input)
+    const { markupDestination, ...correctedData } = input
+    const entryWithMarkup = (markupDestination != undefined && markupDestination !=="")
+    if (!entryWithMarkup) {
+      correctedData.markupFixed = 0
+      correctedData.markupPercentage = 0
+    }
+
+    const category = await ctx.prisma.category.create({
+      data: {
+        markupDestination:
+        entryWithMarkup ? { connect: { id: markupDestination } } : undefined,
+        ...correctedData,
+      },
+    })
+    return category
+  }),
+
+  update: adminProcedure
+    .input(addCategoryValidationSchem.extend({ id }))
     .mutation(async ({ ctx, input }) => {
-      const { markupDestination, ...correctedData } = input
-      if(markupDestination == undefined){
-        correctedData.markupFixed = 0
-        correctedData.markupPercentage = 0
+      const { markupDestination, id, ...data } = input
+
+      if (markupDestination == undefined) {
+        data.markupFixed = 0
+        data.markupPercentage = 0
       }
 
-      const category = await ctx.prisma.category.create({
+      const oldCategory = await ctx.prisma.category.findUniqueOrThrow({ where: { id } })
+      const oldCategoryWithInclude = await ctx.prisma.category.findUniqueOrThrow({
+        where: { id },
+        include: { markupDestination: true, items: true, procurementItems: true },
+      })
+
+      const newCat = await ctx.prisma.category.create({
         data: {
-          markupDestination:
-            markupDestination != undefined ? { connect: { id: markupDestination } } : undefined,
-          ...correctedData,
+          ...oldCategory,
+          id: undefined,
+          items: { connect: oldCategoryWithInclude.items.map((item) => ({id: item.id}))},
+          procurementItems: { connect: oldCategoryWithInclude.procurementItems.map((item) => ({id: item.id})) },
+          ...data,
+          markupDestinationId: oldCategory.markupDestinationId
         },
       })
-      return category
+      await ctx.prisma.category.update({
+        where: { id: oldCategory.id },
+        data: {
+          is_active: false,
+          items: { set: [] },
+          procurementItems: { set: [] },
+        },
+      })
     }),
+
+  delete: adminProcedure.input(idObj).mutation(async ({ ctx, input }) => {
+    const cat = await ctx.prisma.category.findUniqueOrThrow({
+      where: { id: input.id },
+      include: { procurementItems: true, items: true },
+    })
+    if (cat.procurementItems.length === 0 && cat.items.length === 0) {
+      return await ctx.prisma.category.delete({ where: { id: input.id } })
+    } else {
+      return await ctx.prisma.category.update({ where: { id: input.id }, data: { is_active: false } })
+    }
+  }),
 })

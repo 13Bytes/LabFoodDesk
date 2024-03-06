@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react"
 import { useEffect, useRef, useState } from "react"
 import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
 import CenteredPage from "~/components/Layout/CenteredPage"
-import SendMoney from "~/components/SendMoney"
+import SendMoney from "~/components/PageComponents/SendMoney"
 import { api } from "~/utils/api"
 
 const SplitPage: NextPage = () => {

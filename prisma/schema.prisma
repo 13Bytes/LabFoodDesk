@@ -19,13 +19,13 @@ datasource db {
 model Item {
     // items must be immutable and shouldn't be deleted (if transactions exists) 
     // - create copy instead and set is_active=false
-    id              String        @id @default(cuid())
+    id              String                @id @default(cuid())
     name            String
     categories      Category[]
     price           Float
-    transactions    Transaction[]
-    is_active       Boolean       @default(true)
-    for_grouporders Boolean       @default(false)
+    purchases       ItemCategoryMapping[]
+    is_active       Boolean               @default(true)
+    for_grouporders Boolean               @default(false)
 }
 
 model ProcurementItem {
@@ -59,8 +59,6 @@ model GroupOrder {
     closedBy             User?               @relation(fields: [closedById], references: [id])
     closedById           String?
     status               Int                 @default(0) // 0: open, 5: incoming orders stoped, 6: orders fulfilled, 99: aborted (orders not fulfilled)
-    categories           Category[] // only show items from this categories
-    categoryId           String?
     GroupOrderTemplate   GroupOrderTemplate? @relation(fields: [groupOrderTemplateId], references: [id])
     groupOrderTemplateId String?
 }
@@ -76,17 +74,20 @@ model GroupOrderTemplate {
 }
 
 model Category {
-    id                  String           @id @default(cuid())
-    name                String           @unique
+    // items must be immutable and shouldn't be deleted (if linked with item) 
+    // - create copy instead and set is_active=false
+    id                  String               @id @default(cuid())
+    is_active           Boolean              @default(true)
+    name                String
     items               Item[]
+    procurementItems    ProcurementItem[]
     markupDescription   String?
     markupPercentage    Int? // integer ->  [%] = value/100
     markupFixed         Float? // in €
-    markupDestination   ClearingAccount? @relation(fields: [markupDestinationId], references: [id], onDelete: NoAction)
-    GroupOrders         GroupOrder[]
-    ProcurementItem     ProcurementItem? @relation(fields: [procurementItemId], references: [id])
+    markupDestination   ClearingAccount?     @relation(fields: [markupDestinationId], references: [id], onDelete: NoAction)
     markupDestinationId String?
-    procurementItemId   String?
+    ItemPurchase        ItemCategoryMapping? @relation(fields: [itemPurchaseId], references: [id])
+    itemPurchaseId      String?
 }
 
 model ClearingAccount {
@@ -96,19 +97,29 @@ model ClearingAccount {
     Category Category[]
 }
 
+model ItemCategoryMapping {
+    id         String     @id @default(cuid())
+    item       Item       @relation(fields: [itemId], references: [id])
+    categories Category[]
+
+    Transaction   Transaction @relation(fields: [transactionId], references: [id])
+    itemId        String
+    transactionId String
+}
+
 model Transaction {
-    id                     String            @id @default(cuid())
-    user                   User              @relation("user", fields: [userId], references: [id], onDelete: Cascade)
+    id                     String                @id @default(cuid())
+    user                   User                  @relation("user", fields: [userId], references: [id], onDelete: Cascade)
     userId                 String
-    items                  Item[]
+    items                  ItemCategoryMapping[]
     procurementItems       ProcurementItem[]
     totalAmount            Float
-    createdAt              DateTime          @default(now())
-    type                   Int               @default(0) // 0: buy, 1: sell, 2: transfer
-    groupOrder             GroupOrder?       @relation(fields: [groupOrderId], references: [id])
+    createdAt              DateTime              @default(now())
+    type                   Int                   @default(0) // 0: buy, 1: sell, 2: transfer
+    groupOrder             GroupOrder?           @relation(fields: [groupOrderId], references: [id])
     groupOrderId           String?
     //  --- only if transfer (type=2)
-    moneyDestination       User?             @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
+    moneyDestination       User?                 @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
     moneyDestinationUserId String?
     note                   String?
 }

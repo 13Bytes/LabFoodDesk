@@ -7,7 +7,7 @@ import {
   adminProcedure,
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
-import { validationSchema as AddProcurementItemSchema } from "~/components/General/AddProcurementItemForm"
+import { validationSchema as AddProcurementItemSchema } from "~/components/Forms/AddProcurementItemForm"
 import { Category } from "@prisma/client"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
 

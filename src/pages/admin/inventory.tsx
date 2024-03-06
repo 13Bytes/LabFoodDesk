@@ -1,6 +1,6 @@
 import { useState } from "react"
-import AddItemForm from "~/components/General/AddItemForm"
-import AddProcurementItemForm from "~/components/General/AddProcurementItemForm"
+import AddItemForm from "~/components/Forms/AddItemForm"
+import AddProcurementItemForm from "~/components/Forms/AddProcurementItemForm"
 import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
 import Modal from "~/components/Layout/Modal"
 import { api } from "~/utils/api"

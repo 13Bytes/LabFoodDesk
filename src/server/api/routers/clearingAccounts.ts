@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { validationSchema as clearingAccountValidationSchema } from "~/components/General/ClearingAccountForm"
+import { validationSchema as clearingAccountValidationSchema } from "~/components/Forms/ClearingAccountForm"
 import { id, idObj } from "~/helper/zodTypes"
 import {
   adminProcedure,

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import AddGrouporderForm from "~/components/General/AddGrouporderForm"
+import AddGrouporderForm from "~/components/Forms/AddGrouporderForm"
 import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
 import Modal from "~/components/Layout/Modal"
 import { localStringOptions, weekdays } from "~/helper/globalTypes"
