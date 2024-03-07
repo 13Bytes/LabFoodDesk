@@ -178,6 +178,7 @@ export const itemRouter = createTRPCRouter({
         where: {
           id: input.productID,
         },
+        include: { categories: true },
       })
 
       const totalPrice = product.price
@@ -190,8 +191,10 @@ export const itemRouter = createTRPCRouter({
           data: {
             // userId: ctx.session.user.id,
             user: { connect: { id: ctx.session.user.id } },
-            // itemId: product.id,
-            items: { connect: [{ id: product.id }] },
+            items: { create: [{ 
+              item:{connect: { id: product.id}},
+              categories: { connect: product.categories.map((category) => ({ id: category.id })) },
+            }] },
             type: 0,
             totalAmount: totalPrice,
           },
