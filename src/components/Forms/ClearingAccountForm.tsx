@@ -32,7 +32,6 @@ const ClearingAccountForm = (props: Props) => {
   const {
     register: addItemRegister,
     handleSubmit: addItemSubmit,
-    control,
     reset,
   } = useForm<FormType>({
     resolver: zodResolver(validationSchema),

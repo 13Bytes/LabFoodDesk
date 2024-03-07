@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { id } from "~/helper/zodTypes"
+import { id, idObj } from "~/helper/zodTypes"
 import {
   createTRPCRouter,
   publicProcedure,
@@ -7,17 +7,28 @@ import {
   adminProcedure,
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
-import { validationSchema as AddProcurementItemSchema } from "~/components/Forms/AddProcurementItemForm"
+import { createProcItemSchema as AddProcurementItemSchema } from "~/components/Forms/ProcurementItemForm"
 import { Category } from "@prisma/client"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
+import { createItemSchema } from "~/components/Forms/ItemForm"
 
 export const itemRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.item.findMany({ include: { categories: true } })
+    return ctx.prisma.item.findMany({ where: { is_active: true }, include: { categories: true } })
+  }),
+
+  getItem: protectedProcedure.input(idObj).query(({ ctx, input }) => {
+    return ctx.prisma.item.findUniqueOrThrow({
+      where: { id: input.id },
+      include: { categories: true, _count: true },
+    })
   }),
 
   getAllProcurementItems: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.procurementItem.findMany({ include: { categories: true } })
+    return ctx.prisma.procurementItem.findMany({
+      where: { is_active: true },
+      include: { categories: true },
+    })
   }),
 
   getBuyable: protectedProcedure.query(({ ctx }) => {
@@ -27,15 +38,31 @@ export const itemRouter = createTRPCRouter({
     })
   }),
 
-  createItem: adminProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        categories: z.array(id),
-        price: z.number(),
-        for_grouporders: z.boolean().optional().default(false),
+  createItem: adminProcedure.input(createItemSchema).mutation(async ({ ctx, input }) => {
+    const categories = await Promise.all(
+      input.categories.map(async (categoryId) => {
+        return prisma.category.findUniqueOrThrow({
+          where: {
+            id: categoryId,
+          },
+        })
       })
     )
+
+    const item = await prisma.item.create({
+      data: {
+        name: input.name,
+        price: input.price,
+        categories: { connect: categories.map((category) => ({ id: category.id })) },
+        is_active: true,
+        for_grouporders: input.for_grouporders,
+      },
+    })
+    return item
+  }),
+
+  updateItem: adminProcedure
+    .input(createItemSchema.extend({ id }))
     .mutation(async ({ ctx, input }) => {
       const categories = await Promise.all(
         input.categories.map(async (categoryId) => {
@@ -47,17 +74,32 @@ export const itemRouter = createTRPCRouter({
         })
       )
 
-      const item = await prisma.item.create({
-        data: {
-          name: input.name,
-          price: input.price,
-          categories: { connect: categories.map((category) => ({ id: category.id })) },
-          is_active: true,
-          for_grouporders: input.for_grouporders,
-        },
-      })
-      return item
+      const { id, ...inputData } = input
+
+      await prisma.$transaction([
+        prisma.item.update({ where: { id: input.id }, data: { is_active: false } }),
+        prisma.item.create({
+          data: {
+            ...inputData,
+            categories: { connect: categories.map((category) => ({ id: category.id })) },
+          },
+        }),
+      ])
     }),
+
+  deleteItem: adminProcedure.input(idObj).mutation(({ ctx, input }) => {
+    return ctx.prisma.item.update({
+      where: { is_active: true, id: input.id },
+      data: { is_active: false },
+    })
+  }),
+
+  getProcurementItem: protectedProcedure.input(idObj).query(({ ctx, input }) => {
+    return ctx.prisma.procurementItem.findUniqueOrThrow({
+      where: { id: input.id },
+      include: { categories: true },
+    })
+  }),
 
   createProcurementItem: adminProcedure
     .input(AddProcurementItemSchema)
@@ -81,14 +123,47 @@ export const itemRouter = createTRPCRouter({
       return item
     }),
 
+    updateProcurementItem: adminProcedure
+    .input(createItemSchema.extend({ id }))
+    .mutation(async ({ ctx, input }) => {
+      const categories = await Promise.all(
+        input.categories.map(async (categoryId) => {
+          return prisma.category.findUniqueOrThrow({
+            where: {
+              id: categoryId,
+            },
+          })
+        })
+      )
+
+      const { id, ...inputData } = input
+
+      await prisma.$transaction([
+        prisma.procurementItem.update({ where: { id: input.id }, data: { is_active: false } }),
+        prisma.procurementItem.create({
+          data: {
+            ...inputData,
+            categories: { connect: categories.map((category) => ({ id: category.id })) },
+          },
+        }),
+      ])
+    }),
+
+  deleteProcuremenntItem: adminProcedure.input(idObj).mutation(({ ctx, input }) => {
+    return ctx.prisma.procurementItem.update({
+      where: { is_active: true, id: input.id },
+      data: { is_active: false },
+    })
+  }),
+
+
   getGroupBuyItems: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.item.findMany({
       where: { for_grouporders: true, is_active: true },
       include: { categories: true },
     })
   }),
-  
-  
+
   getGroupBuyProcurementItems: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.procurementItem.findMany({
       where: { is_active: true },
@@ -104,9 +179,9 @@ export const itemRouter = createTRPCRouter({
           id: input.productID,
         },
       })
-      
+
       const totalPrice = product.price
-      const user = await ctx.prisma.user.findUniqueOrThrow({where: {id: ctx.session.user.id}})
+      const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
       await checkAccountBacking(user, totalPrice)
 
       // atomic action:

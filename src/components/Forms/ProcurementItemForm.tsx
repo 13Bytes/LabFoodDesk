@@ -3,36 +3,55 @@ import type { SubmitHandler } from "react-hook-form"
 import { Controller, useForm } from "react-hook-form"
 import Select from "react-select"
 import { z } from "zod"
-import { id } from "~/helper/zodTypes"
+import { Tid, formCategories, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import CategorySelector from "../FormElements/CategorySelector"
 import type { Overwrite } from "@trpc/server"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 
-export const validationSchema = z.object({
+export const createProcItemSchema = z.object({
   name: z.string(),
   categories: z.array(id),
 })
+const itemValidationSchema = createProcItemSchema.omit({ categories: true }).merge(formCategories)
 
 type Props = {
   finishAction: () => void
+  id?: Tid
 }
-const AddProcurementItemForm = (props: Props) => {
+const ProcurementItemForm = (props: Props) => {
   const trpcUtils = api.useContext()
 
-  type AddProcurementItem = z.infer<typeof validationSchema>
-  type AddProcurementItemForm = Overwrite<AddProcurementItem, { categories: { label: string; value: string }[] }>
+  type AddProcurementItemForm = z.infer<typeof itemValidationSchema>
   const allCategoriesRequest = api.category.getAll.useQuery()
   const createProcurementItemRequest = api.item.createProcurementItem.useMutation()
+  const currentItem = api.item.getProcurementItem.useQuery({ id: props.id! }, { enabled: !!props.id })
 
   const {
     register: addItemRegister,
     handleSubmit: addItemSubmit,
     control,
+    reset,
+    formState: { errors },
   } = useForm<AddProcurementItemForm>({
-    resolver: zodResolver(validationSchema),
+    resolver: zodResolver(itemValidationSchema),
 })
+
+useEffect(() => {
+  if (props.id) {
+    const mappedData = {
+      ...currentItem.data,
+      categories: currentItem.data?.categories.map((category) => ({
+        label: category.name,
+        value: category.id,
+      })),
+    }
+    reset(mappedData)
+  } else {
+    reset({name: "",  categories: []})
+  }
+}, [currentItem.data, props.id ?? ""])
 
   const onAddItemSubmit: SubmitHandler<AddProcurementItemForm> = async (data) => {
     const dataToSend = {
@@ -40,7 +59,7 @@ const AddProcurementItemForm = (props: Props) => {
       categories: data.categories.map((category) => category.value),
     }
     await createProcurementItemRequest.mutateAsync(dataToSend)
-    await trpcUtils.item.getAll.invalidate()
+    await trpcUtils.item.invalidate()
     props.finishAction()
   }
 
@@ -59,12 +78,14 @@ const AddProcurementItemForm = (props: Props) => {
               className="input-bordered input-primary input w-full max-w-md"
               placeholder="Name"
             />
+            {errors.name && <p>{errors.name.message}</p>}
           </div>
           <div>
             <label className="label">
               <span className="label-text text-base">Categorien</span>
             </label>
             <CategorySelector control={control} categories={allCategoriesRequest.data}  />
+            {errors.categories && <p>{errors.categories.message}</p>}
           </div>
 
           <button className="btn-primary btn-block btn mt-1" type="submit">
@@ -76,4 +97,4 @@ const AddProcurementItemForm = (props: Props) => {
   )
 }
 
-export default AddProcurementItemForm
+export default ProcurementItemForm

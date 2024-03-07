@@ -33,7 +33,8 @@ const CategoryForm = (props: Props) => {
     handleSubmit: addItemSubmit,
     control,
     reset,
-    setValue
+    setValue,
+    formState: { errors },
   } = useForm<AddCategoryInput>({
     resolver: zodResolver(addCategoryValidationSchem),
   })
@@ -73,6 +74,7 @@ const CategoryForm = (props: Props) => {
               className="input-bordered input-primary input w-full max-w-md"
               placeholder="Name"
             />
+            {errors.name && <p>{errors.name.message}</p>}
           </div>
 
           <div className="divider"></div>
@@ -89,6 +91,7 @@ const CategoryForm = (props: Props) => {
               {...addItemRegister("markupDescription")}
               className="input-bordered input-primary input w-full max-w-md"
             />
+            {errors.markupDescription && <p>{errors.markupDescription.message}</p>}
           </div>
           <div>
             <label className="label">
@@ -102,6 +105,7 @@ const CategoryForm = (props: Props) => {
               {...addItemRegister("markupPercentage", { valueAsNumber: true })}
               className="input-bordered input-primary input w-full max-w-md"
             />
+            {errors.markupPercentage && <p>{errors.markupPercentage.message}</p>}
           </div>
           <div>
             <label className="label">
@@ -114,6 +118,7 @@ const CategoryForm = (props: Props) => {
               {...addItemRegister("markupFixed", { valueAsNumber: true })}
               className="input-bordered input-primary input w-full max-w-md"
             />
+            {errors.markupFixed && <p>{errors.markupFixed.message}</p>}
           </div>
           <div>
             <label className="label">
@@ -132,6 +137,7 @@ const CategoryForm = (props: Props) => {
                 </option>
               ))}
             </select>
+            {errors.markupDestination && <p>{errors.markupDestination.message}</p>}
           </div>
 
           <button className="btn-primary btn-block btn mt-1" type="submit">

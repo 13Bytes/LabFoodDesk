@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { addCategoryValidationSchem } from "~/components/Forms/CategoryForm"
 import { Prisma } from "@prisma/client"
+import { prisma } from "~/server/db"
 
 import {
   createTRPCRouter,
@@ -27,7 +28,7 @@ export const categoryRouter = createTRPCRouter({
   create: adminProcedure.input(addCategoryValidationSchem).mutation(async ({ ctx, input }) => {
     console.log(input)
     const { markupDestination, ...correctedData } = input
-    const entryWithMarkup = (markupDestination != undefined && markupDestination !=="")
+    const entryWithMarkup = markupDestination != undefined && markupDestination !== ""
     if (!entryWithMarkup) {
       correctedData.markupFixed = 0
       correctedData.markupPercentage = 0
@@ -35,8 +36,7 @@ export const categoryRouter = createTRPCRouter({
 
     const category = await ctx.prisma.category.create({
       data: {
-        markupDestination:
-        entryWithMarkup ? { connect: { id: markupDestination } } : undefined,
+        markupDestination: entryWithMarkup ? { connect: { id: markupDestination } } : undefined,
         ...correctedData,
       },
     })
@@ -59,24 +59,28 @@ export const categoryRouter = createTRPCRouter({
         include: { markupDestination: true, items: true, procurementItems: true },
       })
 
-      const newCat = await ctx.prisma.category.create({
-        data: {
-          ...oldCategory,
-          id: undefined,
-          items: { connect: oldCategoryWithInclude.items.map((item) => ({id: item.id}))},
-          procurementItems: { connect: oldCategoryWithInclude.procurementItems.map((item) => ({id: item.id})) },
-          ...data,
-          markupDestinationId: oldCategory.markupDestinationId
-        },
-      })
-      await ctx.prisma.category.update({
-        where: { id: oldCategory.id },
-        data: {
-          is_active: false,
-          items: { set: [] },
-          procurementItems: { set: [] },
-        },
-      })
+      await prisma.$transaction([
+        prisma.category.create({
+          data: {
+            ...oldCategory,
+            id: undefined,
+            items: { connect: oldCategoryWithInclude.items.map((item) => ({ id: item.id })) },
+            procurementItems: {
+              connect: oldCategoryWithInclude.procurementItems.map((item) => ({ id: item.id })),
+            },
+            ...data,
+            markupDestinationId: oldCategory.markupDestinationId,
+          },
+        }),
+        prisma.category.update({
+          where: { id: oldCategory.id },
+          data: {
+            is_active: false,
+            items: { set: [] },
+            procurementItems: { set: [] },
+          },
+        }),
+      ])
     }),
 
   delete: adminProcedure.input(idObj).mutation(async ({ ctx, input }) => {
@@ -87,7 +91,10 @@ export const categoryRouter = createTRPCRouter({
     if (cat.procurementItems.length === 0 && cat.items.length === 0) {
       return await ctx.prisma.category.delete({ where: { id: input.id } })
     } else {
-      return await ctx.prisma.category.update({ where: { id: input.id }, data: { is_active: false } })
+      return await ctx.prisma.category.update({
+        where: { id: input.id },
+        data: { is_active: false },
+      })
     }
   }),
 })

@@ -3,10 +3,9 @@ A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## ToDo
 - Gruppenbestellung: Kosten einem gutschreiben
-- generell Möglichkeit Einkäufe zu tätigen (zB Spezi kaufen gehen)
 - Ofensteuer (und andere Buffer für zB Spezi)
+- generell Möglichkeit Einkäufe zu tätigen (zB Spezi kaufen gehen)
 - Error-Messages zu allen Forms adden
-- Items bearbeiten / löschen überall
 - Logs wer was eingetragen hat
 - Gruppenbestellung bearbeiten
 - Gruppen-Wiederholungen
