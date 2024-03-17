@@ -60,7 +60,6 @@ const ItemForm = (props: Props) => {
   }, [currentItem.data, props.id ?? ""])
 
   const onSubmit: SubmitHandler<AddItemForm> = async (data) => {
-    console.log(data)
     const dataToSend = {
       ...data,
       categories: data.categories.map((category) => category.value),

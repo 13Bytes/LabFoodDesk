@@ -27,7 +27,6 @@ const AddGrouporderForm = (props: Props) => {
   const onSubmit: SubmitHandler<AddGrouporderFormInput> = async (data) => {
     const dataToSend = {
       ...data,
-      categories: data.categories.map((category) => category.value),
     }
     await createGrouporder.mutateAsync(dataToSend)
     await trpcUtils.groupOrders.invalidate()

@@ -56,7 +56,7 @@ const GroupOrderDetailView = (props: Props) => {
                       {group.orders.map((o) => (
                         <tr key={o.id}>
                           <th>{o.user?.name}</th>
-                          <td>{o.items.map(item => item.name)}</td>
+                          <td>{o.items.map(mpng => mpng.item.name)}</td>
                         </tr>
                       ))}
                     </tbody>

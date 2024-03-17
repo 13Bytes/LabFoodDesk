@@ -26,6 +26,7 @@ const ProcurementItemForm = (props: Props) => {
   type AddProcurementItemForm = z.infer<typeof itemValidationSchema>
   const allCategoriesRequest = api.category.getAll.useQuery()
   const createProcurementItemRequest = api.item.createProcurementItem.useMutation()
+  const updateProcurementItemRequest = api.item.updateProcurementItem.useMutation()
   const currentItem = api.item.getProcurementItem.useQuery({ id: props.id! }, { enabled: !!props.id })
 
   const {
@@ -58,7 +59,11 @@ useEffect(() => {
       ...data,
       categories: data.categories.map((category) => category.value),
     }
-    await createProcurementItemRequest.mutateAsync(dataToSend)
+    if (!!props.id) {
+      await updateProcurementItemRequest.mutateAsync({ id: props.id, ...dataToSend })
+    } else {
+      await createProcurementItemRequest.mutateAsync(dataToSend)
+    }
     await trpcUtils.item.invalidate()
     props.finishAction()
   }

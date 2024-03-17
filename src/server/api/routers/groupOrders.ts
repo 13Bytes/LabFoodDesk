@@ -43,7 +43,7 @@ export const grouporderRouter = createTRPCRouter({
         ordersCloseAt: "asc",
       },
       include: {
-        orders: { include: { user: { select: { id: true, name: true } }, items: true } },
+        orders: { include: { user: { select: { id: true, name: true } }, items: {include: {item: true}} } },
         procurementWishes: { include: { user: { select: { id: true, name: true } }, items: true } },
       },
     })

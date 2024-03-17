@@ -7,7 +7,7 @@ import {
   adminProcedure,
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
-import { createProcItemSchema as AddProcurementItemSchema } from "~/components/Forms/ProcurementItemForm"
+import { createProcItemSchema } from "~/components/Forms/ProcurementItemForm"
 import { Category } from "@prisma/client"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
 import { createItemSchema } from "~/components/Forms/ItemForm"
@@ -102,7 +102,7 @@ export const itemRouter = createTRPCRouter({
   }),
 
   createProcurementItem: adminProcedure
-    .input(AddProcurementItemSchema)
+    .input(createProcItemSchema)
     .mutation(async ({ ctx, input }) => {
       const categories = await Promise.all(
         input.categories.map(async (categoryId) => {
@@ -124,7 +124,7 @@ export const itemRouter = createTRPCRouter({
     }),
 
     updateProcurementItem: adminProcedure
-    .input(createItemSchema.extend({ id }))
+    .input(createProcItemSchema.extend({ id }))
     .mutation(async ({ ctx, input }) => {
       const categories = await Promise.all(
         input.categories.map(async (categoryId) => {
