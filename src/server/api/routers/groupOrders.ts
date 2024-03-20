@@ -44,7 +44,7 @@ export const grouporderRouter = createTRPCRouter({
       },
       include: {
         orders: { include: { user: { select: { id: true, name: true } }, items: {include: {item: true}} } },
-        procurementWishes: { include: { user: { select: { id: true, name: true } }, items: true } },
+        procurementWishes: { include: { user: { select: { id: true, name: true } }, items: {include: {categories: true}} } },
       },
     })
     return result

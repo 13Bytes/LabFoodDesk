@@ -6,170 +6,205 @@ import type { AppRouter } from "../../server/api/root"
 import { api } from "~/utils/api"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { useRef } from "react"
+import { calculateAdditionalPricing } from "~/helper/dataProcessing"
 
 type RouterOutput = inferRouterOutputs<AppRouter>
 
 type UserItemList = {
-  [key: string]: { items: ProcurementItem[]; username: string }
+  [user: Tid]: {
+    items: ProcurementItem[]
+    username: string
+  }
+}
+
+type Item =
+  RouterOutput["groupOrders"]["getInProgress"][number]["procurementWishes"][number]["items"][number]
+type Split = {
+  user: Tid
+  procurementWishs: {
+    id: Tid
+    items: {
+      item: Item
+      defaultCost: number
+      overwritenCost: number | undefined
+      finalCost: number
+    }[]
+  }[]
 }
 
 type Props = {
   group: RouterOutput["groupOrders"]["getInProgress"][number]
 }
+
 const GroupOrderSplit = (props: Props) => {
   const { group } = props
 
   const trpcUtils = api.useContext()
-  
-  const [itemList, setItemList] = useState<ProcurementItem[]>([])
-  const [userItemList, setUserItemList] = useState<UserItemList>({})
-  const [userSplit, setUserSplit] = useState<{
-    [key: Tid]: {
-      defaultUserExpences: number
-      overwritenUserExpences: number | undefined
-    }
-  }>()
-  const [userCost, setUserCost] = useState<{
-    [key: Tid]: number
-  }>()
   const animationRef = useRef<AnimationHandle>(null)
 
-  // restructure data from group into costDistribution and itemList
+  const [itemList, setItemList] = useState<ProcurementItem[]>([])
+  const [userItemList, setUserItemList] = useState<UserItemList>({})
+  const [split, setSplit] = useState<Split[]>([])
+  const [allUsersOverwritten, setAllUsersOverwritten] = useState<number | undefined>()
+
+  // restructure data from group into (user)ItemList
   useEffect(() => {
-    const tempItemList: ProcurementItem[] = []
-    const tempUserItemList: UserItemList = {}
+    const itemList: ProcurementItem[] = []
+    const userItemList: UserItemList = {}
     group.procurementWishes.forEach((element) => {
       element.items.forEach((item) => {
-        tempItemList.push(item)
-        if (Object.keys(tempUserItemList).includes(element.userId)) {
-          tempUserItemList[element.userId]!.items.push(item)
+        itemList.push(item)
+        if (Object.keys(userItemList).includes(element.userId)) {
+          userItemList[element.userId]!.items.push(item)
         } else {
-          tempUserItemList[element.userId] = {
+          userItemList[element.userId] = {
             items: [item],
             username: element.user.name ?? "",
           }
         }
       })
     })
-    setUserItemList({ ...tempUserItemList })
-    setItemList([...tempItemList])
+    const groupOrderSplit: Split[] = []
+    for (const proc of group.procurementWishes) {
+      if (groupOrderSplit.find((split) => split.user === proc.userId)) {
+        groupOrderSplit
+          .find((split) => split.user === proc.userId)
+          ?.procurementWishs.push({
+            id: proc.id,
+            items: proc.items.map((item) => ({
+              item: item,
+              defaultCost: 0,
+              overwritenCost: undefined,
+              finalCost: 0,
+            })),
+          })
+      } else {
+        groupOrderSplit.push({
+          user: proc.userId,
+          procurementWishs: [
+            {
+              id: proc.id,
+              items: proc.items.map((item) => ({
+                item,
+                defaultCost: 0,
+                overwritenCost: undefined,
+                finalCost: 0,
+              })),
+            },
+          ],
+        })
+      }
+    }
+    setSplit([...groupOrderSplit])
+    setUserItemList({ ...userItemList })
+    setItemList([...itemList])
   }, [JSON.stringify(group)])
 
+  const totalItems = itemList.length
+  const totalUsers = Object.keys(userItemList).length
   const [totalAmount, setTotalAmount] = useState<number>(0)
   const typeTotalAmount = (e: ChangeEvent<HTMLInputElement>) => {
     const userInput = e.currentTarget.value
     const value = parseFloat(userInput)
+    const pricePerItem = value / totalItems
     setTotalAmount(value)
+    setSplit((oldSplit) =>
+      oldSplit.map((split) => ({
+        ...split,
+        procurementWishs: split.procurementWishs.map((wish) => ({
+          ...wish,
+          items: wish.items.map((item) => ({
+            ...item,
+            defaultCost: pricePerItem,
+            overwritenCost: undefined,
+            finalCost: pricePerItem,
+          })),
+        })),
+      }))
+    )
   }
 
-  const totalUsers = Object.keys(userItemList).length
-  const totalItems = itemList.length
-
-  useEffect(() => {
-    if (totalAmount === undefined) return
-    for (const [key, entries] of Object.entries(userItemList)) {
-      const userItemCount = entries.items.length
-      const userExpences = (userItemCount * totalAmount) / totalItems
-      setUserSplit((prevState) => ({
-        ...prevState,
-        [key]: {
-          defaultUserExpences: userExpences,
-          overwritenUserExpences: undefined,
-        },
-      }))
-    }
-  }, [totalAmount, userItemList, totalItems])
-
-  /**
-   * Overwrite the default user expences with custom user input from one user
-   * -> triggers a reclaculation of the other user expences
-   */
-  const overwritenUserExpences = (e: ChangeEvent<HTMLInputElement>, userId: Tid) => {
+  const overwriteUserExpence = (
+    e: ChangeEvent<HTMLInputElement>,
+    userId: Tid,
+    procID: Tid,
+    itemIndex: number
+  ) => {
     const cost = parseFloat(e.currentTarget.value)
-    console.log("inserted value", e.currentTarget.value, cost)
-
-    if (Number.isNaN(cost)) {
-      console.log("Calloingkngfjn")
-      setUserSplit((prevState) => {
-        return {
-          ...prevState,
-          [userId]: {
-            defaultUserExpences: prevState?.[userId]?.defaultUserExpences || 0,
-            overwritenUserExpences: undefined,
-          },
-        }
+    if (!Number.isNaN(cost)) {
+      setSplit((oldSplit) => {
+        const copy = [...oldSplit]
+        const splitIndex = copy.findIndex((split) => split.user === userId)
+        const procIndex = copy[splitIndex]!.procurementWishs.findIndex((wish) => wish.id === procID)
+        copy[splitIndex]!.procurementWishs[procIndex]!.items[itemIndex]!.overwritenCost = cost
+        return copy
       })
     } else {
-      setUserSplit((prevState) => {
-        return {
-          ...prevState,
-          [userId]: {
-            defaultUserExpences: prevState?.[userId]?.defaultUserExpences || 0,
-            overwritenUserExpences: cost,
-          },
-        }
+      setSplit((oldSplit) => {
+        const copy = [...oldSplit]
+        const splitIndex = copy.findIndex((split) => split.user === userId)
+        const procIndex = copy[splitIndex]!.procurementWishs.findIndex((wish) => wish.id === procID)
+        copy[splitIndex]!.procurementWishs[procIndex]!.items[itemIndex]!.overwritenCost = undefined
+        return copy
       })
     }
+    updateFinalCost()
   }
 
-  useEffect(() => {
-    if (userSplit === undefined) return
+  const updateFinalCost = () => {
+    setSplit((oldSplit) => {
+      let overwrittenItems = 0
+      let overwrittenItemsSum = 0
 
-    const tempUserCost: { [key: Tid]: number } = {}
-    const overwritenUsers = Object.values(userSplit).filter(
-      (user) => user.overwritenUserExpences !== undefined
-    )
-    const remainingItemCount = Object.entries(userSplit).reduce(
-      (acc, [userID, userValue], index) => {
-        const userItemCount = userItemList[userID]?.items.length ?? 0
-        return acc + (userValue.overwritenUserExpences === undefined ? userItemCount : 0)
-      },
-      0
-    )
-
-    const remainingAmount =
-      totalAmount -
-      Object.values(userSplit).reduce((acc, user) => acc + (user.overwritenUserExpences ?? 0), 0)
-
-    const remainingCostPerItem =
-      remainingAmount / (totalUsers - overwritenUsers.length) / remainingItemCount
-
-    for (const [userId, data] of Object.entries(userSplit)) {
-      if (data.overwritenUserExpences !== undefined) {
-        tempUserCost[userId] = data.overwritenUserExpences
-      } else {
-        tempUserCost[userId] = remainingCostPerItem * (userItemList[userId]?.items.length ?? 1)
+      for (const userContent of oldSplit) {
+        for (const proc of userContent.procurementWishs) {
+          for (const item of proc.items) {
+            if (item.overwritenCost !== undefined) {
+              overwrittenItemsSum += item.overwritenCost
+              overwrittenItems += 1
+            }
+          }
+        }
       }
-    }
-    setUserCost({ ...tempUserCost })
-  }, [userSplit, totalAmount, totalUsers, userItemList])
-
-  const allUsersOverwritten =
-    userSplit != undefined
-      ? Object.values(userSplit).every((user) => user.overwritenUserExpences !== undefined)
-      : false
+      setAllUsersOverwritten(overwrittenItems === totalItems ? overwrittenItemsSum : undefined)
+      const pricePerRemainingItem =
+        (totalAmount - overwrittenItemsSum) / (totalItems - overwrittenItems)
+      const copy = [...oldSplit]
+      for (const [userIndex, userContent] of copy.entries()) {
+        for (const [procIndex, proc] of userContent.procurementWishs.entries()) {
+          for (const [itemIndex, item] of proc.items.entries()) {
+            if (item.overwritenCost !== undefined) {
+              copy[userIndex]!.procurementWishs[procIndex]!.items[itemIndex]!.finalCost =
+                item.overwritenCost
+            } else {
+              copy[userIndex]!.procurementWishs[procIndex]!.items[itemIndex]!.finalCost =
+                pricePerRemainingItem
+            }
+          }
+        }
+      }
+      return copy
+    })
+  }
 
   const closeGroupOrderRequest = api.groupOrders.close.useMutation()
   const closeGroupOrder = () => {
-    if (userCost === undefined) {
-      animate(animationRef, "failure")
-      return
-    }
-    closeGroupOrderRequest.mutate(
-      {
-        groupId: group.id,
-        split: userCost ?? {},
-      },
-      {
-        onError: (error) => {
-          console.error(error)
-          animate(animationRef, "failure")
-        },
-        onSuccess: () => {
-          animate(animationRef, "success")
-        },
-      }
-    )
+    // TODO: adapt API-call
+    // closeGroupOrderRequest.mutate(
+    //   {
+    //     groupId: group.id,
+    //     split: displayedCost ?? {},
+    //   },
+    //   {
+    //     onError: (error) => {
+    //       console.error(error)
+    //       animate(animationRef, "failure")
+    //     },
+    //     onSuccess: () => {
+    //       animate(animationRef, "success")
+    //     },
+    //   }
+    // )
     setTimeout(() => trpcUtils.groupOrders.invalidate(), 50)
   }
 
@@ -180,7 +215,7 @@ const GroupOrderSplit = (props: Props) => {
           <div className="label">
             <span className="label-text">Kosten Gesammt</span>
           </div>
-          {!allUsersOverwritten && (
+          {allUsersOverwritten === undefined && (
             <input
               type="number"
               step={0.01}
@@ -192,10 +227,9 @@ const GroupOrderSplit = (props: Props) => {
               }`}
             />
           )}
-          {allUsersOverwritten && (
+          {allUsersOverwritten !== undefined && (
             <p className="w-full text-warning">
-              Kosten verändert!:{" "}
-              {Object.values(userCost ?? {}).reduce((acc, user) => acc + user, 0)}
+              Kosten verändert!: {allUsersOverwritten?.toFixed(2)}
             </p>
           )}
         </label>
@@ -211,38 +245,40 @@ const GroupOrderSplit = (props: Props) => {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(userItemList).map(([userID, data]) => (
-                <tr key={userID}>
-                  <th>{data.username}</th>
-                  <td>
-                    {data.items.map((item, key) => (
-                      <p key={key}>{item.name}</p>
-                    ))}
-                  </td>
-                  <td>
-                    {userSplit?.[userID]?.overwritenUserExpences === undefined && (
-                      <input
-                        type="number"
-                        disabled
-                        value={userCost?.[userID]?.toFixed(2)}
-                        className={`input-bordered input input-sm w-full max-w-xs ${
-                          userSplit?.[userID]?.overwritenUserExpences === undefined && "red"
-                        }`}
-                      />
-                    )}
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      step={0.01}
-                      min={0}
-                      value={userSplit?.[userID]?.overwritenUserExpences || ""}
-                      onChange={(e) => overwritenUserExpences(e, userID)}
-                      className="input-bordered input input-sm w-full max-w-xs"
-                    />
-                  </td>
-                </tr>
-              ))}
+              {split.map((userContent) =>
+                userContent.procurementWishs.map((proc) =>
+                  proc.items.map((item, itemIndex) => (
+                    <tr key={userContent.user}>
+                      <th>{userItemList[userContent.user]?.username}</th>
+                      <td>{item.item.name}</td>
+                      <td>
+                        <span>{item.finalCost.toFixed(2)}€</span>
+                        <span>
+                          {" "}
+                          +{" "}
+                          {calculateAdditionalPricing(
+                            item.finalCost ?? 0,
+                            item.item.categories
+                          ).toFixed(2)}
+                          €
+                        </span>
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          step={0.01}
+                          min={0}
+                          value={item.overwritenCost || ""}
+                          onChange={(e) =>
+                            overwriteUserExpence(e, userContent.user, proc.id, itemIndex)
+                          }
+                          className="input-bordered input input-sm w-full max-w-xs"
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )
+              )}
             </tbody>
           </table>
         </div>
