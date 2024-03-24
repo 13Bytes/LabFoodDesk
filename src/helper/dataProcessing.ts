@@ -1,14 +1,22 @@
 import type { Category, Item } from "@prisma/client"
+import { Tid } from "./zodTypes"
 
+export const calculateFeesPerCategory = (price: number, categories: Category[]) => {
+  const fees: { categories: { id: Tid; charges: number }[]; total: number } = {
+    categories: [],
+    total: 0,
+  }
+  for (const category of categories) {
+    const fixed = category.markupFixed ?? 0
+    const procentual = (price * (category.markupPercentage ?? 0)) / 100
+    fees.total += fixed + procentual
+    fees.categories.push({ id: category.id, charges: fixed + procentual })
+  }
+  return fees
+}
 
 export const calculateAdditionalPricing = (price: number, categories: Category[]) => {
-    let sum = 0
-    for (const category of categories) {
-        const fixed = category.markupFixed ?? 0
-        const procentual = (price * (category.markupPercentage ?? 0)) / 100
-        sum += fixed + procentual
-    }
-    return sum
+  return calculateFeesPerCategory(price, categories).total
 }
 
 export const calculateAdditionalItemPricing = (item: Item, categories: Category[]) => {

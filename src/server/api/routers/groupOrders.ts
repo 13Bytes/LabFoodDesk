@@ -1,18 +1,17 @@
+import { Prisma } from "@prisma/client"
+import { TRPCError } from "@trpc/server"
+import dayjs from "dayjs"
 import { z } from "zod"
-import { Tid, id } from "~/helper/zodTypes"
-
-import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
-import { prisma } from "~/server/db"
+import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
 import { validationSchema as groupOrderValidationSchema } from "~/components/Forms/AddGrouporderForm"
 import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/Forms/AddGrouporderTemplateForm"
-import dayjs from "dayjs"
-import { checkAccountBacking, verifyAllCategories } from "~/server/helper/dbCallHelper"
-import { TRPCError } from "@trpc/server"
-import { itemRouter } from "./items"
-import { type ProcurementItem, Prisma } from "@prisma/client"
-import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
-import { group } from "console"
-import { calculateAdditionalItemPricing, calculateAdditionalPricing } from "~/helper/dataProcessing"
+import {
+  calculateFeesPerCategory
+} from "~/helper/dataProcessing"
+import { Tid, id } from "~/helper/zodTypes"
+import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
+import { prisma } from "~/server/db"
+import { checkAccountBacking } from "~/server/helper/dbCallHelper"
 
 const pageSize = 20
 export const grouporderRouter = createTRPCRouter({
@@ -242,8 +241,7 @@ export const grouporderRouter = createTRPCRouter({
         })
       }
 
-      const userProcurementWishes: { [key: Tid]: typeof group.procurementWishes } = {}
-
+      const allCategorieFees: { catId: Tid; charges: number; balanceAccountId: Tid }[] = []
       const transactions: Prisma.TransactionCreateInput[] = []
       for (const wish of group.procurementWishes) {
         const splitIndex = split.findIndex((split) => split.user === wish.userId)
@@ -266,7 +264,23 @@ export const grouporderRouter = createTRPCRouter({
                 })
               }
               const item = billingItems[itemIndex]!
-              totalAmount += item.price + calculateAdditionalPricing(item.price, dbItem.categories)
+              const categorieFees = calculateFeesPerCategory(item.price, dbItem.categories)
+              for (const categorie of categorieFees.categories) {
+                const catIndex = allCategorieFees.findIndex((fee) => fee.catId === categorie.id)
+                if (catIndex === -1) {
+                  allCategorieFees.push({
+                    catId: categorie.id,
+                    charges: categorie.charges,
+                    balanceAccountId:
+                      dbItem.categories.find((cat) => cat.id === categorie.id)
+                        ?.markupDestinationId ?? "",
+                  })
+                } else {
+                  allCategorieFees[catIndex]!.charges += categorie.charges
+                }
+              }
+
+              totalAmount += item.price + categorieFees.total
               itemPriceMap.push({ itemId: dbItem.id, price: item.price })
               billingItems.splice(itemIndex, 1)
             }
@@ -299,6 +313,12 @@ export const grouporderRouter = createTRPCRouter({
           where: { id: group.id },
           data: { status: 6, closedBy: { connect: { id: ctx.session.user.id } } },
         }),
+        ...allCategorieFees.map((cat) =>
+          prisma.clearingAccount.update({
+            where: { id: cat.balanceAccountId },
+            data: { balance: { increment: cat.charges } },
+          })
+        ),
       ])
     }),
 
