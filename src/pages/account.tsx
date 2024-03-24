@@ -58,7 +58,7 @@ const AccountPage: NextPage = () => {
                   userData?.balance && userData?.balance > 0 ? "text-green-600" : "text-red-700"
                 }`}
               >
-                {userData?.balance}€
+                {userData?.balance.toFixed(2)}€
               </span>
             </p>
           </div>
@@ -71,11 +71,11 @@ const AccountPage: NextPage = () => {
                   {transactionData?.pages[page]?.items.map((transaction) => (
                     <tr key={transaction.id}>
                       <td key={`${transaction.id}-td1`}>
-                        <span className="font-bold">{transaction.totalAmount}€</span>
+                        <span className="font-bold">{transaction.totalAmount.toFixed(2)}€</span>
                       </td>
                       <td key={`${transaction.id}-td2`}>
                         <span className="pl-8 font-semibold">
-                          {[...transaction.items, ...transaction.procurementItems].map(item => item.name).join(', ') || transaction.note}
+                          {[...transaction.items, ...transaction.procurementItems].map(item => item.item.name).join(', ') || transaction.note}
                         </span>{" "}
                         wurde(n)
                         {transaction.type == 0 && <span className="text-red-700"> gekauft</span>}

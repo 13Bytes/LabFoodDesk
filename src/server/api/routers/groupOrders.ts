@@ -9,7 +9,10 @@ import dayjs from "dayjs"
 import { checkAccountBacking, verifyAllCategories } from "~/server/helper/dbCallHelper"
 import { TRPCError } from "@trpc/server"
 import { itemRouter } from "./items"
-import { type ProcurementItem } from "@prisma/client"
+import { type ProcurementItem, Prisma } from "@prisma/client"
+import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
+import { group } from "console"
+import { calculateAdditionalItemPricing, calculateAdditionalPricing } from "~/helper/dataProcessing"
 
 const pageSize = 20
 export const grouporderRouter = createTRPCRouter({
@@ -43,8 +46,18 @@ export const grouporderRouter = createTRPCRouter({
         ordersCloseAt: "asc",
       },
       include: {
-        orders: { include: { user: { select: { id: true, name: true } }, items: {include: {item: true}} } },
-        procurementWishes: { include: { user: { select: { id: true, name: true } }, items: {include: {categories: true}} } },
+        orders: {
+          include: {
+            user: { select: { id: true, name: true } },
+            items: { include: { item: true } },
+          },
+        },
+        procurementWishes: {
+          include: {
+            user: { select: { id: true, name: true } },
+            items: { include: { categories: true } },
+          },
+        },
       },
     })
     return result
@@ -53,7 +66,7 @@ export const grouporderRouter = createTRPCRouter({
   getLatelyClosed: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.prisma.groupOrder.findMany({
       where: {
-        status: {gt: 5}, // closed, aborted, ...
+        status: { gt: 5 }, // closed, aborted, ...
         ordersClosedAt: {
           gte: dayjs().subtract(21, "days").toDate(),
         },
@@ -62,7 +75,13 @@ export const grouporderRouter = createTRPCRouter({
         ordersCloseAt: "desc",
       },
       include: {
-        orders: { include: { user: { select: { id: true, name: true } }, items: true, procurementItems: true } },
+        orders: {
+          include: {
+            user: { select: { id: true, name: true } },
+            items: { include: { item: true, categories: true } },
+            procurementItems: { include: { item: { include: { categories: true } } } },
+          },
+        },
         procurementWishes: { include: { user: { select: { id: true, name: true } }, items: true } },
         closedBy: { select: { id: true, name: true } },
       },
@@ -206,46 +225,76 @@ export const grouporderRouter = createTRPCRouter({
   }),
 
   close: adminProcedure
-    .input(z.object({ groupId: id, split: z.record(z.number()) }))
+    .input(z.object({ split: splitSubmitSchema, groupId: id }))
     .mutation(async ({ ctx, input }) => {
+      const split = input.split
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
-        include: { orders: true, procurementWishes: { include: { items: true } } },
+        include: {
+          orders: true,
+          procurementWishes: { include: { items: { include: { categories: true } } } },
+        },
       })
-
       if (group.status !== 5) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Orders are not closed yet / or already have been closed" })
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Orders are not closed yet / or already have been closed",
+        })
       }
 
       const userProcurementWishes: { [key: Tid]: typeof group.procurementWishes } = {}
-      for (const wish of group.procurementWishes) {
-        if (Object.keys(userProcurementWishes).includes(wish.userId)) {
-          userProcurementWishes[wish.userId]!.push(wish)
-        } else {
-          userProcurementWishes[wish.userId] = [wish]
-        }
-      }
-      
-      // atomic action:
-      await prisma.$transaction([
-        ...Object.entries(userProcurementWishes).map(([userId, wishs]) => {
-          const items = wishs.reduce(
-            (acc, wish) => [...acc, ...wish.items],
-            [] as ProcurementItem[]
-          )
-          const wishIdObjects = [...items.map((wish) => ({ id: wish.id }))]
 
-          return prisma.transaction.create({
-            data: {
-              user: { connect: { id: userId } },
-              // no "regular" items
-              procurementItems: { connect:  wishIdObjects},
+      const transactions: Prisma.TransactionCreateInput[] = []
+      for (const wish of group.procurementWishes) {
+        const splitIndex = split.findIndex((split) => split.user === wish.userId)
+        if (splitIndex !== -1) {
+          const userSplitSection = split[splitIndex]
+          const userProcBilling = userSplitSection?.procurementWishs.find(
+            (procWish) => procWish.id === wish.id
+          )
+          if (userProcBilling !== undefined) {
+            let totalAmount = 0
+            const billingItems = [...userProcBilling.items] // remove elements from this array to check if all items are billed
+            const itemPriceMap: { itemId: Tid; price: number }[] = []
+            for (const dbItem of wish.items) {
+              const itemIndex = billingItems.findIndex((item) => item.id === dbItem.id)
+              if (itemIndex === -1) {
+                throw new TRPCError({
+                  code: "BAD_REQUEST",
+                  message:
+                    "Item missing at billing! (Seems like a bad internal Error, or a malicious attempt)",
+                })
+              }
+              const item = billingItems[itemIndex]!
+              totalAmount += item.price + calculateAdditionalPricing(item.price, dbItem.categories)
+              itemPriceMap.push({ itemId: dbItem.id, price: item.price })
+              billingItems.splice(itemIndex, 1)
+            }
+            transactions.push({
+              user: { connect: { id: wish.userId } },
+              procurementItems: {
+                create: itemPriceMap.map((item) => ({
+                  item: { connect: { id: item.itemId } },
+                  cost: item.price,
+                })),
+              },
               groupOrder: { connect: { id: group.id } },
               type: 0,
-              totalAmount: input.split[userId] ?? 0,
-            },
-          })
-        }),
+              totalAmount: totalAmount,
+            })
+
+            continue
+          }
+        }
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "User missing at billing! (Seems like a bad internal Error, or a malicious attempt)",
+        })
+      }
+
+      await prisma.$transaction([
+        ...transactions.map((transaction) => prisma.transaction.create({ data: transaction })),
         prisma.groupOrder.update({
           where: { id: group.id },
           data: { status: 6, closedBy: { connect: { id: ctx.session.user.id } } },

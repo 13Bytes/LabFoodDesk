@@ -52,17 +52,17 @@ const GroupOrdersHistory: NextPage = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {group.orders.map((o) => (
-                            <tr key={`${o.id}`}>
+                          {group.orders.map((transaction) => (
+                            <tr key={`${transaction.id}`}>
                               <td>
-                                <p className="font-semibold">{o.user.name}</p>
+                                <p className="font-semibold">{transaction.user.name}</p>
                               </td>
                               <td>
-                                {[...o.items, ...o.procurementItems]
-                                  .map((item) => item.name)
+                                {[...transaction.items, ...transaction.procurementItems]
+                                  .map((item) => item.item.name)
                                   .concat(", ")}
                               </td>
-                              <td>{o.totalAmount}€</td>
+                              <td>{transaction.totalAmount.toFixed(2)}€</td>
                             </tr>
                           ))}
                         </tbody>

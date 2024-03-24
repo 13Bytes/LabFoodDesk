@@ -31,11 +31,11 @@ model Item {
 model ProcurementItem {
     // items must be immutable and shouldn't be deleted (if transactions exists) 
     // - create copy instead and set is_active=false
-    id              String            @id @default(cuid())
+    id              String                   @id @default(cuid())
     name            String
     categories      Category[]
-    is_active       Boolean           @default(true)
-    transactions    Transaction[]
+    is_active       Boolean                  @default(true)
+    transactions    ProcurementItemBilling[]
     ProcurementWish ProcurementWish[]
 }
 
@@ -107,19 +107,28 @@ model ItemCategoryMapping {
     transactionId String
 }
 
+model ProcurementItemBilling {
+    id                String          @id @default(cuid())
+    item              ProcurementItem @relation(fields: [procurementItemId], references: [id])
+    transaction       Transaction     @relation(fields: [transactionId], references: [id])
+    cost              Float // without category-markup
+    procurementItemId String
+    transactionId     String
+}
+
 model Transaction {
-    id                     String                @id @default(cuid())
-    user                   User                  @relation("user", fields: [userId], references: [id], onDelete: Cascade)
+    id                     String                   @id @default(cuid())
+    user                   User                     @relation("user", fields: [userId], references: [id], onDelete: Cascade)
     userId                 String
     items                  ItemCategoryMapping[]
-    procurementItems       ProcurementItem[]
+    procurementItems       ProcurementItemBilling[]
     totalAmount            Float
-    createdAt              DateTime              @default(now())
-    type                   Int                   @default(0) // 0: buy, 1: sell, 2: transfer
-    groupOrder             GroupOrder?           @relation(fields: [groupOrderId], references: [id])
+    createdAt              DateTime                 @default(now())
+    type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer
+    groupOrder             GroupOrder?              @relation(fields: [groupOrderId], references: [id])
     groupOrderId           String?
     //  --- only if transfer (type=2)
-    moneyDestination       User?                 @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
+    moneyDestination       User?                    @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
     moneyDestinationUserId String?
     note                   String?
 }

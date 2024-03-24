@@ -1,12 +1,13 @@
 import type { ProcurementItem } from "@prisma/client"
 import type { inferRouterOutputs } from "@trpc/server"
 import { ChangeEvent, useEffect, useState } from "react"
-import { Tid } from "~/helper/zodTypes"
+import { Tid, id } from "~/helper/zodTypes"
 import type { AppRouter } from "../../server/api/root"
 import { api } from "~/utils/api"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { useRef } from "react"
 import { calculateAdditionalPricing } from "~/helper/dataProcessing"
+import { z } from "zod"
 
 type RouterOutput = inferRouterOutputs<AppRouter>
 
@@ -17,8 +18,29 @@ type UserItemList = {
   }
 }
 
+export const splitSubmitSchema = z.array(
+  z.object({
+    user: id,
+    procurementWishs: z.array(
+      z.object({
+        id: id,
+        items: z.array(
+          z.object({
+            id: id,
+            price: z.number(),
+          })
+        ),
+      })
+    ),
+  })
+)
+
+type SplitSubmit = z.infer<typeof splitSubmitSchema>
+
 type Item =
   RouterOutput["groupOrders"]["getInProgress"][number]["procurementWishes"][number]["items"][number]
+
+// only one entry per user id
 type Split = {
   user: Tid
   procurementWishs: {
@@ -66,18 +88,17 @@ const GroupOrderSplit = (props: Props) => {
     })
     const groupOrderSplit: Split[] = []
     for (const proc of group.procurementWishes) {
-      if (groupOrderSplit.find((split) => split.user === proc.userId)) {
-        groupOrderSplit
-          .find((split) => split.user === proc.userId)
-          ?.procurementWishs.push({
-            id: proc.id,
-            items: proc.items.map((item) => ({
-              item: item,
-              defaultCost: 0,
-              overwritenCost: undefined,
-              finalCost: 0,
-            })),
-          })
+      const splitIndex = groupOrderSplit.findIndex((split) => split.user === proc.userId)
+      if (splitIndex !== -1) {
+        groupOrderSplit[splitIndex]!.procurementWishs.push({
+          id: proc.id,
+          items: proc.items.map((item) => ({
+            item: item,
+            defaultCost: 0,
+            overwritenCost: undefined,
+            finalCost: 0,
+          })),
+        })
       } else {
         groupOrderSplit.push({
           user: proc.userId,
@@ -166,9 +187,11 @@ const GroupOrderSplit = (props: Props) => {
           }
         }
       }
-      setAllUsersOverwritten(overwrittenItems === totalItems ? overwrittenItemsSum : undefined)
+      setAllUsersOverwritten(overwrittenItemsSum > totalAmount ? overwrittenItemsSum : undefined)
       const pricePerRemainingItem =
-        (totalAmount - overwrittenItemsSum) / (totalItems - overwrittenItems)
+        totalAmount - overwrittenItemsSum > 0
+          ? (totalAmount - overwrittenItemsSum) / (totalItems - overwrittenItems)
+          : 0
       const copy = [...oldSplit]
       for (const [userIndex, userContent] of copy.entries()) {
         for (const [procIndex, proc] of userContent.procurementWishs.entries()) {
@@ -189,22 +212,32 @@ const GroupOrderSplit = (props: Props) => {
 
   const closeGroupOrderRequest = api.groupOrders.close.useMutation()
   const closeGroupOrder = () => {
-    // TODO: adapt API-call
-    // closeGroupOrderRequest.mutate(
-    //   {
-    //     groupId: group.id,
-    //     split: displayedCost ?? {},
-    //   },
-    //   {
-    //     onError: (error) => {
-    //       console.error(error)
-    //       animate(animationRef, "failure")
-    //     },
-    //     onSuccess: () => {
-    //       animate(animationRef, "success")
-    //     },
-    //   }
-    // )
+    const splitSubmit: SplitSubmit = split.map((userContent) => ({
+      user: userContent.user,
+      procurementWishs: userContent.procurementWishs.map((proc) => ({
+        id: proc.id,
+        items: proc.items.map((item) => ({
+          id: item.item.id,
+          price: item.finalCost,
+        })),
+      })),
+    }))
+
+    closeGroupOrderRequest.mutate(
+      {
+        groupId: group.id,
+        split: splitSubmit ?? {},
+      },
+      {
+        onError: (error) => {
+          console.error(error)
+          animate(animationRef, "failure")
+        },
+        onSuccess: () => {
+          animate(animationRef, "success")
+        },
+      }
+    )
     setTimeout(() => trpcUtils.groupOrders.invalidate(), 50)
   }
 
@@ -214,24 +247,24 @@ const GroupOrderSplit = (props: Props) => {
         <label className="form-control w-full max-w-xs">
           <div className="label">
             <span className="label-text">Kosten Gesammt</span>
+            {allUsersOverwritten !== undefined && (
+              <span className="label-text text-warning">(verändert)</span>
+            )}
           </div>
-          {allUsersOverwritten === undefined && (
-            <input
-              type="number"
-              step={0.01}
-              min={0}
-              onChange={typeTotalAmount}
-              placeholder="Gesammter Betrag"
-              className={`input-bordered input input-sm  w-full max-w-xs ${
-                Number.isNaN(totalAmount) && "input-error"
-              }`}
-            />
-          )}
-          {allUsersOverwritten !== undefined && (
-            <p className="w-full text-warning">
-              Kosten verändert!: {allUsersOverwritten?.toFixed(2)}
-            </p>
-          )}
+          <input
+            type="number"
+            step={0.01}
+            min={0}
+            onChange={typeTotalAmount}
+            value={
+              allUsersOverwritten === undefined ? totalAmount : allUsersOverwritten?.toFixed(2)
+            }
+            placeholder="Gesammter Betrag"
+            className={`\ input-bordered input  input-sm w-full max-w-xs
+               ${Number.isNaN(totalAmount) && "input-error"} \
+               ${allUsersOverwritten !== undefined && "!input-warning "}`}
+            disabled={allUsersOverwritten !== undefined}
+          />
         </label>
 
         <div className="overflow-x-auto">
@@ -253,7 +286,7 @@ const GroupOrderSplit = (props: Props) => {
                       <td>{item.item.name}</td>
                       <td>
                         <span>{item.finalCost.toFixed(2)}€</span>
-                        <span>
+                        <span className="text-xs">
                           {" "}
                           +{" "}
                           {calculateAdditionalPricing(
