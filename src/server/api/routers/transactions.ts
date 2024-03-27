@@ -28,8 +28,8 @@ export const transactionRouter = createTRPCRouter({
           OR: [{ userId: ctx.session.user.id }, { moneyDestinationUserId: ctx.session.user.id }],
         },
         include: {
-          items: {include: {item: true}},
-          procurementItems: {include: {item: true}},
+          items: {include: {item: {include: {categories: true}}}},
+          procurementItems: {include: {item: {include: {categories: true}}}},
         },
         skip: (page - 1) * pageSize,
         orderBy: {

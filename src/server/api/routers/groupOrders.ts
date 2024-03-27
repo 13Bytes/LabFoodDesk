@@ -266,13 +266,13 @@ export const grouporderRouter = createTRPCRouter({
               const item = billingItems[itemIndex]!
               const categorieFees = calculateFeesPerCategory(item.price, dbItem.categories)
               for (const categorie of categorieFees.categories) {
-                const catIndex = allCategorieFees.findIndex((fee) => fee.catId === categorie.id)
+                const catIndex = allCategorieFees.findIndex((fee) => fee.catId === categorie.categoryId)
                 if (catIndex === -1) {
                   allCategorieFees.push({
-                    catId: categorie.id,
+                    catId: categorie.categoryId,
                     charges: categorie.charges,
                     balanceAccountId:
-                      dbItem.categories.find((cat) => cat.id === categorie.id)
+                      dbItem.categories.find((cat) => cat.id === categorie.categoryId)
                         ?.markupDestinationId ?? "",
                   })
                 } else {

@@ -122,7 +122,7 @@ model Transaction {
     userId                 String
     items                  ItemCategoryMapping[]
     procurementItems       ProcurementItemBilling[]
-    totalAmount            Float
+    totalAmount            Float // without category-markup
     createdAt              DateTime                 @default(now())
     type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer
     groupOrder             GroupOrder?              @relation(fields: [groupOrderId], references: [id])

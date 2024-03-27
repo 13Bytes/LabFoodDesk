@@ -8,9 +8,10 @@ import {
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
 import { createProcItemSchema } from "~/components/Forms/ProcurementItemForm"
-import { Category } from "@prisma/client"
+import { Category, Prisma } from "@prisma/client"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
 import { createItemSchema } from "~/components/Forms/ItemForm"
+import { calculateFeesPerCategory } from "~/helper/dataProcessing"
 
 export const itemRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
@@ -123,7 +124,7 @@ export const itemRouter = createTRPCRouter({
       return item
     }),
 
-    updateProcurementItem: adminProcedure
+  updateProcurementItem: adminProcedure
     .input(createProcItemSchema.extend({ id }))
     .mutation(async ({ ctx, input }) => {
       const categories = await Promise.all(
@@ -156,7 +157,6 @@ export const itemRouter = createTRPCRouter({
     })
   }),
 
-
   getGroupBuyItems: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.item.findMany({
       where: { for_grouporders: true, is_active: true },
@@ -178,12 +178,24 @@ export const itemRouter = createTRPCRouter({
         where: {
           id: input.productID,
         },
-        include: { categories: true },
+        include: { categories: { include: { markupDestination: true } } },
       })
-
-      const totalPrice = product.price
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
+
+      const fees = calculateFeesPerCategory(product.price, product.categories)
+      const totalPrice = product.price + fees.total
       await checkAccountBacking(user, totalPrice)
+
+      
+      const clearingAccountTransactions:Prisma.PrismaPromise<any>[] = []
+      for (const cat of fees.categories) {
+        if (cat.clearingAccountId) {
+          clearingAccountTransactions.push(prisma.clearingAccount.update({
+            where: { id: cat.clearingAccountId },
+            data: { balance: { increment: cat.charges } },
+          }))
+        }
+      }
 
       // atomic action:
       await prisma.$transaction([
@@ -191,18 +203,25 @@ export const itemRouter = createTRPCRouter({
           data: {
             // userId: ctx.session.user.id,
             user: { connect: { id: ctx.session.user.id } },
-            items: { create: [{ 
-              item:{connect: { id: product.id}},
-              categories: { connect: product.categories.map((category) => ({ id: category.id })) },
-            }] },
+            items: {
+              create: [
+                {
+                  item: { connect: { id: product.id } },
+                  categories: {
+                    connect: product.categories.map((category) => ({ id: category.id })),
+                  },
+                },
+              ],
+            },
             type: 0,
-            totalAmount: totalPrice,
+            totalAmount: product.price,
           },
         }),
         prisma.user.update({
           where: { id: ctx.session.user.id },
           data: { balance: { decrement: totalPrice } },
         }),
+        ...clearingAccountTransactions
       ])
     }),
 })
