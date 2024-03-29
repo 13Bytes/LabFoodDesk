@@ -37,6 +37,9 @@ export default function Header() {
               <li>
                 <Link href="/admin/categories">Kategorien</Link>
               </li>
+              <li>
+                <Link href="/admin/procurement">Einkauf</Link>
+              </li>
             </ul>
           </details>
         </li>

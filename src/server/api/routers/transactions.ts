@@ -1,7 +1,14 @@
+import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { id } from "~/helper/zodTypes"
+import { sendMoneyProcurementSchema } from "~/pages/admin/procurement"
 
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc"
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+  adminProcedure,
+} from "~/server/api/trpc"
 import { prisma } from "~/server/db"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
 
@@ -28,8 +35,8 @@ export const transactionRouter = createTRPCRouter({
           OR: [{ userId: ctx.session.user.id }, { moneyDestinationUserId: ctx.session.user.id }],
         },
         include: {
-          items: {include: {item: {include: {categories: true}}}},
-          procurementItems: {include: {item: {include: {categories: true}}}},
+          items: { include: { item: { include: { categories: true } } } },
+          procurementItems: { include: { item: { include: { categories: true } } } },
         },
         skip: (page - 1) * pageSize,
         orderBy: {
@@ -57,7 +64,7 @@ export const transactionRouter = createTRPCRouter({
         where: { id: input.destinationUserId },
       })
 
-      const user = await ctx.prisma.user.findUniqueOrThrow({where: {id: ctx.session.user.id}})
+      const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
       await checkAccountBacking(user, input.amount)
 
       // atomic action:
@@ -80,5 +87,48 @@ export const transactionRouter = createTRPCRouter({
           data: { balance: { increment: input.amount } },
         }),
       ])
+    }),
+
+  sendMoneyProcurement: adminProcedure
+    .input(sendMoneyProcurementSchema)
+    .mutation(async ({ ctx, input }) => {
+      const clearingAccount = await prisma.clearingAccount.findUniqueOrThrow({
+        where: { id: input.sourceClearingAccountId },
+      })
+
+      await prisma.$transaction(
+        async (tx) => {
+          // 1. Decrement amount from the sender.
+          const sender = await tx.clearingAccount.update({
+            data: {
+              balance: {
+                decrement: input.amount,
+              },
+            },
+            where: {
+              id: input.sourceClearingAccountId,
+            },
+          })
+      
+          // 2. Verify that the sender's balance didn't go below zero.
+          if (sender.balance < 0) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "The account hasn't enough credit",
+            })
+          }
+      
+          // 3. Increment the recipient's balance
+          const recipient = await tx.user.update({
+            data: {
+              balance: {
+                increment: input.amount,
+              },
+            },
+            where: {
+              id: input.destinationUserId,
+            },
+          })
+        })
     }),
 })
