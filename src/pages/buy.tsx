@@ -37,7 +37,7 @@ const BuyPage: NextPage = () => {
           <input
             type="text"
             placeholder="Suche"
-            className="input-bordered input w-full max-w-xs"
+            className="input-bordered input w-full max-w-xs m-1"
             onChange={(e) => {
               setSearchString(e.target.value)
             }}

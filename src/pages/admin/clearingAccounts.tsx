@@ -6,6 +6,7 @@ import ActionResponsePopup, {
   animate,
 } from "~/components/General/ActionResponsePopup"
 import { LongRightArrowIcon } from "~/components/Icons/LongRightArrowIcon"
+import ClearingAccountOverview from "~/components/PageComponents/ClearingAccountOverview"
 import { Tid, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
@@ -16,7 +17,7 @@ export const sendMoneyProcurementSchema = z.object({
   note: z.string().optional(),
 })
 
-const ProcurementPage = () => {
+const ClearingAccountPage = () => {
   const animationRef = useRef<AnimationHandle>(null)
 
   const allUserRequest = api.user.getAllUsers.useQuery()
@@ -63,8 +64,12 @@ const ProcurementPage = () => {
 
   return (
     <>
+      <div className="card m-2 flex flex-col bg-base-300 shadow-sm">
+      <ClearingAccountOverview />
+      </div>
+
       <div className="card card-body m-2 flex flex-col bg-base-300 shadow-sm">
-        <h1 className="mb-2 text-lg font-bold">Einkauf vergüten</h1>
+        <h1 className="mb-2 text-lg font-bold">Verrechnungskonto aufwenden</h1>
         <div className="flex flex-row items-center">
           <div>
             <input
@@ -82,12 +87,40 @@ const ProcurementPage = () => {
             type="text"
             className="input-bordered input  ml-4 w-full max-w-xl"
             value={noteSend}
-            placeholder="Was wurde gekauft?"
+            placeholder="Grund für Überweisung?"
             onChange={(e) => setNoteSend(e.target.value)}
           />
         </div>
         <div className="flex flex-row items-center">
-          <span>an</span>
+          <div>
+            <select
+              className="select-bordered select w-full max-w-xs font-bold "
+              id="sel-dest-user"
+              value={
+                !!(allClearingAccountsRequest && allClearingAccountsRequest.data)
+                  ? allClearingAccountsRequest.data.find(
+                      (account) => account.id === selectedOriginClearingAccount
+                    )?.name
+                  : ""
+              }
+              onChange={(e) => {
+                setSelectedOriginClearingAccount(e.target.options[e.target.selectedIndex]?.id)
+              }}
+            >
+              <option key="dis" className="disabled">
+                Verrechnungskonto wählen:
+              </option>
+              {allClearingAccountsRequest.data?.map((account) => {
+                if (account.id !== session.data?.user.id)
+                  return (
+                    <option id={account.id} key={account.id} className="">
+                      {account.name}
+                    </option>
+                  )
+              })}
+            </select>
+          </div>
+
           <div className="mx-3">
             <LongRightArrowIcon />
           </div>
@@ -118,14 +151,14 @@ const ProcurementPage = () => {
               })}
             </select>
           </div>
-          <div className="ml-3">
+        </div>
+        <div>
           <button
             className={`btn ${!correctEntries ? "btn-disabled" : ""}`}
             onClick={() => sendMoneyAction()}
-            >
-            Geld Gutschreiben
+          >
+            Überweisen
           </button>
-            </div>
         </div>
       </div>
 
@@ -134,4 +167,4 @@ const ProcurementPage = () => {
   )
 }
 
-export default ProcurementPage
+export default ClearingAccountPage

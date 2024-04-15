@@ -25,9 +25,17 @@ export default function Header() {
       </li>
       {sessionData?.user.is_admin && (
         <li>
-          <details tabIndex={0}>
+          <details
+            tabIndex={0}
+            onBlur={(e) => {
+              const target = e.currentTarget
+              setTimeout(function () {
+                target.open = false
+              }, 100)
+            }}
+          >
             <summary tabIndex={0}>Admin</summary>
-            <ul>
+            <ul className="z-[100]">
               <li>
                 <Link href="/admin/inventory">Inventar</Link>
               </li>
@@ -38,12 +46,41 @@ export default function Header() {
                 <Link href="/admin/categories">Kategorien</Link>
               </li>
               <li>
+                <Link href="/admin/clearingAccounts">Verrechnungskonten</Link>
+              </li>
+              <li>
                 <Link href="/admin/procurement">Einkauf</Link>
               </li>
             </ul>
           </details>
         </li>
       )}
+      {/* {sessionData?.user.is_admin && (
+        <li>
+          <div tabIndex={0} className="collapse">
+            <div className="collapse-title">Admin 2</div>
+            <div className="collapse-content">
+            <ul className="z-[100]">
+              <li>
+                <Link href="/admin/inventory">Inventar</Link>
+              </li>
+              <li>
+                <Link href="/admin/grouporders">Gruppenbestellungen</Link>
+              </li>
+              <li>
+                <Link href="/admin/categories">Kategorien</Link>
+              </li>
+              <li>
+                <Link href="/admin/clearingAccounts">Verrechnungskonten</Link>
+              </li>
+              <li>
+                <Link href="/admin/procurement">Einkauf</Link>
+              </li>
+            </ul>
+            </div>
+          </div>
+        </li>
+      )} */}
     </>
   )
 

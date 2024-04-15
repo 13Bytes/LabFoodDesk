@@ -2,10 +2,10 @@
 A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## ToDo
-- Gruppenbestellung: Kosten einem gutschreiben
-- Ofensteuer (und andere Buffer für zB Spezi)
-- Verrechnungskonto an jemanden Überweisen
 - generell Möglichkeit Einkäufe zu tätigen (zB Spezi kaufen gehen)
+    - procurement: fix api-call so user gets just the money, without any debt elsewhere
+- Gruppenbestellung: Kosten einem gutschreiben
+- Verrechnungskonto an jemanden Überweisen
 - Error-Messages zu allen Forms adden
 - Logs wer was eingetragen hat
 - Gruppenbestellung bearbeiten

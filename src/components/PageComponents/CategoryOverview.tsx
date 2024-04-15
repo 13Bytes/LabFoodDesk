@@ -8,7 +8,7 @@ import CategoryForm from "../Forms/CategoryForm"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { TrashIcon } from "../Icons/TrashIcon"
 
-const ClearingAccountOverview = () => {
+const CategoryOverview = () => {
   const allItemsRequest = api.category.getAll.useQuery()
   const deleteRequest = api.category.delete.useMutation()
   const [openAddItemModal, setOpenAddItemModal] = useState(false)
@@ -117,4 +117,4 @@ const ClearingAccountOverview = () => {
   )
 }
 
-export default ClearingAccountOverview
+export default CategoryOverview

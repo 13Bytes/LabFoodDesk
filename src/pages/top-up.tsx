@@ -14,8 +14,14 @@ const TopUp: NextPage = () => {
       <CenteredPage>
         {allowedOverdraftUserIds?.includes(sessionUser?.id || "x") ? (
           <>
-            <h3 className="self-start text-xl">Geld bekommen von</h3>
-            <SendMoney comment="Einzahlung"/>
+            <div className="my-2">
+              <h3 className="text-2xl">Überweisung</h3>
+              <p className="text-sm font-light">
+                Wenn du von einem Nutzenden Bargeld bekommst, kannst du hier den entsprechenden
+                Betrag an ihn übertragen.
+              </p>
+            </div>
+            <SendMoney comment="Einzahlung" sendDescription="Übertragen" />
           </>
         ) : (
           <>
@@ -23,19 +29,21 @@ const TopUp: NextPage = () => {
             <div>
               <div className="alert alert-info">
                 <InfoIcon />
-                <span>
-                  Du kannst einem der folgenden tollen Menschen Geld geben (und diese schreiben es dir dann gut)
-                </span>
+                <div>
+                  <div className="text-xs">LabEats basiert auf Prepaid-Guthaben.</div>
+                  <h3 className="">
+                    Du kannst einem der folgenden tollen Menschen Geld geben (und diese schreiben es
+                    dann deinem Konto gut):
+                  </h3>
+                  <ul className="mt-1 list-none">
+                    {userWithAllowOverdrawRequest.data?.map((user, index) => (
+                      <li key={index}>
+                        - <span className="font-bold">{user.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-            <div>
-              <ul className="mt-6 list-none">
-                {userWithAllowOverdrawRequest.data?.map((user, index) => (
-                  <li key={index}>
-                    an <span className="font-bold">{user.name}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           </>
         )}

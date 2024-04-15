@@ -73,7 +73,7 @@ const SplitPage: NextPage = () => {
                   <tr key={user.id}>
                     <th>{user.name}</th>
                     <td className={`${user.balance >= 0 ? "text-green-600" : "text-red-700"}`}>
-                      {user.balance}€
+                      {user.balance.toFixed(2)}€
                     </td>
                   </tr>
                 ))}

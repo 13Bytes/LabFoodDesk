@@ -8,6 +8,7 @@ import { api } from "~/utils/api"
 
 type Props = {
   comment?: string
+  sendDescription?: string
 }
 
 const SendMoney = (props: Props) => {
@@ -104,7 +105,7 @@ const SendMoney = (props: Props) => {
               className={`btn ml-5 ${!selectedDestinationUser ? "btn-disabled" : ""}`}
               onClick={() => sendMoneyAction()}
             >
-              Senden
+              {props.sendDescription ?? 'Senden'}
             </button>
           </div>
         </div>
