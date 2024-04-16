@@ -31,6 +31,7 @@ const CategorySelector = (props: Props) => {
                   onChange={onChange}
                   isMulti={true}
                   onBlur={onBlur}
+                  // @typescript-eslint/no-unsafe-assignment
                   value={value}
                   name={name}
                   ref={ref}

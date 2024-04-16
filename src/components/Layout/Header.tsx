@@ -55,32 +55,6 @@ export default function Header() {
           </details>
         </li>
       )}
-      {/* {sessionData?.user.is_admin && (
-        <li>
-          <div tabIndex={0} className="collapse">
-            <div className="collapse-title">Admin 2</div>
-            <div className="collapse-content">
-            <ul className="z-[100]">
-              <li>
-                <Link href="/admin/inventory">Inventar</Link>
-              </li>
-              <li>
-                <Link href="/admin/grouporders">Gruppenbestellungen</Link>
-              </li>
-              <li>
-                <Link href="/admin/categories">Kategorien</Link>
-              </li>
-              <li>
-                <Link href="/admin/clearingAccounts">Verrechnungskonten</Link>
-              </li>
-              <li>
-                <Link href="/admin/procurement">Einkauf</Link>
-              </li>
-            </ul>
-            </div>
-          </div>
-        </li>
-      )} */}
     </>
   )
 

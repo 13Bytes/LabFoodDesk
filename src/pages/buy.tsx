@@ -2,7 +2,6 @@ import { type NextPage } from "next"
 import { useRef, useState } from "react"
 import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
-import CenteredPage from "~/components/Layout/CenteredPage"
 import { api } from "~/utils/api"
 
 const BuyPage: NextPage = () => {

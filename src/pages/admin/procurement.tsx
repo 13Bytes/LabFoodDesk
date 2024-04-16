@@ -10,7 +10,6 @@ import { Tid, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 export const sendMoneyProcurementSchema = z.object({
-  sourceClearingAccountId: id,
   destinationUserId: id,
   amount: z.number(),
   note: z.string().optional(),
@@ -30,8 +29,6 @@ const ProcurementPage = () => {
   const [selectedOriginClearingAccount, setSelectedOriginClearingAccount] = useState<Tid>()
   const [noteSend, setNoteSend] = useState<string>()
 
-  const correctEntries = !!selectedDestinationUser && !!selectedOriginClearingAccount
-
   const apiSendMoneyForProcurement = api.transaction.sendMoneyProcurement.useMutation()
   const resetEntries = () => {
     setAmountSend(1)
@@ -40,7 +37,9 @@ const ProcurementPage = () => {
     setNoteSend("")
   }
 
-  const sendMoneyAction = async () => {
+  const correctEntries = !!selectedDestinationUser
+
+  const procuremenntAction = async () => {
     if (!correctEntries) {
       animate(animationRef, "failure")
       return
@@ -49,7 +48,6 @@ const ProcurementPage = () => {
       .mutateAsync({
         amount: amountSend,
         destinationUserId: selectedDestinationUser!,
-        sourceClearingAccountId: selectedOriginClearingAccount!,
         note: noteSend,
       })
       .then(() => {
@@ -108,24 +106,21 @@ const ProcurementPage = () => {
               <option key="dis" className="disabled">
                 User wählen:
               </option>
-              {allUserRequest.data?.map((user) => {
-                if (user.id !== session.data?.user.id)
-                  return (
-                    <option id={user.id} key={user.id} className="">
-                      {user.name}
-                    </option>
-                  )
-              })}
+              {allUserRequest.data?.map((user) => (
+                <option id={user.id} key={user.id} className="">
+                  {user.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="ml-3">
-          <button
-            className={`btn ${!correctEntries ? "btn-disabled" : ""}`}
-            onClick={() => sendMoneyAction()}
+            <button
+              className={`btn ${!correctEntries ? "btn-disabled" : ""}`}
+              onClick={() => procuremenntAction()}
             >
-            Geld Gutschreiben
-          </button>
-            </div>
+              Geld Gutschreiben
+            </button>
+          </div>
         </div>
       </div>
 

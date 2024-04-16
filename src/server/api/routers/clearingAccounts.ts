@@ -1,6 +1,8 @@
 import { TRPCError } from "@trpc/server"
 import { validationSchema as clearingAccountValidationSchema } from "~/components/Forms/ClearingAccountForm"
 import { id, idObj } from "~/helper/zodTypes"
+import { sendMoneyFromClearingAccountSchema } from "~/pages/admin/clearingAccounts"
+import { sendMoneyProcurementSchema } from "~/pages/admin/procurement"
 import {
   adminProcedure,
   createTRPCRouter,
@@ -35,5 +37,48 @@ export const clearingAccountRouter = createTRPCRouter({
     const {id, ...data} = input
     const account = await ctx.prisma.clearingAccount.update({where: {id: input.id}, data })
     return account
+  }),
+
+  sendMoneyFromClearingAccount: adminProcedure
+  .input(sendMoneyFromClearingAccountSchema)
+  .mutation(async ({ ctx, input }) => {
+    const clearingAccount = await ctx.prisma.clearingAccount.findUniqueOrThrow({
+      where: { id: input.sourceClearingAccountId },
+    })
+
+    await ctx.prisma.$transaction(
+      async (tx) => {
+        // 1. Decrement amount from the sender.
+        const sender = await tx.clearingAccount.update({
+          data: {
+            balance: {
+              decrement: input.amount,
+            },
+          },
+          where: {
+            id: input.sourceClearingAccountId,
+          },
+        })
+    
+        // 2. Verify that the sender's balance didn't go below zero.
+        if (sender.balance < 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "The account hasn't enough credit",
+          })
+        }
+    
+        // 3. Increment the recipient's balance
+        const recipient = await tx.user.update({
+          data: {
+            balance: {
+              increment: input.amount,
+            },
+          },
+          where: {
+            id: input.destinationUserId,
+          },
+        })
+      })
   }),
 })

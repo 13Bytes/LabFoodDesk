@@ -32,7 +32,8 @@ export const transactionRouter = createTRPCRouter({
       const items = await ctx.prisma.transaction.findMany({
         take: pageSize + 1, // get an extra item at the end which we'll use as next cursor
         where: {
-          OR: [{ userId: ctx.session.user.id }, { moneyDestinationUserId: ctx.session.user.id }],
+          // userId with type 3 not shown, as user only created tranasaction, but has no monetarian stake
+          OR: [{ userId: ctx.session.user.id,  type: {lte: 2 } }, {moneyDestinationUserId: ctx.session.user.id}],   
         },
         include: {
           items: { include: { item: { include: { categories: true } } } },
@@ -92,43 +93,26 @@ export const transactionRouter = createTRPCRouter({
   sendMoneyProcurement: adminProcedure
     .input(sendMoneyProcurementSchema)
     .mutation(async ({ ctx, input }) => {
-      const clearingAccount = await prisma.clearingAccount.findUniqueOrThrow({
-        where: { id: input.sourceClearingAccountId },
-      })
-
-      await prisma.$transaction(
-        async (tx) => {
-          // 1. Decrement amount from the sender.
-          const sender = await tx.clearingAccount.update({
-            data: {
-              balance: {
-                decrement: input.amount,
-              },
+      await ctx.prisma.$transaction(async (tx) => {
+        const recipient = await tx.user.update({
+          data: {
+            balance: {
+              increment: input.amount,
             },
-            where: {
-              id: input.sourceClearingAccountId,
-            },
-          })
-      
-          // 2. Verify that the sender's balance didn't go below zero.
-          if (sender.balance < 0) {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "The account hasn't enough credit",
-            })
-          }
-      
-          // 3. Increment the recipient's balance
-          const recipient = await tx.user.update({
-            data: {
-              balance: {
-                increment: input.amount,
-              },
-            },
-            where: {
-              id: input.destinationUserId,
-            },
-          })
+          },
+          where: {
+            id: input.destinationUserId,
+          },
         })
+        await tx.transaction.create({
+          data: {
+            totalAmount: input.amount,
+            type: 3,
+            moneyDestination: { connect: { id: recipient.id } },
+            note: input.note,
+            user: { connect: { id: ctx.session.user.id } },
+          },
+        })
+      })
     }),
 })

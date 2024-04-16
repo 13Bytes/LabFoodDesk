@@ -10,7 +10,7 @@ import ClearingAccountOverview from "~/components/PageComponents/ClearingAccount
 import { Tid, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
-export const sendMoneyProcurementSchema = z.object({
+export const sendMoneyFromClearingAccountSchema = z.object({
   sourceClearingAccountId: id,
   destinationUserId: id,
   amount: z.number(),
@@ -33,7 +33,7 @@ const ClearingAccountPage = () => {
 
   const correctEntries = !!selectedDestinationUser && !!selectedOriginClearingAccount
 
-  const apiSendMoneyForProcurement = api.transaction.sendMoneyProcurement.useMutation()
+  const apiSendMoneyForProcurement = api.clearingAccount.sendMoneyFromClearingAccount.useMutation()
   const resetEntries = () => {
     setAmountSend(1)
     setSelectedDestinationUser("")

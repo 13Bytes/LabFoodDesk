@@ -118,13 +118,13 @@ model ProcurementItemBilling {
 
 model Transaction {
     id                     String                   @id @default(cuid())
-    user                   User                     @relation("user", fields: [userId], references: [id], onDelete: Cascade)
+    user                   User                     @relation("user", fields: [userId], references: [id], onDelete: NoAction)
     userId                 String
     items                  ItemCategoryMapping[]
     procurementItems       ProcurementItemBilling[]
     totalAmount            Float // without category-markup
     createdAt              DateTime                 @default(now())
-    type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer
+    type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer, 3: procurement
     groupOrder             GroupOrder?              @relation(fields: [groupOrderId], references: [id])
     groupOrderId           String?
     //  --- only if transfer (type=2)

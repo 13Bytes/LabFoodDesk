@@ -89,7 +89,7 @@ const AccountPage: NextPage = () => {
                         {getTransactionFees(transaction) > 0 && (
                           <span className="text-sm font-extralight">
                             {" "}
-                            +{getTransactionFees(transaction)}€
+                            +{getTransactionFees(transaction).toFixed(2)}€
                           </span>
                         )}
                       </td>
@@ -108,6 +108,8 @@ const AccountPage: NextPage = () => {
                         {transaction.type == 2 && !userIsTransactionDestination(transaction) && (
                           <span className="text-red-700"> überwiesen</span>
                         )}{" "}
+                        {transaction.type == 3 && <span className="text-green-600"> gutgeschrieben</span>}
+                        {" "}
                         am {transaction.createdAt.toISOString().split("T")[0]}
                       </td>
                     </tr>
