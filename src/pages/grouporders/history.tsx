@@ -52,7 +52,7 @@ const GroupOrdersHistory: NextPage = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {group.orders.map((transaction) => (
+                          {group.orders.map((transaction) => { if (transaction.type < 3) { return(
                             <tr key={`${transaction.id}`}>
                               <td>
                                 <p className="font-semibold">{transaction.user.name}</p>
@@ -64,13 +64,19 @@ const GroupOrdersHistory: NextPage = () => {
                               </td>
                               <td>{transaction.totalAmount.toFixed(2)}€</td>
                             </tr>
-                          ))}
+                          )}
+                          else{
+                            return null
+                          }})}
                         </tbody>
                       </table>
                     </div>
                   </div>
                   <div className="flex justify-end px-3">
+                    <div className="flex flex-col items-end">
                     <p className="text-xs">Abgerechnet durch <span className="font-semibold">{group.closedBy?.name}</span></p>
+                    <p className="text-xs">Gutschrift an <span className="font-semibold">{group.orders.find(order => order.type === 3)?.moneyDestination?.name ?? "LabEats"}</span></p>
+                    </div>
                   </div>
                 </div>
               </div>

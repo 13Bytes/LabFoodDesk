@@ -40,12 +40,16 @@ const Me: NextPage = () => {
         </button>
       </form>
 
-      <div className="pt-10">
-        <p className="font-bold">Debugging sessionData</p>
-        {sessionData && JSON.stringify(sessionData)}
+      <div className="collapse mt-100">
+        <input type="checkbox" />
+        <div className="collapse-title text-sm font-medium">Debugging infos</div>
+        <div className="collapse-content">
+          <p className="font-bold">Debugging sessionData</p>
+          {sessionData && JSON.stringify(sessionData)}
 
-        <p className="font-bold">Debugging userData</p>
-        {userData && JSON.stringify(userData)}
+          <p className="font-bold">Debugging userData</p>
+          {userData && JSON.stringify(userData)}
+        </div>
       </div>
     </CenteredPage>
   )

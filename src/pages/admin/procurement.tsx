@@ -94,20 +94,16 @@ const ProcurementPage = () => {
             <select
               className="select-bordered select w-full max-w-xs font-bold "
               id="sel-dest-user"
-              value={
-                !!(selectedDestinationUser && allUserRequest.data)
-                  ? allUserRequest.data.find((user) => user.id === selectedDestinationUser)!.name!
-                  : ""
-              }
+              value={selectedDestinationUser}
               onChange={(e) => {
-                setSelectedDestinationUser(e.target.options[e.target.selectedIndex]?.id)
+                setSelectedDestinationUser(e.target.value)
               }}
             >
-              <option key="dis" className="disabled">
+              <option key="dis" value="" className="disabled">
                 User wählen:
               </option>
               {allUserRequest.data?.map((user) => (
-                <option id={user.id} key={user.id} className="">
+                <option value={user.id} key={user.id} className="">
                   {user.name}
                 </option>
               ))}

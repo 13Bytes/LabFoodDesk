@@ -8,6 +8,7 @@ import ActionResponsePopup, { AnimationHandle, animate } from "../General/Action
 import { useRef } from "react"
 import { calculateAdditionalPricing } from "~/helper/dataProcessing"
 import { z } from "zod"
+import { LongRightArrowIcon } from "../Icons/LongRightArrowIcon"
 
 type RouterOutput = inferRouterOutputs<AppRouter>
 
@@ -64,10 +65,15 @@ const GroupOrderSplit = (props: Props) => {
   const trpcUtils = api.useContext()
   const animationRef = useRef<AnimationHandle>(null)
 
+  const allUserRequest = api.user.getAllUsers.useQuery()
+
   const [itemList, setItemList] = useState<ProcurementItem[]>([])
   const [userItemList, setUserItemList] = useState<UserItemList>({})
   const [split, setSplit] = useState<Split[]>([])
   const [allUsersOverwritten, setAllUsersOverwritten] = useState<number | undefined>()
+
+  const [selectedDestination, setSelectedDestination] = useState<string>("server")
+  const [destinationError, setDestinationError] = useState(false)
 
   // restructure data from group into (user)ItemList
   useEffect(() => {
@@ -212,6 +218,13 @@ const GroupOrderSplit = (props: Props) => {
 
   const closeGroupOrderRequest = api.groupOrders.close.useMutation()
   const closeGroupOrder = () => {
+    if (!selectedDestination) {
+      setDestinationError(true)
+      return
+    }
+    else{
+      setDestinationError(false)
+    }
     const splitSubmit: SplitSubmit = split.map((userContent) => ({
       user: userContent.user,
       procurementWishs: userContent.procurementWishs.map((proc) => ({
@@ -226,6 +239,7 @@ const GroupOrderSplit = (props: Props) => {
     closeGroupOrderRequest.mutate(
       {
         groupId: group.id,
+        destination: selectedDestination,
         split: splitSubmit ?? {},
       },
       {
@@ -305,7 +319,7 @@ const GroupOrderSplit = (props: Props) => {
                           onChange={(e) =>
                             overwriteUserExpence(e, userContent.user, proc.id, itemIndex)
                           }
-                          className="input-bordered input input-sm w-full max-w-xs"
+                          className="input-bordered input input-sm max-w-[6rem]"
                         />
                       </td>
                     </tr>
@@ -315,6 +329,31 @@ const GroupOrderSplit = (props: Props) => {
             </tbody>
           </table>
         </div>
+
+        <div className="mt-6 flex flex-row items-center gap-2">
+          <LongRightArrowIcon />
+          <p>Geld gutschreiben an:</p>
+          <select
+            className={`select-bordered select select-sm w-full max-w-xs font-bold ${
+              destinationError && "select-error"
+            } `}
+            id="sel-dest-user"
+            value={selectedDestination}
+            onChange={(e) => {
+              setSelectedDestination(e.target.value)
+            }}
+          >
+            <option value="server" key="server" className="text-primary">
+              LabEats (Systemuser)
+            </option>
+            {allUserRequest.data?.map((user) => (
+              <option value={user.id} key={user.id} className="">
+                {user.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="flex justify-end">
           <button className="btn-primary btn-sm btn mr-4 mt-1" onClick={closeGroupOrder}>
             Abrechnen

@@ -2,10 +2,7 @@
 A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## ToDo
-- generell Möglichkeit Einkäufe zu tätigen (zB Spezi kaufen gehen)
-    - procurement: fix api-call so user gets just the money, without any debt elsewhere
-- Gruppenbestellung: Kosten einem gutschreiben
-- Verrechnungskonto an jemanden Überweisen
+- ! fix TODO in groupOrders.ts:327  (adapt balance of user for transactions as well as destinationTransaction)
 - Error-Messages zu allen Forms adden
 - Logs wer was eingetragen hat
 - Gruppenbestellung bearbeiten

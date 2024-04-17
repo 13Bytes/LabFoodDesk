@@ -87,9 +87,8 @@ const AccountPage: NextPage = () => {
                       <td key={`${transaction.id}-td1`}>
                         <span className="font-bold">{transaction.totalAmount.toFixed(2)}€</span>
                         {getTransactionFees(transaction) > 0 && (
-                          <span className="text-sm font-extralight">
-                            {" "}
-                            +{getTransactionFees(transaction).toFixed(2)}€
+                          <span className="text-sm font-extralight pl-2">
+                            (ink. {getTransactionFees(transaction).toFixed(2)}€)
                           </span>
                         )}
                       </td>

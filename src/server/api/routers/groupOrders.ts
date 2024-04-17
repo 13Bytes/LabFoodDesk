@@ -5,9 +5,7 @@ import { z } from "zod"
 import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
 import { validationSchema as groupOrderValidationSchema } from "~/components/Forms/AddGrouporderForm"
 import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/Forms/AddGrouporderTemplateForm"
-import {
-  calculateFeesPerCategory
-} from "~/helper/dataProcessing"
+import { calculateFeesPerCategory } from "~/helper/dataProcessing"
 import { Tid, id } from "~/helper/zodTypes"
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
@@ -79,6 +77,7 @@ export const grouporderRouter = createTRPCRouter({
             user: { select: { id: true, name: true } },
             items: { include: { item: true, categories: true } },
             procurementItems: { include: { item: { include: { categories: true } } } },
+            moneyDestination: { select: { id: true, name: true } },
           },
         },
         procurementWishes: { include: { user: { select: { id: true, name: true } }, items: true } },
@@ -224,7 +223,9 @@ export const grouporderRouter = createTRPCRouter({
   }),
 
   close: adminProcedure
-    .input(z.object({ split: splitSubmitSchema, groupId: id }))
+    .input(
+      z.object({ split: splitSubmitSchema, groupId: id, destination: z.union([id, z.string()]) })
+    )
     .mutation(async ({ ctx, input }) => {
       const split = input.split
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
@@ -243,6 +244,7 @@ export const grouporderRouter = createTRPCRouter({
 
       const allCategorieFees: { catId: Tid; charges: number; balanceAccountId: Tid }[] = []
       const transactions: Prisma.TransactionCreateInput[] = []
+      let creditOfDest = 0
       for (const wish of group.procurementWishes) {
         const splitIndex = split.findIndex((split) => split.user === wish.userId)
         if (splitIndex !== -1) {
@@ -266,7 +268,9 @@ export const grouporderRouter = createTRPCRouter({
               const item = billingItems[itemIndex]!
               const categorieFees = calculateFeesPerCategory(item.price, dbItem.categories)
               for (const categorie of categorieFees.categories) {
-                const catIndex = allCategorieFees.findIndex((fee) => fee.catId === categorie.categoryId)
+                const catIndex = allCategorieFees.findIndex(
+                  (fee) => fee.catId === categorie.categoryId
+                )
                 if (catIndex === -1) {
                   allCategorieFees.push({
                     catId: categorie.categoryId,
@@ -279,7 +283,7 @@ export const grouporderRouter = createTRPCRouter({
                   allCategorieFees[catIndex]!.charges += categorie.charges
                 }
               }
-
+              creditOfDest += item.price
               totalAmount += item.price + categorieFees.total
               itemPriceMap.push({ itemId: dbItem.id, price: item.price })
               billingItems.splice(itemIndex, 1)
@@ -307,18 +311,32 @@ export const grouporderRouter = createTRPCRouter({
         })
       }
 
+      const destinationTransaction:Prisma.TransactionCreateInput[] = []
+      if(input.destination !== "server"){
+        const destinationUser = await ctx.prisma.user.findUniqueOrThrow({ where: { id: input.destination } })
+        destinationTransaction.push({
+          user: { connect: { id: ctx.session.user.id} },
+          moneyDestination: { connect: { id: destinationUser.id } },
+          groupOrder: { connect: { id: group.id } },
+          type: 3,
+          totalAmount: creditOfDest,
+        })
+      }
+
       await prisma.$transaction([
-        ...transactions.map((transaction) => prisma.transaction.create({ data: transaction })),
+        // TODO: adapt balance of user for transactions as well as destinationTransaction
         prisma.groupOrder.update({
           where: { id: group.id },
           data: { status: 6, closedBy: { connect: { id: ctx.session.user.id } } },
         }),
+        ...transactions.map((transaction) => prisma.transaction.create({ data: transaction })),
         ...allCategorieFees.map((cat) =>
           prisma.clearingAccount.update({
             where: { id: cat.balanceAccountId },
             data: { balance: { increment: cat.charges } },
           })
         ),
+        ...destinationTransaction.map((transaction) => prisma.transaction.create({ data: transaction })),
       ])
     }),
 

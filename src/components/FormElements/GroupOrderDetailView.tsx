@@ -33,7 +33,7 @@ const GroupOrderDetailView = (props: Props) => {
           <div>
             <div className="flex flex-row flex-wrap gap-2">
               <h2 className="font-bold">Gruppen-Artikel</h2>
-              <table className="table">
+              <table className="table table-sm">
                 <tbody>
                   {group.procurementWishes.map((o) =>
                     o.items.map((item, id) => (

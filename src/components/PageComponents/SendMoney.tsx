@@ -81,18 +81,18 @@ const SendMoney = (props: Props) => {
               id="sel-dest-user"
               value={
                 !!(selectedDestinationUser && allUserRequest.data)
-                  ? allUserRequest.data.find((user) => user.id === selectedDestinationUser)!.name!
+                  ? selectedDestinationUser
                   : "Auswählen:"
               }
               onChange={(e) => {
-                setSelectedDestinationUser(e.target.options[e.target.selectedIndex]?.id)
+                setSelectedDestinationUser(e.target.value)
               }}
             >
               <option key="dis" className="disabled">Auswählen:</option>
               {allUserRequest.data?.map((user) => {
                 if (user.id !== session.data?.user.id)
                   return (
-                    <option id={user.id} key={user.id} className="">
+                    <option value={user.id} key={user.id} className="">
                       {user.name}
                     </option>
                   )

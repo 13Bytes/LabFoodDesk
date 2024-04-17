@@ -55,6 +55,7 @@ const ClearingAccountPage = () => {
       })
       .then(() => {
         animate(animationRef, "success")
+        trpcUtils.clearingAccount.invalidate()
         resetEntries()
       })
       .catch(() => {
@@ -96,24 +97,18 @@ const ClearingAccountPage = () => {
             <select
               className="select-bordered select w-full max-w-xs font-bold "
               id="sel-dest-user"
-              value={
-                !!(allClearingAccountsRequest && allClearingAccountsRequest.data)
-                  ? allClearingAccountsRequest.data.find(
-                      (account) => account.id === selectedOriginClearingAccount
-                    )?.name
-                  : ""
-              }
+              value={selectedOriginClearingAccount}
               onChange={(e) => {
-                setSelectedOriginClearingAccount(e.target.options[e.target.selectedIndex]?.id)
+                setSelectedOriginClearingAccount(e.target.value)
               }}
             >
-              <option key="dis" className="disabled">
+              <option key="dis" value="" className="disabled">
                 Verrechnungskonto wählen:
               </option>
               {allClearingAccountsRequest.data?.map((account) => {
                 if (account.id !== session.data?.user.id)
                   return (
-                    <option id={account.id} key={account.id} className="">
+                    <option value={account.id} key={account.id} className="">
                       {account.name}
                     </option>
                   )
@@ -131,20 +126,20 @@ const ClearingAccountPage = () => {
               id="sel-dest-user"
               value={
                 !!(selectedDestinationUser && allUserRequest.data)
-                  ? allUserRequest.data.find((user) => user.id === selectedDestinationUser)!.name!
+                  ? selectedDestinationUser
                   : ""
               }
               onChange={(e) => {
-                setSelectedDestinationUser(e.target.options[e.target.selectedIndex]?.id)
+                setSelectedDestinationUser(e.target.value)
               }}
             >
-              <option key="dis" className="disabled">
+              <option key="dis" value="" className="disabled">
                 User wählen:
               </option>
               {allUserRequest.data?.map((user) => {
                 if (user.id !== session.data?.user.id)
                   return (
-                    <option id={user.id} key={user.id} className="">
+                    <option value={user.id} key={user.id} className="">
                       {user.name}
                     </option>
                   )
