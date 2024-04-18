@@ -41,7 +41,7 @@ const ClearingAccountPage = () => {
     setNoteSend("")
   }
 
-  const sendMoneyAction = async () => {
+  const sendMoneyAction = () => {
     if (!correctEntries) {
       animate(animationRef, "failure")
       return
@@ -49,13 +49,13 @@ const ClearingAccountPage = () => {
     apiSendMoneyForProcurement
       .mutateAsync({
         amount: amountSend,
-        destinationUserId: selectedDestinationUser!,
-        sourceClearingAccountId: selectedOriginClearingAccount!,
+        destinationUserId: selectedDestinationUser,
+        sourceClearingAccountId: selectedOriginClearingAccount,
         note: noteSend,
       })
       .then(() => {
         animate(animationRef, "success")
-        trpcUtils.clearingAccount.invalidate()
+        void trpcUtils.clearingAccount.invalidate()
         resetEntries()
       })
       .catch(() => {

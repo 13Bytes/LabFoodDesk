@@ -3,7 +3,7 @@ import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import React, { useEffect } from "react"
 import CenteredPage from "~/components/Layout/CenteredPage"
-import { calculateAdditionalItemPricing, calculateAdditionalPricing } from "~/helper/dataProcessing"
+import { calculateAdditionalItemPricing, calculateAdditionalPricing, getTransactionFees } from "~/helper/dataProcessing"
 import { RouterOutputs, api } from "~/utils/api"
 
 const AccountPage: NextPage = () => {
@@ -45,17 +45,7 @@ const AccountPage: NextPage = () => {
     return transaction.moneyDestinationUserId === userData?.id
   }
 
-  const getTransactionFees = (transaction: TransactionData) => {
-    let fees = 0
-    for (const item of transaction.items) {
-      fees += calculateAdditionalItemPricing(item.item, item.item.categories)
-    }
-    for (const procItem of transaction.procurementItems) {
-      procItem.cost
-      fees += calculateAdditionalPricing(procItem.cost, procItem.item.categories)
-    }
-    return fees
-  }
+
 
   return (
     <>
@@ -88,7 +78,7 @@ const AccountPage: NextPage = () => {
                         <span className="font-bold">{transaction.totalAmount.toFixed(2)}€</span>
                         {getTransactionFees(transaction) > 0 && (
                           <span className="text-sm font-extralight pl-2">
-                            (ink. {getTransactionFees(transaction).toFixed(2)}€)
+                            + {getTransactionFees(transaction).toFixed(2)}€
                           </span>
                         )}
                       </td>

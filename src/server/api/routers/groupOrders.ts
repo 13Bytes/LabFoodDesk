@@ -5,7 +5,7 @@ import { z } from "zod"
 import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
 import { validationSchema as groupOrderValidationSchema } from "~/components/Forms/AddGrouporderForm"
 import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/Forms/AddGrouporderTemplateForm"
-import { calculateFeesPerCategory } from "~/helper/dataProcessing"
+import { calculateFeesPerCategory, getTransactionFees } from "~/helper/dataProcessing"
 import { Tid, id } from "~/helper/zodTypes"
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
@@ -243,7 +243,7 @@ export const grouporderRouter = createTRPCRouter({
       }
 
       const allCategorieFees: { catId: Tid; charges: number; balanceAccountId: Tid }[] = []
-      const transactions: Prisma.TransactionCreateInput[] = []
+      const transactions: { transaction: Prisma.TransactionCreateInput; totalAmountWithCat: number }[] = []
       let creditOfDest = 0
       for (const wish of group.procurementWishes) {
         const splitIndex = split.findIndex((split) => split.user === wish.userId)
@@ -254,6 +254,7 @@ export const grouporderRouter = createTRPCRouter({
           )
           if (userProcBilling !== undefined) {
             let totalAmount = 0
+            let totalAmountWithCat = 0
             const billingItems = [...userProcBilling.items] // remove elements from this array to check if all items are billed
             const itemPriceMap: { itemId: Tid; price: number }[] = []
             for (const dbItem of wish.items) {
@@ -284,21 +285,25 @@ export const grouporderRouter = createTRPCRouter({
                 }
               }
               creditOfDest += item.price
-              totalAmount += item.price + categorieFees.total
+              totalAmount += item.price
+              totalAmountWithCat += item.price + categorieFees.total
               itemPriceMap.push({ itemId: dbItem.id, price: item.price })
               billingItems.splice(itemIndex, 1)
             }
             transactions.push({
-              user: { connect: { id: wish.userId } },
-              procurementItems: {
-                create: itemPriceMap.map((item) => ({
-                  item: { connect: { id: item.itemId } },
-                  cost: item.price,
-                })),
+              transaction: {
+                user: { connect: { id: wish.userId } },
+                procurementItems: {
+                  create: itemPriceMap.map((item) => ({
+                    item: { connect: { id: item.itemId } },
+                    cost: item.price,
+                  })),
+                },
+                groupOrder: { connect: { id: group.id } },
+                type: 0,
+                totalAmount: totalAmount,
               },
-              groupOrder: { connect: { id: group.id } },
-              type: 0,
-              totalAmount: totalAmount,
+              totalAmountWithCat,
             })
 
             continue
@@ -311,33 +316,60 @@ export const grouporderRouter = createTRPCRouter({
         })
       }
 
-      const destinationTransaction:Prisma.TransactionCreateInput[] = []
-      if(input.destination !== "server"){
-        const destinationUser = await ctx.prisma.user.findUniqueOrThrow({ where: { id: input.destination } })
-        destinationTransaction.push({
-          user: { connect: { id: ctx.session.user.id} },
-          moneyDestination: { connect: { id: destinationUser.id } },
-          groupOrder: { connect: { id: group.id } },
-          type: 3,
-          totalAmount: creditOfDest,
-        })
-      }
-
-      await prisma.$transaction([
-        // TODO: adapt balance of user for transactions as well as destinationTransaction
-        prisma.groupOrder.update({
-          where: { id: group.id },
-          data: { status: 6, closedBy: { connect: { id: ctx.session.user.id } } },
-        }),
-        ...transactions.map((transaction) => prisma.transaction.create({ data: transaction })),
-        ...allCategorieFees.map((cat) =>
-          prisma.clearingAccount.update({
+      await ctx.prisma.$transaction(async (tx) => {
+        // create transactions and update user balances
+        for (const transaction of transactions) {
+          const finishedTransaction = await tx.transaction.create({ data: transaction.transaction })
+          await tx.user.update({
+            data: {
+              balance: {
+                decrement: transaction.totalAmountWithCat,
+              },
+            },
+            where: {
+              id: finishedTransaction.userId,
+            },
+          })
+        }
+        // add money to clearing-account
+        for (const cat of allCategorieFees) {
+          await tx.clearingAccount.update({
             where: { id: cat.balanceAccountId },
             data: { balance: { increment: cat.charges } },
           })
-        ),
-        ...destinationTransaction.map((transaction) => prisma.transaction.create({ data: transaction })),
-      ])
+        }
+
+        if (input.destination !== "server") {
+          const destinationUser = await ctx.prisma.user.findUniqueOrThrow({
+            where: { id: input.destination },
+          })
+          // Compensate destination-user
+          await tx.transaction.create({
+            data: {
+              user: { connect: { id: ctx.session.user.id } },
+              moneyDestination: { connect: { id: destinationUser.id } },
+              groupOrder: { connect: { id: group.id } },
+              type: 3,
+              totalAmount: creditOfDest,
+            },
+          })
+          await tx.user.update({
+            data: {
+              balance: {
+                increment: creditOfDest,
+              },
+            },
+            where: {
+              id: destinationUser.id,
+            },
+          })
+        }
+        // close group order (by setting status)
+        await tx.groupOrder.update({
+          where: { id: group.id },
+          data: { status: 6, closedBy: { connect: { id: ctx.session.user.id } } },
+        })
+      })
     }),
 
   getAllTemplates: protectedProcedure.query(async ({ ctx }) => {
