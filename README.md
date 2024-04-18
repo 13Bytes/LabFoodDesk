@@ -2,12 +2,12 @@
 A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## ToDo
-- ! fix TODO in groupOrders.ts:327  (adapt balance of user for transactions as well as destinationTransaction)
 - Error-Messages zu allen Forms adden
 - Logs wer was eingetragen hat
 - Gruppenbestellung bearbeiten
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?
+- LDAP-integration
 #### Nice Improveents:
 - the check if account is covered is prone to simultaneous requests (the actual credit of course not)
 
