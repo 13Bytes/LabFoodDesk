@@ -1,12 +1,12 @@
-import { User } from "@prisma/client"
-import { TRPCClientErrorLike } from "@trpc/client"
-import { group } from "console"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { useRef, useState } from "react"
 import GroupOrderDetailView from "~/components/FormElements/GroupOrderDetailView"
-import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
+import ActionResponsePopup, {
+  type AnimationHandle,
+  animate,
+} from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
 import ItemCard from "~/components/General/ItemCard"
 
@@ -22,7 +22,7 @@ const GroupOrders: NextPage = () => {
   const groupOrderRequest = api.groupOrders.getRelevant.useQuery()
   const groupOrdersInProgress = api.groupOrders.getInProgress.useQuery()
   const groupOrderItems = api.item.getGroupBuyItems.useQuery()
-  const groupOrderPocurementItems = api.item.getGroupBuyProcurementItems.useQuery()
+  const groupOrderProcurementItems = api.item.getGroupBuyProcurementItems.useQuery()
   const buyItemRequest = api.groupOrders.buyGroupOrderItem.useMutation()
   const procureItemRequest = api.groupOrders.procureGroupOrderItem.useMutation()
   const stopOrderRequest = api.groupOrders.stopOrders.useMutation()
@@ -48,7 +48,7 @@ const GroupOrders: NextPage = () => {
         {
           onError: (error) => {
             console.error(error)
-            animate(animationRef, "failure")
+            animate(animationRef, "failure", error.message)
           },
           onSuccess: () => {
             animate(animationRef, "success")
@@ -61,7 +61,7 @@ const GroupOrders: NextPage = () => {
         {
           onError: (error) => {
             console.error(error)
-            animate(animationRef, "failure")
+            animate(animationRef, "failure", error.message)
           },
           onSuccess: () => {
             animate(animationRef, "success")
@@ -78,7 +78,7 @@ const GroupOrders: NextPage = () => {
       <CenteredPage>
         <div className="container">
           {groupOrdersInProgress.data?.map((group) => (
-           <GroupOrderDetailView key={group.id} group={group} />
+            <GroupOrderDetailView key={group.id} group={group} />
           ))}
         </div>
 
@@ -100,7 +100,10 @@ const GroupOrders: NextPage = () => {
                 </div>
 
                 <div className="flex flex-row  justify-between">
-                  <button className="btn-primary btn btn-sm mt-7" onClick={() => joinGroupOrder(group.id)}>
+                  <button
+                    className="btn-primary btn-sm btn mt-7"
+                    onClick={() => joinGroupOrder(group.id)}
+                  >
                     {group.orders.some((order) => order.userId === sessionUser?.id) ||
                     group.procurementWishes.some((wish) => wish.userId === sessionUser?.id)
                       ? "Bestellung erweitern"
@@ -124,14 +127,15 @@ const GroupOrders: NextPage = () => {
         </div>
 
         <div className="container ">
-        <Link href="/grouporders/history" role="button" className="btn btn-ghost">History</Link>
+          <Link href="/grouporders/history" role="button" className="btn-ghost btn">
+            History
+          </Link>
         </div>
-
       </CenteredPage>
 
       <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-9/12 !max-w-5xl pr-10">
         <div className="flex flex-row flex-wrap gap-4">
-          {groupOrderPocurementItems.data?.map((item) => (
+          {groupOrderProcurementItems.data?.map((item) => (
             <ItemCard
               id={item.id}
               key={item.id}

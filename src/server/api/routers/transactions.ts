@@ -5,7 +5,6 @@ import { sendMoneyProcurementSchema } from "~/pages/admin/procurement"
 
 import {
   createTRPCRouter,
-  publicProcedure,
   protectedProcedure,
   adminProcedure,
 } from "~/server/api/trpc"

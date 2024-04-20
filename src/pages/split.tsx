@@ -1,62 +1,10 @@
 import { type NextPage } from "next"
-import { useSession } from "next-auth/react"
-import { useEffect, useRef, useState } from "react"
-import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import SendMoney from "~/components/PageComponents/SendMoney"
 import { api } from "~/utils/api"
 
 const SplitPage: NextPage = () => {
-  const allItemsRequest = api.item.getAll.useQuery()
-  const allUserRequest = api.user.getAllUsers.useQuery()
   const allBalancesRequest = api.user.getAllBalances.useQuery()
-  const animationRef = useRef<AnimationHandle>(null)
-
-  const trpcUtils = api.useContext()
-
-  const session = useSession()
-  const [amountRec, setAmountRec] = useState<number>(1)
-  const [amountSend, setAmountSend] = useState<number>(1)
-  const [noteRec, setNoteRec] = useState("")
-  const [noteSend, setNoteSend] = useState("")
-  const [selectedDestinationUser, setSelectedDestinationUser] = useState<string>()
-  const [errorMessage, setErrorMessage] = useState("")
-  const checkboxRef = useRef<AnimationHandle>(null)
-
-  const apiBuyOneItem = api.item.buyOneItem.useMutation()
-  const apiSendMoney = api.transaction.sendMoney.useMutation()
-
-  const sendMoneyAction = async () => {
-    if (selectedDestinationUser) {
-      setErrorMessage("")
-      await apiSendMoney.mutateAsync(
-        {
-          amount: amountSend,
-          destinationUserId: selectedDestinationUser,
-          note: noteSend,
-        },
-        {
-          onError: (error) => {
-            console.error(error)
-            animate(animationRef, "failure")
-          },
-          onSuccess: () => {
-            animate(animationRef, "success")
-            setSelectedDestinationUser(undefined)
-            setAmountSend(1)
-            setNoteSend("")
-            trpcUtils.user.getAllBalances.invalidate()
-          },
-        }
-      )
-    } else {
-      setErrorMessage("Bitte wähle einen Empfänger aus")
-    }
-  }
-
-  useEffect(() => {
-    console.log(selectedDestinationUser)
-  }, [selectedDestinationUser])
 
   return (
     <>
@@ -82,7 +30,6 @@ const SplitPage: NextPage = () => {
           </div>
         </div>
       </CenteredPage>
-      <ActionResponsePopup ref={animationRef} />
     </>
   )
 }

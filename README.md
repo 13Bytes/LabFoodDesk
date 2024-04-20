@@ -3,9 +3,6 @@ A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## ToDo
 - Error-Messages zu allen Forms adden
-- Error-Message bei
-    - overdraw-kauf
-    - overdraw gruppenbestellung
 - Gruppenbestellung bearbeiten
 - Undo bei kauf
 - LDAP-integration

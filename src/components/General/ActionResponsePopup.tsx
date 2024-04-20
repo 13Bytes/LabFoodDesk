@@ -1,21 +1,24 @@
-import { RefObject, forwardRef, useImperativeHandle, useState } from "react"
+import { type RefObject, forwardRef, useImperativeHandle, useState } from "react"
 
 export type AnimationHandle = {
   success: () => void
-  failure: () => void
+  failure: (errorMessage?: string) => void
 }
 
 type Status = "failure" | "success"
 
-export const animate = (handle: RefObject<AnimationHandle>, status: Status) => {
-  if(!handle.current){
+export const animate = (
+  handle: RefObject<AnimationHandle>,
+  status: Status,
+  errorMessage?: string
+) => {
+  if (!handle.current) {
     return
   }
   if (status === "success") {
     handle.current.success()
-  } 
-  else if (status === "failure") {
-    handle.current.failure()
+  } else if (status === "failure") {
+    handle.current.failure(errorMessage)
   }
 }
 
@@ -25,17 +28,25 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
 ) {
   const [isOpen, setIsOpen] = useState(false)
   const [status, setStatus] = useState<Status>("success")
+  const [message, setMessage] = useState<string>("")
 
+  const reset = () => {
+    setIsOpen(false)
+    setMessage("")
+  }
+
+  const DISPLAY_TIME = 1800
   useImperativeHandle(ref, () => ({
     success() {
       setStatus("success")
       setIsOpen(true)
-      setTimeout(() => setIsOpen(false), 1100)
+      setTimeout(() => reset(), DISPLAY_TIME)
     },
-    failure() {
+    failure(errorMessage?: string) {
       setStatus("failure")
+      setMessage(errorMessage ?? "")
       setIsOpen(true)
-      setTimeout(() => setIsOpen(false), 1100)
+      setTimeout(() => reset(), DISPLAY_TIME)
     },
   }))
 
@@ -46,7 +57,7 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
         isOpen ? "modal-open opacity-100" : "opacity-0"
       } transition-opacity  duration-500`}
     >
-      <div className="center modal-box flex max-w-sm flex-shrink justify-center">
+      <div className="center modal-box flex max-w-sm flex-shrink flex-col items-center justify-center">
         {status === "success" && (
           <svg
             className="h-40 w-40 text-green-500"
@@ -83,6 +94,7 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
             />
           </svg>
         )}
+        <p className="font-semibold">{message}</p>
       </div>
     </dialog>
   )

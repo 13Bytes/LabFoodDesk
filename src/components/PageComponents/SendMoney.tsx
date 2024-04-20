@@ -1,9 +1,9 @@
-import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
-import { comment } from "postcss"
-import { useEffect, useRef, useState } from "react"
-import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
-import CenteredPage from "~/components/Layout/CenteredPage"
+import { useRef, useState } from "react"
+import ActionResponsePopup, {
+  animate,
+  type AnimationHandle,
+} from "~/components/General/ActionResponsePopup"
 import { api } from "~/utils/api"
 
 type Props = {
@@ -37,14 +37,14 @@ const SendMoney = (props: Props) => {
         {
           onError: (error) => {
             console.error(error)
-            animate(animationRef, "failure")
+            animate(animationRef, "failure", error.message)
           },
           onSuccess: () => {
             animate(animationRef, "success")
             setSelectedDestinationUser(undefined)
             setAmountSend(1)
             setNoteSend("")
-            trpcUtils.user.getAllBalances.invalidate()
+            void trpcUtils.user.getAllBalances.invalidate()
           },
         }
       )
@@ -88,7 +88,9 @@ const SendMoney = (props: Props) => {
                 setSelectedDestinationUser(e.target.value)
               }}
             >
-              <option key="dis" className="disabled">Auswählen:</option>
+              <option key="dis" className="disabled">
+                Auswählen:
+              </option>
               {allUserRequest.data?.map((user) => {
                 if (user.id !== session.data?.user.id)
                   return (
@@ -105,7 +107,7 @@ const SendMoney = (props: Props) => {
               className={`btn ml-5 ${!selectedDestinationUser ? "btn-disabled" : ""}`}
               onClick={() => sendMoneyAction()}
             >
-              {props.sendDescription ?? 'Senden'}
+              {props.sendDescription ?? "Senden"}
             </button>
           </div>
         </div>
