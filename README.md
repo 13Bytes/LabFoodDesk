@@ -3,13 +3,24 @@ A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## ToDo
 - Error-Messages zu allen Forms adden
-- Logs wer was eingetragen hat
+- Error-Message bei
+    - overdraw-kauf
+    - overdraw gruppenbestellung
 - Gruppenbestellung bearbeiten
+- Undo bei kauf
+- LDAP-integration
+- Logs wer was eingetragen hat
+- Android zahlen komma auf tastatur ausgeblendet
+- Konto-History etwas übersichtlicher: überweisungen an wen / von wem anzeigen
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?
-- LDAP-integration
-#### Nice Improveents:
+#### Nice Improvements:
+- Verrechnungkonten global anzeigen
+- Kontostand in header
+- Gruppenbestellung: was bestellt anzeigen.
 - the check if account is covered is prone to simultaneous requests (the actual credit of course not)
+- Stats wie oft man was gekauft
+- Geld anfordern (kann von anderem User bestätigt werden)
 
 
 ## Development

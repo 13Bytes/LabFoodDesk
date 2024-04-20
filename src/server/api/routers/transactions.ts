@@ -66,7 +66,13 @@ export const transactionRouter = createTRPCRouter({
       })
 
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
-      await checkAccountBacking(user, input.amount)
+      if (input.amount <= 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't send a negative amount",
+        })
+      }
+      checkAccountBacking(user, input.amount)
 
       // atomic action:
       await prisma.$transaction([

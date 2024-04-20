@@ -2,11 +2,11 @@ import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
 import { z } from "zod"
 import ActionResponsePopup, {
-  AnimationHandle,
+  type AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
 import { LongRightArrowIcon } from "~/components/Icons/LongRightArrowIcon"
-import { Tid, id } from "~/helper/zodTypes"
+import { type Tid, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 export const sendMoneyProcurementSchema = z.object({
@@ -39,7 +39,7 @@ const ProcurementPage = () => {
 
   const correctEntries = !!selectedDestinationUser
 
-  const procuremenntAction = async () => {
+  const procuremenntAction = () => {
     if (!correctEntries) {
       animate(animationRef, "failure")
       return
@@ -47,7 +47,7 @@ const ProcurementPage = () => {
     apiSendMoneyForProcurement
       .mutateAsync({
         amount: amountSend,
-        destinationUserId: selectedDestinationUser!,
+        destinationUserId: selectedDestinationUser,
         note: noteSend,
       })
       .then(() => {
@@ -114,7 +114,7 @@ const ProcurementPage = () => {
               className={`btn ${!correctEntries ? "btn-disabled" : ""}`}
               onClick={() => procuremenntAction()}
             >
-              Geld Gutschreiben
+              Geld gutschreiben
             </button>
           </div>
         </div>
