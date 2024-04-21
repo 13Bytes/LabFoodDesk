@@ -30,7 +30,7 @@ const GroupOrdersHistory: NextPage = () => {
       <CenteredPage>
         <div className="container">
           {groupOrdersLatelyClosed.data?.map((group) => (
-            <div className="container">
+            <div key={group.id} className="container">
               <div key={group.id} className="card mb-5 max-w-5xl bg-base-200 p-3">
                 <div className="flex  flex-col justify-start gap-1 p-1">
                   <div className="flex flex-row items-end justify-between">
@@ -52,30 +52,42 @@ const GroupOrdersHistory: NextPage = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {group.orders.map((transaction) => { if (transaction.type < 3) { return(
-                            <tr key={`${transaction.id}`}>
-                              <td>
-                                <p className="font-semibold">{transaction.user.name}</p>
-                              </td>
-                              <td>
-                                {[...transaction.items, ...transaction.procurementItems]
-                                  .map((item) => item.item.name)
-                                  .concat(", ")}
-                              </td>
-                              <td>{transaction.totalAmount.toFixed(2)}€</td>
-                            </tr>
-                          )}
-                          else{
-                            return null
-                          }})}
+                          {group.orders.map((transaction) => {
+                            if (transaction.type < 3) {
+                              return (
+                                <tr key={`${transaction.id}`}>
+                                  <td>
+                                    <p className="font-semibold">{transaction.user.name}</p>
+                                  </td>
+                                  <td>
+                                    {[...transaction.items, ...transaction.procurementItems]
+                                      .map((item) => item.item.name)
+                                      .concat(", ")}
+                                  </td>
+                                  <td>{transaction.totalAmount.toFixed(2)}€</td>
+                                </tr>
+                              )
+                            } else {
+                              return null
+                            }
+                          })}
                         </tbody>
                       </table>
                     </div>
                   </div>
                   <div className="flex justify-end px-3">
                     <div className="flex flex-col items-end">
-                    <p className="text-xs">Abgerechnet durch <span className="font-semibold">{group.closedBy?.name}</span></p>
-                    <p className="text-xs">Gutschrift an <span className="font-semibold">{group.orders.find(order => order.type === 3)?.moneyDestination?.name ?? "LabEats"}</span></p>
+                      <p className="text-xs">
+                        Abgerechnet durch{" "}
+                        <span className="font-semibold">{group.closedBy?.name}</span>
+                      </p>
+                      <p className="text-xs">
+                        Gutschrift an{" "}
+                        <span className="font-semibold">
+                          {group.orders.find((order) => order.type === 3)?.moneyDestination?.name ??
+                            "LabEats"}
+                        </span>
+                      </p>
                     </div>
                   </div>
                 </div>

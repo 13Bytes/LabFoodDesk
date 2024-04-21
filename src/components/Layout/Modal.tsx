@@ -11,7 +11,9 @@ export default function Modal({
   open,
   setOpen,
   className = "",
-  closeFunctionCall = () => {},
+  closeFunctionCall = () => {
+    // do nothing
+  },
 }: Props) {
   return (
     <dialog className={`modal ${open ? "modal-open" : ""}`}>

@@ -12,6 +12,7 @@ A tool to manage (food)(orders) in the Aerospace Lab.
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?
 #### Nice Improvements:
+- Interface für Admins
 - Verrechnungkonten global anzeigen
 - Kontostand in header
 - Gruppenbestellung: was bestellt anzeigen.

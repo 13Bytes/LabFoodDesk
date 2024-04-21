@@ -21,34 +21,34 @@ const CategorySelector = (props: Props) => {
       }))
 
     return (
-        <Controller
-              control={props.control}
-              name={"categories"}
-              defaultValue={[]}
-              render={({ field: { onChange, onBlur, value, name, ref } }) => (
-                <Select
-                  options={options}
-                  onChange={onChange}
-                  isMulti={true}
-                  onBlur={onBlur}
-                  // @typescript-eslint/no-unsafe-assignment
-                  value={value}
-                  name={name}
-                  ref={ref}
-                  id="select_categories"
-                  key="select_categories_key"
-                  styles={{
-                    control: (baseStyles, _props) => ({
-                      ...baseStyles,
-                      backgroundColor: "transparent",
-                      borderColor: "#6419E6",
-                      boxShadow: "none",
-                      ":hover": { borderColor: "#6419E6" },
-                    }),
-                  }}
-                />
-              )}
-            />
+      <Controller
+        control={props.control}
+        name={"categories"}
+        defaultValue={[]}
+        render={({ field: { onChange, onBlur, value, name, ref } }) => (
+          <Select
+            options={options}
+            onChange={onChange}
+            isMulti={true}
+            onBlur={onBlur}
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            value={value}
+            name={name}
+            ref={ref}
+            id="select_categories"
+            key="select_categories_key"
+            styles={{
+              control: (baseStyles, _props) => ({
+                ...baseStyles,
+                backgroundColor: "transparent",
+                borderColor: "#6419E6",
+                boxShadow: "none",
+                ":hover": { borderColor: "#6419E6" },
+              }),
+            }}
+          />
+        )}
+      />
     )
 }
 
