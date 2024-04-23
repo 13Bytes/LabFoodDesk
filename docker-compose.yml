@@ -1,18 +1,18 @@
 services:
-  app:
+  labfooddesk:
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile-app
+      dockerfile: Dockerfile
       # args:
       #   NEXT_PUBLIC_CLIENTVAR: "clientvar"
     working_dir: /app
     ports:
       - "3000:3000"
-    image: lab-eats
+    image: labfooddesk
     env_file:
       - .env
     environment:
-      - DATABASE_URL=database_url_goes_here
+      - DATABASE_URL=file:/app/db/db.sqlite
 volumes: 
   postgres_data:

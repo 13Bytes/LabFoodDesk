@@ -4,7 +4,7 @@ FROM node:21-alpine3.18 AS deps
 RUN apk add --no-cache libc6-compat openssl1.1-compat
 WORKDIR /app
 
-# Install Prisma Client - remove if not using Prisma
+# Install Prisma Client
 COPY prisma ./
 
 # Install dependencies based on the preferred package manager
@@ -45,18 +45,24 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+RUN mkdir /app/db
+RUN chown nextjs:nodejs /app/db
+
 COPY docker-entrypoint.sh /code/entrypoint.sh
 RUN chmod +x /code/entrypoint.sh
 COPY --from=builder /app/next.config.mjs ./
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/prisma ./prisma
 
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+ENV PORT 3000
 
 USER nextjs
 EXPOSE 3000
 ENV PORT 3000
 
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/code/entrypoint.sh"]

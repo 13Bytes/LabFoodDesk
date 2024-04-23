@@ -6,3 +6,5 @@ npm-debug.log
 README.md
 .next
 .git
+prisma\db.sqlite
+prisma\db.sqlite-journal
