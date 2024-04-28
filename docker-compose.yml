@@ -1,19 +1,20 @@
-version: "3.9"
 services:
-  app:
+  labfooddesk:
+    image: ghcr.io/13bytes/labfooddesk
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile-app
+      dockerfile: Dockerfile
       # args:
       #   NEXT_PUBLIC_CLIENTVAR: "clientvar"
     working_dir: /app
     ports:
-      - "3000:3000"
-    image: lab-eats
+      - "3000:3000"  # nextjs
+      - "5555:5555"  # prisma studio - mustn't be acessible by public!
     env_file:
       - .env
+    volumes:
+      - ./labfooddesk-docker-db/:/app/db/
     environment:
-      - DATABASE_URL=database_url_goes_here
-volumes: 
-  postgres_data:
+      - DATABASE_URL=file:/app/db/db.sqlite
+      - ENABLE_PRISMA_STUDIO=true

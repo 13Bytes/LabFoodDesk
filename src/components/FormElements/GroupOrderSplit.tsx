@@ -221,8 +221,7 @@ const GroupOrderSplit = (props: Props) => {
     if (!selectedDestination) {
       setDestinationError(true)
       return
-    }
-    else{
+    } else {
       setDestinationError(false)
     }
     const splitSubmit: SplitSubmit = split.map((userContent) => ({
@@ -275,8 +274,8 @@ const GroupOrderSplit = (props: Props) => {
             }
             placeholder="Gesammter Betrag"
             className={`\ input-bordered input  input-sm w-full max-w-xs
-               ${Number.isNaN(totalAmount) && "input-error"} \
-               ${allUsersOverwritten !== undefined && "!input-warning "}`}
+               ${Number.isNaN(totalAmount) ? "input-error" : ""} \
+               ${allUsersOverwritten !== undefined ? "!input-warning " : ""}`}
             disabled={allUsersOverwritten !== undefined}
           />
         </label>
@@ -335,8 +334,8 @@ const GroupOrderSplit = (props: Props) => {
           <p>Geld gutschreiben an:</p>
           <select
             className={`select-bordered select select-sm w-full max-w-xs font-bold ${
-              destinationError && "select-error"
-            } `}
+              destinationError ? "select-error" : ""
+            }`}
             id="sel-dest-user"
             value={selectedDestination}
             onChange={(e) => {

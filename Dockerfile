@@ -1,10 +1,10 @@
 ##### DEPENDENCIES
 
-FROM node:20-alpine3.17 AS deps
+FROM node:21-alpine3.18 AS deps
 RUN apk add --no-cache libc6-compat openssl1.1-compat
 WORKDIR /app
 
-# Install Prisma Client - remove if not using Prisma
+# Install Prisma Client
 COPY prisma ./
 
 # Install dependencies based on the preferred package manager
@@ -12,15 +12,15 @@ COPY prisma ./
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml\* ./
 
 RUN \
- if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
- elif [ -f package-lock.json ]; then npm ci; \
- elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i; \
- else echo "Lockfile not found." && exit 1; \
- fi
+    if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then npm ci; \
+    elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i; \
+    else echo "Lockfile not found." && exit 1; \
+    fi
 
 ##### BUILDER
 
-FROM node:20-alpine3.17 AS builder
+FROM node:21-alpine3.18 AS builder
 ARG DATABASE_URL
 ARG NEXT_PUBLIC_CLIENTVAR
 WORKDIR /app
@@ -29,16 +29,12 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN \
- if [ -f yarn.lock ]; then SKIP_ENV_VALIDATION=1 yarn build; \
- elif [ -f package-lock.json ]; then SKIP_ENV_VALIDATION=1 npm run build; \
- elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && SKIP_ENV_VALIDATION=1 pnpm run build; \
- else echo "Lockfile not found." && exit 1; \
- fi
+ENV SKIP_ENV_VALIDATION 1
+RUN npm run build
 
 
 ##### RUNNER
-FROM node:20-alpine3.17 AS runner
+FROM node:21-alpine3.18 AS runner
 RUN apk add --no-cache sqlite 
 WORKDIR /app
 
@@ -49,18 +45,25 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY docker-entrypoint.sh ./entrypoint.sh
+RUN mkdir /app/db
+RUN chown nextjs:nodejs /app/db
+
+COPY docker-entrypoint.sh /code/entrypoint.sh
 RUN chmod +x /code/entrypoint.sh
 COPY --from=builder /app/next.config.mjs ./
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/prisma ./prisma
 
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-USER nextjs
-EXPOSE 3000
 ENV PORT 3000
 
+USER nextjs
+ENV PORT 3000
+EXPOSE 3000
+EXPOSE 5555
 
-ENTRYPOINT ["entrypoint.sh"]
+
+ENTRYPOINT ["/code/entrypoint.sh"]

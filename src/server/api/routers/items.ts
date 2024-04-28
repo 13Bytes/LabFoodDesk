@@ -184,7 +184,7 @@ export const itemRouter = createTRPCRouter({
 
       const fees = calculateFeesPerCategory(product.price, product.categories)
       const totalPrice = product.price + fees.total
-      await checkAccountBacking(user, totalPrice)
+      checkAccountBacking(user, totalPrice)
 
       
       const clearingAccountTransactions:Prisma.PrismaPromise<any>[] = []

@@ -1,19 +1,9 @@
 #!/bin/sh
 
-npx prisma migrate deploy &
-# if [ "$DATABASE" = "postgres" ]
-# then
-#     echo "Waiting for postgres..."
+npx prisma migrate deploy
 
-#     while ! nc -z $SQL_HOST $SQL_PORT; do
-#       sleep 0.1
-#     done
-
-#     echo "##########"
-#     echo "PostgreSQL started"
-# fi
-node server.js &
-exec "$@"
-
-wait -n
-exit $?
+if [ "$ENABLE_PRISMA_STUDIO" == "true" ]; then
+    echo "starting prisma studio"
+    npx prisma studio &  # start prisma studio on :5555
+fi
+node server.js
