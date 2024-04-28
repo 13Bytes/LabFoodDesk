@@ -61,8 +61,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 ENV PORT 3000
 
 USER nextjs
-EXPOSE 3000
 ENV PORT 3000
+EXPOSE 3000
+EXPOSE 5555
 
 
 ENTRYPOINT ["/code/entrypoint.sh"]

@@ -1,5 +1,6 @@
 services:
   labfooddesk:
+    image: ghcr.io/13bytes/labfooddesk
     restart: always
     build:
       context: .
@@ -8,11 +9,12 @@ services:
       #   NEXT_PUBLIC_CLIENTVAR: "clientvar"
     working_dir: /app
     ports:
-      - "3000:3000"
-    image: labfooddesk
+      - "3000:3000"  # nextjs
+      - "5555:5555"  # prisma studio - mustn't be acessible by public!
     env_file:
       - .env
+    volumes:
+      - ./labfooddesk-docker-db/:/app/db/
     environment:
       - DATABASE_URL=file:/app/db/db.sqlite
-volumes: 
-  postgres_data:
+      - ENABLE_PRISMA_STUDIO=true
