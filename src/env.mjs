@@ -16,6 +16,12 @@ const server = z.object({
     // VERCEL_URL doesn't include `https` so it cant be validated as a URL
     process.env.VERCEL ? z.string().min(1) : z.string().url()
   ),
+
+  LDAP_URL: z.string(),
+  LDAP_BIND_USER: z.string(),
+  LDAP_BIND_PASSWORT: z.string(),
+  LDAP_SEARCH_BASE: z.string(),
+
   // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
   EMAIL_SERVER_USER: z.string().min(1),
   EMAIL_SERVER_PASSWORD: z.string().min(1),
@@ -38,11 +44,16 @@ const client = z.object({
  *
  * @type {Record<keyof z.infer<typeof server> | keyof z.infer<typeof client>, string | undefined>}
  */
+// const envProvider = process.env 
 const processEnv = {
   DATABASE_URL: process.env.DATABASE_URL,
   NODE_ENV: process.env.NODE_ENV,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  LDAP_URL: process.env.LDAP_URL,
+  LDAP_BIND_USER: process.env.LDAP_BIND_USER,
+  LDAP_BIND_PASSWORT:process.env.LDAP_BIND_PASSWORT,
+  LDAP_SEARCH_BASE:process.env.LDAP_SEARCH_BASE,
   EMAIL_SERVER_USER: process.env.EMAIL_SERVER_USER,
   EMAIL_SERVER_PASSWORD: process.env.EMAIL_SERVER_PASSWORD,
   EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,

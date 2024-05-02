@@ -8,6 +8,7 @@
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
+    "test": "vitest",
     "db:push": "npx prisma db push",
     "db:studio": "npx prisma studio"
   },
@@ -23,6 +24,8 @@
     "@trpc/server": "^10.18.0",
     "@types/react-select": "^5.0.1",
     "dayjs": "^1.11.10",
+    "dotenv": "^16.4.5",
+    "ldapts": "^7.0.11",
     "next": "^13.2.4",
     "next-auth": "^4.21.0",
     "nodemailer": "^6.9.4",
@@ -37,12 +40,14 @@
     "@hookform/devtools": "^4.3.1",
     "@tailwindcss/typography": "^0.5.9",
     "@types/eslint": "^8.21.3",
+    "@types/ldapjs": "^3.0.6",
     "@types/node": "^18.15.5",
     "@types/prettier": "^2.7.2",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
+    "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.14",
     "daisyui": "^3.5.1",
     "eslint": "^8.36.0",
@@ -52,7 +57,8 @@
     "prettier-plugin-tailwindcss": "^0.2.8",
     "prisma": "^5.12.1",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "vitest": "^1.5.3"
   },
   "ct3aMetadata": {
     "initVersion": "7.10.3"
