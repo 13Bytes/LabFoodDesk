@@ -2,8 +2,6 @@
 A tool to manage (food)(orders) in the Aerospace Lab.
 
 ## ToDo
-- LDAP-integration
-- Error-Messages zu allen Forms adden
 - Gruppenbestellung bearbeiten
 - Undo bei kauf
 - Logs wer was eingetragen hat

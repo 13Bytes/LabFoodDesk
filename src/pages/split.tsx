@@ -9,7 +9,7 @@ const SplitPage: NextPage = () => {
   return (
     <>
       <CenteredPage>
-        <h3 className="mt-12 self-start text-xl">Geld senden</h3>
+        <h3 className="mt-12 self-start py-2 text-xl">Geld senden</h3>
         <SendMoney />
 
         <h3 className="mt-12 self-start text-xl">Übersicht</h3>

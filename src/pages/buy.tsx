@@ -2,6 +2,7 @@ import { type NextPage } from "next"
 import { useRef, useState } from "react"
 import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
+import RegularPage from "~/components/Layout/RegularPage"
 import { api } from "~/utils/api"
 
 const BuyPage: NextPage = () => {
@@ -30,7 +31,7 @@ const BuyPage: NextPage = () => {
   }
 
   return (
-    <>
+    <RegularPage>
       <div className="flex flex-grow flex-col">
         <div className="self-end pr-3 pt-1">
           <input
@@ -50,7 +51,7 @@ const BuyPage: NextPage = () => {
         </div>
       </div>
       <ActionResponsePopup ref={animationRef} />
-    </>
+    </RegularPage>
   )
 }
 

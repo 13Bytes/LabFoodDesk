@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import AddGrouporderForm from "~/components/Forms/AddGrouporderForm"
 import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
 import Modal from "~/components/Layout/Modal"
+import RegularPage from "~/components/Layout/RegularPage"
 import { localStringOptions, weekdays } from "~/helper/globalTypes"
 import { api } from "~/utils/api"
 
@@ -59,9 +60,9 @@ const InventoryPage = () => {
   )
 
   return (
-    <>
+    <RegularPage>
       <div className="max-w-7xl">
-        <div className="flex flex-col p-5">
+        <div className="flex flex-col">
           <h2 className="text-xl">Wiederholungen</h2>
           <div className="flex max-w-5xl grow flex-row items-center justify-center">
             <table className="table">
@@ -174,7 +175,7 @@ const InventoryPage = () => {
           <AddGrouporderForm finishAction={() => setAddGrouporderModalOpen(false)} />
         </Modal>
       </div>
-    </>
+    </RegularPage>
   )
 }
 

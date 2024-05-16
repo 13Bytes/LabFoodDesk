@@ -6,6 +6,7 @@ import ActionResponsePopup, {
   animate,
 } from "~/components/General/ActionResponsePopup"
 import { LongRightArrowIcon } from "~/components/Icons/LongRightArrowIcon"
+import RegularPage from "~/components/Layout/RegularPage"
 import ClearingAccountOverview from "~/components/PageComponents/ClearingAccountOverview"
 import { Tid, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
@@ -64,12 +65,12 @@ const ClearingAccountPage = () => {
   }
 
   return (
-    <>
-      <div className="card m-2 flex flex-col bg-base-300 shadow-sm">
+    <RegularPage>
+      <div className="card flex flex-col bg-base-300 shadow-sm">
       <ClearingAccountOverview />
       </div>
 
-      <div className="card card-body m-2 flex flex-col bg-base-300 shadow-sm">
+      <div className="card card-body my-3 flex flex-col bg-base-300 shadow-sm">
         <h1 className="mb-2 text-lg font-bold">Verrechnungskonto aufwenden</h1>
         <div className="flex flex-row items-center">
           <div>
@@ -158,7 +159,7 @@ const ClearingAccountPage = () => {
       </div>
 
       <ActionResponsePopup ref={animationRef} />
-    </>
+    </RegularPage>
   )
 }
 

@@ -44,7 +44,7 @@ const InventoryOverview = () => {
 
   return (
     <>
-      <div className="flex max-w-5xl flex-col  p-5 ">
+      <div className="flex max-w-5xl flex-col">
         <div className="flex justify-between gap-3 align-bottom">
           <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
             <CloseWindowIcon /> Produkt

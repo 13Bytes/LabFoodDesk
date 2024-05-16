@@ -6,6 +6,7 @@ import Modal from "~/components/Layout/Modal"
 import { api } from "~/utils/api"
 import InventoryOverview from "~/components/PageComponents/InventoryOverview"
 import ProcurementItemOverview from "~/components/PageComponents/ProcurementItemOverview"
+import RegularPage from "~/components/Layout/RegularPage"
 
 const InventoryPage = () => {
   const allItemsRequest = api.item.getAll.useQuery()
@@ -25,10 +26,12 @@ const InventoryPage = () => {
   )
 
   return (
-    <>
-      <InventoryOverview />
-      <ProcurementItemOverview />
-    </>
+    <RegularPage>
+      <div className="space-y-5">
+        <InventoryOverview />
+        <ProcurementItemOverview />
+      </div>
+    </RegularPage>
   )
 }
 
