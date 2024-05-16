@@ -5,7 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import EmailProvider from "next-auth/providers/email"
 import { env } from "~/env.mjs"
 import { prisma } from "~/server/db"
-import { getLdapClient, searchUser } from "./ldap"
+import {  manageLdapLogin } from "./ldap"
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -83,7 +83,7 @@ export const authOptions: NextAuthOptions = {
         if (!credentials || credentials.username.length <= 1 || credentials.password.length <= 1) {
           return null
         }
-        return searchUser(credentials?.username, credentials?.password)
+        return manageLdapLogin(credentials?.username, credentials?.password)
       },
     }),
   ],

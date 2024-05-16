@@ -10,39 +10,53 @@ const Me: NextPage = () => {
 
   const trpcUtils = api.useContext()
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
-  const updateUser = api.user.updateMe.useMutation()
 
   type UserFormInput = { name: string }
   const { register: userFormRegister, handleSubmit: handleUserSubmit } = useForm<UserFormInput>()
 
-  const onUserSubmit: SubmitHandler<UserFormInput> = async (data) => {
-    const user = await updateUser.mutateAsync(data)
+  // const updateUser = api.user.updateMe.useMutation()
+  // const onUserSubmit: SubmitHandler<UserFormInput> = async (data) => {
+  //   const user = await updateUser.mutateAsync(data)
 
-    trpcUtils.user.getMe.setData(undefined, user)
-    await updateSession()
-    return
-  }
+  //   trpcUtils.user.getMe.setData(undefined, user)
+  //   await updateSession()
+  //   return
+  // }
 
   return (
     <CenteredPage>
-      <form onSubmit={handleUserSubmit(onUserSubmit)} className="gap-1">
+      {/* <form onSubmit={handleUserSubmit(onUserSubmit)} className="gap-1">
         <p className="font-semibold">Mein Username:</p>
         <div className="mt-1">
           <input
             type="text"
+            disabled 
             defaultValue={userData?.name || ""}
             {...userFormRegister("name", { required: true })}
-            className="input-bordered input w-full max-w-xs"
+            className="input-bordered input w-full max-w-xs disabled"
           />
         </div>
         <button className="btn mt-1" type="submit">
           Speichern
         </button>
-      </form>
+      </form> */}
 
-      <div className="collapse mt-100">
+      <div className="flex items-center flex-col">
+        <p className="font-semibold">Username</p>
+        <div className="mt-1">
+          <input
+            type="text"
+            disabled
+            defaultValue={userData?.name || ""}
+            {...userFormRegister("name", { required: true })}
+            className="disabled input input-bordered w-full max-w-xs"
+          />
+        </div>
+
+      </div>
+      <div className="collapse mt-10">
         <input type="checkbox" />
-        <div className="collapse-title text-sm font-medium">Debugging infos</div>
+        <div className="collapse-title text-sm font-thin">Debugging infos</div>
         <div className="collapse-content">
           <p className="font-bold">Debugging sessionData</p>
           {sessionData && JSON.stringify(sessionData)}

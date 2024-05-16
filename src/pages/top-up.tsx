@@ -25,7 +25,7 @@ const TopUp: NextPage = () => {
           </>
         ) : (
           <>
-            <h3 className="self-start text-xl">Geld einzahlen</h3>
+            <h3 className="self-start text-xl pb-3">Geld einzahlen</h3>
             <div>
               <div className="alert alert-info">
                 <InfoIcon />

@@ -1,9 +1,9 @@
+import { Client } from "ldapts"
 import { type User } from "next-auth"
-import { env } from "~/env.mjs"
-import { Client, type ClientOptions } from "ldapts"
 import fs from "node:fs"
 import path from "node:path"
-import { Tid } from "~/helper/zodTypes"
+import { env } from "~/env.mjs"
+import { prisma } from "./db"
 
 const ldapCert = fs.readFileSync(path.resolve(process.cwd(), `./LDAP-ca.crt`))
 export const clientOptions = {
@@ -14,11 +14,7 @@ export const clientOptions = {
   strictDN: false,
 }
 
-export const getLdapClient = () => {
-  return new Client(clientOptions)
-}
-
-export const searchUser = (
+export const manageLdapLogin = (
   username: string | undefined,
   password: string | undefined,
 ): Promise<User | null> => {
@@ -35,7 +31,6 @@ export const searchUser = (
     const searchUser = new Client(clientOptions)
     const testClient = new Client(clientOptions)
 
-    console.log(process.cwd())
     try {
       console.info("Starting bind of search-user....")
       await searchUser.bind(env.LDAP_BIND_USER, env.LDAP_BIND_PASSWORT)
@@ -46,9 +41,8 @@ export const searchUser = (
         throw new Error("User not found")
       }
       const userData = searchEntries[0]
-      console.log(`objectSid: ${userData['objectSid']}`)
       console.info("Found User in LDAP")
-      console.log("Checking user-credentials against LDAP")
+      console.info("Checking user-credentials against LDAP")
       await testClient.bind(userData.dn, password)
       console.log(`Found UserData: ${JSON.stringify(userData)}`)
       const userID = userData.sAMAccountName
@@ -57,25 +51,32 @@ export const searchUser = (
       }
       console.log(`LDAP bind successful (UserID: ${userID})`)
 
+      // Admin-Check
       let is_admin = false
-      // TODO: Admin-Check currently broken
-      if (env.LDAP_ADMIN_GROUP) {
-        const { searchEntries } = await searchUser.search(env.LDAP_SEARCH_BASE, {
-          filter: `(&(objectClass=organizationalPerson)(memberOf=${env.LDAP_ADMIN_GROUP}))`,
-        })
-        console.log(`Found Admin-users: ${JSON.stringify(searchEntries)}`)
-          // if (env.LDAP_ADMIN_GROUP.toLowerCase()) {
-          //   is_admin = true
-          // }
+      if (env.LDAP_ADMIN_GROUP && userData.memberOf !== undefined) {
+        for (const userGroup of userData.memberOf) {
+          if (typeof userGroup === "string") {
+            if (env.LDAP_ADMIN_GROUP.toLowerCase() === userGroup.toLowerCase()) {
+              is_admin = true
+            }
+          }
+        }
       }
 
-      const user: User = {
-        id: userData.dn,
-        name: username,
-        is_admin,
+      // Check if uidNumber is valid
+      const uid = userData.uidNumber
+      if (uid == undefined || typeof uid !== "string" || uid.length === 0) {
+        throw new Error("uidNumber not defined")
       }
-      console.log(`Authed user: ${JSON.stringify(user)}`)
-      resolve(user)
+
+      const upsertedUser = await prisma.user.upsert({
+        where: { id: uid },
+        update: { name: username, is_admin },
+        create: { id: uid, name: username, is_admin },
+      })
+
+      console.log(`Authed user: ${JSON.stringify(upsertedUser)}`)
+      resolve(upsertedUser)
     } catch (error) {
       console.error("LDAP bind failed - wrong user-credentials?", error)
       resolve(null)

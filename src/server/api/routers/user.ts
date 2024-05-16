@@ -22,19 +22,20 @@ export const userRouter = createTRPCRouter({
     }
   }),
 
-  updateMe: protectedProcedure
-    .input(
-      z.object({
-        name: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const user = await ctx.prisma.user.update({
-        where: { id: ctx.session.user.id },
-        data: { name: input.name },
-      })
-      return user
-    }),
+  // Disabled as name is taken from LDAP
+  // updateMe: protectedProcedure
+  //   .input(
+  //     z.object({
+  //       name: z.string(),
+  //     })
+  //   )
+  //   .mutation(async ({ ctx, input }) => {
+  //     const user = await ctx.prisma.user.update({
+  //       where: { id: ctx.session.user.id },
+  //       data: { name: input.name },
+  //     })
+  //     return user
+  //   }),
 
   getAllUsers: protectedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany({ select: { name: true, id: true } })
