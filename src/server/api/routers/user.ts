@@ -1,6 +1,8 @@
+import { env } from "~/env.mjs"
 import { z } from "zod"
 
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
+
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc"
 
 export const userRouter = createTRPCRouter({
   
@@ -8,6 +10,16 @@ export const userRouter = createTRPCRouter({
     return ctx.prisma.user.findUnique({
       where: { id: ctx.session.user.id },
     })
+  }),
+
+  getCtx: publicProcedure.query(({ ctx }) => {
+    return {
+      LDAP_URL:env.LDAP_URL,
+      LDAP_BIND_USER:env.LDAP_BIND_USER,
+      LDAP_BIND_PASSWORT:env.LDAP_BIND_PASSWORT,
+      LDAP_SEARCH_BASE:env.LDAP_SEARCH_BASE,
+      LDAP_ADMIN_GROUP:env.LDAP_ADMIN_GROUP,
+    }
   }),
 
   updateMe: protectedProcedure

@@ -31,7 +31,7 @@ export default function Header() {
               const target = e.currentTarget
               setTimeout(function () {
                 target.open = false
-              }, 100)
+              }, 300)
             }}
           >
             <summary tabIndex={0}>Admin</summary>

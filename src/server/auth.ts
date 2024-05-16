@@ -83,8 +83,7 @@ export const authOptions: NextAuthOptions = {
         if (!credentials || credentials.username.length <= 1 || credentials.password.length <= 1) {
           return null
         }
-        const client = await getLdapClient()
-        return searchUser(client, credentials?.username, credentials?.password)
+        return searchUser(credentials?.username, credentials?.password)
       },
     }),
   ],

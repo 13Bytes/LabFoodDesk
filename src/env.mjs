@@ -21,6 +21,7 @@ const server = z.object({
   LDAP_BIND_USER: z.string(),
   LDAP_BIND_PASSWORT: z.string(),
   LDAP_SEARCH_BASE: z.string(),
+  LDAP_ADMIN_GROUP: z.string(),
 
   // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
   EMAIL_SERVER_USER: z.string().min(1),
@@ -54,6 +55,7 @@ const processEnv = {
   LDAP_BIND_USER: process.env.LDAP_BIND_USER,
   LDAP_BIND_PASSWORT:process.env.LDAP_BIND_PASSWORT,
   LDAP_SEARCH_BASE:process.env.LDAP_SEARCH_BASE,
+  LDAP_ADMIN_GROUP:process.env.LDAP_ADMIN_GROUP,
   EMAIL_SERVER_USER: process.env.EMAIL_SERVER_USER,
   EMAIL_SERVER_PASSWORD: process.env.EMAIL_SERVER_PASSWORD,
   EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
