@@ -1,6 +1,7 @@
 import { Transaction } from "@prisma/client"
 import { type NextPage } from "next"
 import React, { useEffect } from "react"
+import { Balance } from "~/components/General/Balance"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { getTransactionFees } from "~/helper/dataProcessing"
 import { RouterOutputs, api } from "~/utils/api"
@@ -26,7 +27,7 @@ const AccountPage: NextPage = () => {
           return undefined
         }
       },
-    }
+    },
   )
 
   useEffect(() => {
@@ -41,8 +42,6 @@ const AccountPage: NextPage = () => {
     return transaction.moneyDestinationUserId === userData?.id
   }
 
-
-
   return (
     <>
       <CenteredPage>
@@ -51,16 +50,10 @@ const AccountPage: NextPage = () => {
             <h1 className="text-xl">
               Account von <span className="font-bold ">{userData?.name}</span>
             </h1>
-            <p>
-              Guthaben:{" "}
-              <span
-                className={`font-bold ${
-                  userData?.balance && userData?.balance > 0 ? "text-green-600" : "text-red-700"
-                }`}
-              >
-                {userData?.balance.toFixed(2)}€
-              </span>
-            </p>
+            <div className="flex flex-row space-x-2">
+            <p>Guthaben: </p>
+            <Balance balance={userData?.balance} />
+            </div>
           </div>
 
           <div className="pt-2">
@@ -73,7 +66,7 @@ const AccountPage: NextPage = () => {
                       <td key={`${transaction.id}-td1`}>
                         <span className="font-bold">{transaction.totalAmount.toFixed(2)}€</span>
                         {getTransactionFees(transaction) > 0 && (
-                          <span className="text-sm font-extralight pl-2">
+                          <span className="pl-2 text-sm font-extralight">
                             + {getTransactionFees(transaction).toFixed(2)}€
                           </span>
                         )}
@@ -93,8 +86,9 @@ const AccountPage: NextPage = () => {
                         {transaction.type == 2 && !userIsTransactionDestination(transaction) && (
                           <span className="text-red-700"> überwiesen</span>
                         )}{" "}
-                        {transaction.type == 3 && <span className="text-green-600"> gutgeschrieben</span>}
-                        {" "}
+                        {transaction.type == 3 && (
+                          <span className="text-green-600"> gutgeschrieben</span>
+                        )}{" "}
                         am {transaction.createdAt.toISOString().split("T")[0]}
                       </td>
                     </tr>
@@ -107,14 +101,14 @@ const AccountPage: NextPage = () => {
 
           <div className="join mt-2">
             <button
-              className={`join-item btn ${page < 1 ? "btn-disabled" : ""}`}
+              className={`btn join-item ${page < 1 ? "btn-disabled" : ""}`}
               onClick={() => setPage((prev) => prev - 1)}
             >
               «
             </button>
-            <button className="join-item btn pointer-events-none">Seite {page + 1}</button>
+            <button className="btn join-item pointer-events-none">Seite {page + 1}</button>
             <button
-              className={`join-item btn ${page >= maxPage ? "btn-disabled" : ""}`}
+              className={`btn join-item ${page >= maxPage ? "btn-disabled" : ""}`}
               onClick={() => {
                 void fetchNextPage()
                 setPage((prev) => prev + 1)

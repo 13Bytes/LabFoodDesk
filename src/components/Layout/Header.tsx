@@ -51,6 +51,9 @@ export default function Header() {
               <li>
                 <Link href="/admin/procurement">Einkauf</Link>
               </li>
+              <li>
+                <Link href="/admin/users">User-Verwaltung</Link>
+              </li>
             </ul>
           </details>
         </li>
