@@ -68,10 +68,10 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      name: "LDAP",
+      name: "ASL-Account",
       credentials: {
-        username: { label: "ASL-Username", type: "text", placeholder: "" },
-        password: { label: "Password", type: "password" },
+        username: { label: "ASL-Username", type: "text", placeholder: "sally.ride"},
+        password: { label: "Password", type: "password", placeholder: "sUper $ecr3t" },
       },
       async authorize(credentials, req) {
         if (!credentials || credentials.username.length <= 1 || credentials.password.length <= 1) {

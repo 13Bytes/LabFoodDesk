@@ -1,7 +1,11 @@
-import type { Category, Item } from "@prisma/client"
+import type { Category, Item, ProcurementItem } from "@prisma/client"
 import { Tid } from "./zodTypes"
 import { RouterOutputs } from "~/utils/api"
 
+/**
+ * Returns all fees for a given price and categories
+ * total as well as per category
+ */
 export const calculateFeesPerCategory = (price: number, categories: Category[]) => {
   const fees: {
     categories: { categoryId: Tid; charges: number; clearingAccountId?: Tid }[]
@@ -27,20 +31,36 @@ export const calculateAdditionalPricing = (price: number, categories: Category[]
   return calculateFeesPerCategory(price, categories).total
 }
 
+/**
+ * @returns the total fees (without item cost itself)
+ */
 export const calculateAdditionalItemPricing = (item: Item, categories: Category[]) => {
   return calculateAdditionalPricing(item.price, categories)
 }
 
 type TransactionData = RouterOutputs["transaction"]["getMineInfinite"]["items"][0]
 
-export const getTransactionFees = (transaction: TransactionData) => {
+/**
+ * @returns the total fees of a list of items (without item costs itself)
+ */
+export const getItemsFee = (
+  items: TransactionData["items"] = [],
+  procurementItems: TransactionData["procurementItems"] = [],
+) => {
   let fees = 0
-  for (const item of transaction.items) {
+  for (const item of items) {
     fees += calculateAdditionalItemPricing(item.item, item.item.categories)
   }
-  for (const procItem of transaction.procurementItems) {
+  for (const procItem of procurementItems) {
     procItem.cost
     fees += calculateAdditionalPricing(procItem.cost, procItem.item.categories)
   }
   return fees
+}
+
+/**
+ * @returns the total fees of all the items in a transaction (without item costs itself)
+ */
+export const getTransactionFees = (transaction: TransactionData) => {
+  return getItemsFee(transaction.items, transaction.procurementItems)
 }

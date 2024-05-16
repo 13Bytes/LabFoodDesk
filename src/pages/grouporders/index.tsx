@@ -44,7 +44,7 @@ const GroupOrders: NextPage = () => {
   ) => {
     if (type === "order") {
       await buyItemRequest.mutateAsync(
-        { groupId, items: [itemID] },
+        { groupId, item: itemID },
         {
           onError: (error) => {
             console.error(error)

@@ -5,11 +5,12 @@ import { z } from "zod"
 import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
 import { validationSchema as groupOrderValidationSchema } from "~/components/Forms/AddGrouporderForm"
 import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/Forms/AddGrouporderTemplateForm"
-import { calculateFeesPerCategory, getTransactionFees } from "~/helper/dataProcessing"
+import { calculateFeesPerCategory, getItemsFee, getTransactionFees } from "~/helper/dataProcessing"
 import { Tid, id } from "~/helper/zodTypes"
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
+import { buyOneItem } from "./items"
 
 const pageSize = 20
 export const grouporderRouter = createTRPCRouter({
@@ -91,7 +92,7 @@ export const grouporderRouter = createTRPCRouter({
     .input(
       z.object({
         cursor: z.number().min(1).optional().default(1),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const page = input.cursor ?? 1
@@ -142,37 +143,14 @@ export const grouporderRouter = createTRPCRouter({
     .input(
       z.object({
         groupId: id,
-        items: z.array(id),
-      })
+        item: id,
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
       })
-      const items = await Promise.all(
-        input.items.map((item) => ctx.prisma.item.findUniqueOrThrow({ where: { id: item } }))
-      )
-      const totalPrice = items.reduce((acc, item) => acc + item.price, 0)
-      const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
-      checkAccountBacking(user, totalPrice)
-
-      await prisma.$transaction([
-        ...items.map((item) =>
-          prisma.transaction.create({
-            data: {
-              user: { connect: { id: ctx.session.user.id } },
-              items: { connect: [{ id: item.id }] },
-              groupOrder: { connect: { id: group.id } },
-              type: 0,
-              totalAmount: item.price,
-            },
-          })
-        ),
-        prisma.user.update({
-          where: { id: ctx.session.user.id },
-          data: { balance: { decrement: totalPrice } },
-        }),
-      ])
+      await buyOneItem(ctx.prisma, input.item, ctx.session.user.id, group.id)
     }),
 
   procureGroupOrderItem: protectedProcedure
@@ -180,7 +158,7 @@ export const grouporderRouter = createTRPCRouter({
       z.object({
         groupId: id,
         items: z.array(id),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
@@ -188,8 +166,8 @@ export const grouporderRouter = createTRPCRouter({
       })
       const items = await Promise.all(
         input.items.map((item) =>
-          ctx.prisma.procurementItem.findUniqueOrThrow({ where: { id: item } })
-        )
+          ctx.prisma.procurementItem.findUniqueOrThrow({ where: { id: item } }),
+        ),
       )
 
       const requiredBacking = items.length * 5 // secure 5€ per item
@@ -224,7 +202,7 @@ export const grouporderRouter = createTRPCRouter({
 
   close: adminProcedure
     .input(
-      z.object({ split: splitSubmitSchema, groupId: id, destination: z.union([id, z.string()]) })
+      z.object({ split: splitSubmitSchema, groupId: id, destination: z.union([id, z.string()]) }),
     )
     .mutation(async ({ ctx, input }) => {
       const split = input.split
@@ -243,14 +221,17 @@ export const grouporderRouter = createTRPCRouter({
       }
 
       const allCategorieFees: { catId: Tid; charges: number; balanceAccountId: Tid }[] = []
-      const transactions: { transaction: Prisma.TransactionCreateInput; totalAmountWithCat: number }[] = []
+      const transactions: {
+        transaction: Prisma.TransactionCreateInput
+        totalAmountWithCat: number
+      }[] = []
       let creditOfDest = 0
       for (const wish of group.procurementWishes) {
         const splitIndex = split.findIndex((split) => split.user === wish.userId)
         if (splitIndex !== -1) {
           const userSplitSection = split[splitIndex]
           const userProcBilling = userSplitSection?.procurementWishs.find(
-            (procWish) => procWish.id === wish.id
+            (procWish) => procWish.id === wish.id,
           )
           if (userProcBilling !== undefined) {
             let totalAmount = 0
@@ -270,7 +251,7 @@ export const grouporderRouter = createTRPCRouter({
               const categorieFees = calculateFeesPerCategory(item.price, dbItem.categories)
               for (const categorie of categorieFees.categories) {
                 const catIndex = allCategorieFees.findIndex(
-                  (fee) => fee.catId === categorie.categoryId
+                  (fee) => fee.catId === categorie.categoryId,
                 )
                 if (catIndex === -1) {
                   allCategorieFees.push({

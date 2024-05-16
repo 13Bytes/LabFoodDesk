@@ -4,6 +4,7 @@ A tool to manage (food)(orders) in the Aerospace Lab.
 ## ToDo
 - Gruppenbestellung bearbeiten
 - Undo bei kauf
+- money: float -> 100x int
 - Logs wer was eingetragen hat
 - Android zahlen komma auf tastatur ausgeblendet
 - Konto-History etwas übersichtlicher: überweisungen an wen / von wem anzeigen
