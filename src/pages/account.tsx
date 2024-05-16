@@ -1,22 +1,18 @@
-import { Transaction, Prisma } from "@prisma/client"
+import { Transaction } from "@prisma/client"
 import { type NextPage } from "next"
-import { useSession } from "next-auth/react"
 import React, { useEffect } from "react"
 import CenteredPage from "~/components/Layout/CenteredPage"
-import { calculateAdditionalItemPricing, calculateAdditionalPricing, getTransactionFees } from "~/helper/dataProcessing"
+import { getTransactionFees } from "~/helper/dataProcessing"
 import { RouterOutputs, api } from "~/utils/api"
 
 const AccountPage: NextPage = () => {
   const [page, setPage] = React.useState(0)
   const [maxPage, setMaxPage] = React.useState(Infinity)
-  const { data: sessionData } = useSession()
 
-  const trpcUtils = api.useContext()
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
   type TransactionData = RouterOutputs["transaction"]["getMineInfinite"]["items"][0]
   const {
     data: transactionData,
-    isLoading: transactionIsLoading,
     fetchNextPage,
     hasNextPage,
   } = api.transaction.getMineInfinite.useInfiniteQuery(

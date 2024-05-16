@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server"
 import { validationSchema as clearingAccountValidationSchema } from "~/components/Forms/ClearingAccountForm"
 import { id, idObj } from "~/helper/zodTypes"
 import { sendMoneyFromClearingAccountSchema } from "~/pages/admin/clearingAccounts"
-import { sendMoneyProcurementSchema } from "~/pages/admin/procurement"
 import {
   adminProcedure,
   createTRPCRouter,

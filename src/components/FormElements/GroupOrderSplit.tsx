@@ -1,13 +1,12 @@
 import type { ProcurementItem } from "@prisma/client"
 import type { inferRouterOutputs } from "@trpc/server"
-import { ChangeEvent, useEffect, useState } from "react"
-import { Tid, id } from "~/helper/zodTypes"
-import type { AppRouter } from "../../server/api/root"
-import { api } from "~/utils/api"
-import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
-import { useRef } from "react"
-import { calculateAdditionalPricing } from "~/helper/dataProcessing"
+import { ChangeEvent, useEffect, useRef, useState } from "react"
 import { z } from "zod"
+import { calculateAdditionalPricing } from "~/helper/dataProcessing"
+import { Tid, id } from "~/helper/zodTypes"
+import { api } from "~/utils/api"
+import type { AppRouter } from "../../server/api/root"
+import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { LongRightArrowIcon } from "../Icons/LongRightArrowIcon"
 
 type RouterOutput = inferRouterOutputs<AppRouter>
@@ -29,11 +28,11 @@ export const splitSubmitSchema = z.array(
           z.object({
             id: id,
             price: z.number(),
-          })
+          }),
         ),
-      })
+      }),
     ),
-  })
+  }),
 )
 
 type SplitSubmit = z.infer<typeof splitSubmitSchema>
@@ -128,7 +127,6 @@ const GroupOrderSplit = (props: Props) => {
   }, [JSON.stringify(group)])
 
   const totalItems = itemList.length
-  const totalUsers = Object.keys(userItemList).length
   const [totalAmount, setTotalAmount] = useState<number>(0)
   const typeTotalAmount = (e: ChangeEvent<HTMLInputElement>) => {
     const userInput = e.currentTarget.value
@@ -147,7 +145,7 @@ const GroupOrderSplit = (props: Props) => {
             finalCost: pricePerItem,
           })),
         })),
-      }))
+      })),
     )
   }
 
@@ -155,7 +153,7 @@ const GroupOrderSplit = (props: Props) => {
     e: ChangeEvent<HTMLInputElement>,
     userId: Tid,
     procID: Tid,
-    itemIndex: number
+    itemIndex: number,
   ) => {
     const cost = parseFloat(e.currentTarget.value)
     if (!Number.isNaN(cost)) {
@@ -249,7 +247,7 @@ const GroupOrderSplit = (props: Props) => {
         onSuccess: () => {
           animate(animationRef, "success")
         },
-      }
+      },
     )
     setTimeout(() => trpcUtils.groupOrders.invalidate(), 50)
   }
@@ -273,7 +271,7 @@ const GroupOrderSplit = (props: Props) => {
               allUsersOverwritten === undefined ? totalAmount : allUsersOverwritten?.toFixed(2)
             }
             placeholder="Gesammter Betrag"
-            className={`\ input-bordered input  input-sm w-full max-w-xs
+            className={`\ input input-sm  input-bordered w-full max-w-xs
                ${Number.isNaN(totalAmount) ? "input-error" : ""} \
                ${allUsersOverwritten !== undefined ? "!input-warning " : ""}`}
             disabled={allUsersOverwritten !== undefined}
@@ -304,7 +302,7 @@ const GroupOrderSplit = (props: Props) => {
                           +{" "}
                           {calculateAdditionalPricing(
                             item.finalCost ?? 0,
-                            item.item.categories
+                            item.item.categories,
                           ).toFixed(2)}
                           €
                         </span>
@@ -318,12 +316,12 @@ const GroupOrderSplit = (props: Props) => {
                           onChange={(e) =>
                             overwriteUserExpence(e, userContent.user, proc.id, itemIndex)
                           }
-                          className="input-bordered input input-sm max-w-[6rem]"
+                          className="input input-sm input-bordered max-w-[6rem]"
                         />
                       </td>
                     </tr>
-                  ))
-                )
+                  )),
+                ),
               )}
             </tbody>
           </table>
@@ -333,7 +331,7 @@ const GroupOrderSplit = (props: Props) => {
           <LongRightArrowIcon />
           <p>Geld gutschreiben an:</p>
           <select
-            className={`select-bordered select select-sm w-full max-w-xs font-bold ${
+            className={`select select-bordered select-sm w-full max-w-xs font-bold ${
               destinationError ? "select-error" : ""
             }`}
             id="sel-dest-user"
@@ -354,7 +352,7 @@ const GroupOrderSplit = (props: Props) => {
         </div>
 
         <div className="flex justify-end">
-          <button className="btn-primary btn-sm btn mr-4 mt-1" onClick={closeGroupOrder}>
+          <button className="btn btn-primary btn-sm mr-4 mt-1" onClick={closeGroupOrder}>
             Abrechnen
           </button>
         </div>

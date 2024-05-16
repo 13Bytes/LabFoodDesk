@@ -1,5 +1,5 @@
 import { type NextPage } from "next"
-import { signIn, signOut, useSession } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import { AuthButton } from "~/components/General/AuthButton"
 
 import CenteredPage from "~/components/Layout/CenteredPage"

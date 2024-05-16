@@ -27,7 +27,7 @@ export const manageLdapLogin = (
     console.log("LDAP injection-attack detected - Nice try : )")
     return Promise.resolve(null)
   }
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     const searchUser = new Client(clientOptions)
     const testClient = new Client(clientOptions)
 
@@ -46,7 +46,7 @@ export const manageLdapLogin = (
       await testClient.bind(userData.dn, password)
       console.log(`Found UserData: ${JSON.stringify(userData)}`)
       const userID = userData.sAMAccountName
-      if (userID === undefined) {
+      if (userID === undefined || typeof userID !== "string") {
         throw new Error("sAMAccountName not defined")
       }
       console.log(`LDAP bind successful (UserID: ${userID})`)

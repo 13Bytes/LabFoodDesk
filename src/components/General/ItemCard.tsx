@@ -1,4 +1,4 @@
-import type { Category, Item } from "@prisma/client"
+import type { Category } from "@prisma/client"
 import type { Tid } from "~/helper/zodTypes"
 
 interface Props {

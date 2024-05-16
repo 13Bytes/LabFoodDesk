@@ -1,14 +1,11 @@
 import type { Category } from "@prisma/client"
-import { useEffect, useState } from "react"
-import type { Control, FieldValues, SubmitHandler } from "react-hook-form"
-import { Controller, useForm } from "react-hook-form"
+import type { Control } from "react-hook-form"
+import { Controller } from "react-hook-form"
 import Select from "react-select"
-import { z } from "zod"
-import { id } from "~/helper/zodTypes"
-import { api } from "~/utils/api"
 
 
 type Props = {
+   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     control: Control<any>
     categories: Category[] | undefined
 }

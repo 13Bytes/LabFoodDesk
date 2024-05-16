@@ -1,15 +1,7 @@
-import type { Category } from "@prisma/client"
-import { useEffect, useState } from "react"
-import type { Control, FieldValues, SubmitHandler } from "react-hook-form"
-import { Controller, useForm } from "react-hook-form"
-import Select from "react-select"
-import { z } from "zod"
-import { id } from "~/helper/zodTypes"
-import { api } from "~/utils/api"
-import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server"
+import type { inferRouterOutputs } from "@trpc/server"
+import { localStringOptions } from "~/helper/globalTypes"
 import type { AppRouter } from "../../server/api/root"
 import GroupOrderSplit from "./GroupOrderSplit"
-import { localStringOptions } from "~/helper/globalTypes"
 
 type RouterOutput = inferRouterOutputs<AppRouter>
 

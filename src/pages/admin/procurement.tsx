@@ -1,13 +1,12 @@
-import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
 import { z } from "zod"
 import ActionResponsePopup, {
-  type AnimationHandle,
   animate,
+  type AnimationHandle,
 } from "~/components/General/ActionResponsePopup"
 import { LongRightArrowIcon } from "~/components/Icons/LongRightArrowIcon"
 import RegularPage from "~/components/Layout/RegularPage"
-import { type Tid, id } from "~/helper/zodTypes"
+import { id, type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 export const sendMoneyProcurementSchema = z.object({
@@ -20,11 +19,7 @@ const ProcurementPage = () => {
   const animationRef = useRef<AnimationHandle>(null)
 
   const allUserRequest = api.user.getAllUsers.useQuery()
-  const allClearingAccountsRequest = api.clearingAccount.getAll.useQuery()
 
-  const trpcUtils = api.useContext()
-
-  const session = useSession()
   const [amountSend, setAmountSend] = useState<number>(1)
   const [selectedDestinationUser, setSelectedDestinationUser] = useState<Tid>()
   const [selectedOriginClearingAccount, setSelectedOriginClearingAccount] = useState<Tid>()
@@ -68,7 +63,7 @@ const ProcurementPage = () => {
           <div>
             <input
               type="number"
-              className="input-bordered input w-20"
+              className="input input-bordered w-20"
               value={amountSend}
               min={0}
               step={0.01}
@@ -79,7 +74,7 @@ const ProcurementPage = () => {
 
           <input
             type="text"
-            className="input-bordered input  ml-4 w-full max-w-xl"
+            className="input input-bordered  ml-4 w-full max-w-xl"
             value={noteSend}
             placeholder="Was wurde gekauft?"
             onChange={(e) => setNoteSend(e.target.value)}
@@ -93,7 +88,7 @@ const ProcurementPage = () => {
 
           <div>
             <select
-              className="select-bordered select w-full max-w-xs font-bold "
+              className="select select-bordered w-full max-w-xs font-bold "
               id="sel-dest-user"
               value={selectedDestinationUser}
               onChange={(e) => {

@@ -1,20 +1,7 @@
-import { User } from "@prisma/client"
-import { TRPCClientErrorLike } from "@trpc/client"
-import { group } from "console"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
-import { useRef, useState } from "react"
-import GroupOrderDetailView from "~/components/FormElements/GroupOrderDetailView"
-import ActionResponsePopup, {
-  AnimationHandle,
-  animate,
-} from "~/components/General/ActionResponsePopup"
-import BuyItemCard from "~/components/General/BuyItemCard"
-import ItemCard from "~/components/General/ItemCard"
 
 import CenteredPage from "~/components/Layout/CenteredPage"
-import Modal from "~/components/Layout/Modal"
-import { getUsernameLetters } from "~/helper/generalFunctions"
 import { localStringOptions } from "~/helper/globalTypes"
 import { api } from "~/utils/api"
 

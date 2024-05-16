@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useEffect } from "react"
 import type { SubmitHandler } from "react-hook-form"
-import { Controller, useForm } from "react-hook-form"
-import Select from "react-select"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Tid, formCategories, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import CategorySelector from "../FormElements/CategorySelector"
-import type { Overwrite } from "@trpc/server"
-import { zodResolver } from "@hookform/resolvers/zod"
 
 
 export const createProcItemSchema = z.object({

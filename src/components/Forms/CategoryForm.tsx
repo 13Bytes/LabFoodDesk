@@ -19,7 +19,7 @@ type Props = {
   id?: Tid
 }
 const CategoryForm = (props: Props) => {
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const createRequest = api.category.create.useMutation()
   const updateRequest = api.category.update.useMutation()
   const category = api.category.get.useQuery({ id: props.id ?? "-" }, { enabled: !!props.id })
@@ -31,7 +31,6 @@ const CategoryForm = (props: Props) => {
   const {
     register: addItemRegister,
     handleSubmit: addItemSubmit,
-    control,
     reset,
     setValue,
     formState: { errors },

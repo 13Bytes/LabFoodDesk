@@ -1,11 +1,11 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { type GetServerSidePropsContext } from "next"
-import { DefaultUser, getServerSession, type DefaultSession, type NextAuthOptions } from "next-auth"
+import { getServerSession, type DefaultSession, type DefaultUser, type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import EmailProvider from "next-auth/providers/email"
 import { env } from "~/env.mjs"
 import { prisma } from "~/server/db"
-import {  manageLdapLogin } from "./ldap"
+import { manageLdapLogin } from "./ldap"
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -54,7 +54,7 @@ export const authOptions: NextAuthOptions = {
         is_admin: token.is_admin_jwt,
       },
     }),
-    async jwt({ token, user }) {
+    jwt({ token, user }) {
       if (user) {
         token.is_admin_jwt = user.is_admin
       }

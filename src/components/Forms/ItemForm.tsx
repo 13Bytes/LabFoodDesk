@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react"
-import type { SubmitHandler } from "react-hook-form"
-import { Controller, useForm } from "react-hook-form"
-import Select from "react-select"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useEffect } from "react"
+import type { SubmitHandler } from "react-hook-form"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { Tid, formCategories, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import CategorySelector from "../FormElements/CategorySelector"
-import { Tid, formCategories, id } from "~/helper/zodTypes"
-import { DevTool } from "@hookform/devtools"
-import { z } from "zod"
 
 export const createItemSchema = z.object({
   name: z.string(),
@@ -24,7 +22,7 @@ type Props = {
   id?: Tid
 }
 const ItemForm = (props: Props) => {
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
 
   const allCategoriesRequest = api.category.getAll.useQuery()
   const createItemRequest = api.item.createItem.useMutation()
@@ -55,7 +53,7 @@ const ItemForm = (props: Props) => {
       }
       reset(mappedData)
     } else {
-      reset({name: "", price: 0, for_grouporders: false, categories: []})
+      reset({ name: "", price: 0, for_grouporders: false, categories: [] })
     }
   }, [currentItem.data, props.id ?? ""])
 
@@ -87,7 +85,7 @@ const ItemForm = (props: Props) => {
             <input
               type="text"
               {...addItemRegister("name", { required: true })}
-              className="input-bordered input-primary input w-full max-w-md"
+              className="input input-bordered input-primary w-full max-w-md"
               placeholder="Name"
             />
             {errors.name && <p>{errors.name.message}</p>}
@@ -103,7 +101,7 @@ const ItemForm = (props: Props) => {
                 required: true,
                 valueAsNumber: true,
               })}
-              className="input-bordered input-primary input w-full max-w-md"
+              className="input input-bordered input-primary w-full max-w-md"
               placeholder="Preis"
             />
             {errors.price && <p>{errors.price.message}</p>}
@@ -121,7 +119,7 @@ const ItemForm = (props: Props) => {
             {errors.for_grouporders && <p>{errors.for_grouporders.message}</p>}
           </div>
 
-          <button className="btn-primary btn-block btn mt-1" type="submit">
+          <button className="btn btn-primary btn-block mt-1" type="submit">
             Item Anlegen
           </button>
         </form>

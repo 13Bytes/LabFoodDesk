@@ -16,13 +16,13 @@ type Props = {
   finishAction: () => void
 }
 const AddGrouporderForm = (props: Props) => {
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const createGrouporder = api.groupOrders.create.useMutation()
 
   type AddGrouporderInput = z.infer<typeof validationSchema>
   type AddGrouporderFormInput = Overwrite<AddGrouporderInput, { categories: { label: string; value: string }[] }>
 
-  const { register, handleSubmit, control } = useForm<AddGrouporderFormInput>()
+  const { register, handleSubmit } = useForm<AddGrouporderFormInput>()
 
   const onSubmit: SubmitHandler<AddGrouporderFormInput> = async (data) => {
     const dataToSend = {

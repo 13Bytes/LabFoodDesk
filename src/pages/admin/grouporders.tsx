@@ -35,7 +35,8 @@ const InventoryPage = () => {
     }
   }, [setMaxPage, hasNextPage])
 
-  const createTemplateRequest = api.groupOrders.createTemplate.useMutation()
+  // todo:
+  // const createTemplateRequest = api.groupOrders.createTemplate.useMutation()
   const [addGrouporderModalOpen, setAddGrouporderModalOpen] = useState(false)
 
   const LegendTemplates = () => (
