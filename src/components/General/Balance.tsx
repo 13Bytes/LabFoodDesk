@@ -3,7 +3,7 @@ type Props = {
 }
 export const Balance = (props: Props) => {
   if (props.balance === undefined) {
-    return <div className="skeleton h-4 w-5"></div>
+    return <div className="skeleton h-5 w-9"></div>
   } else {
     let color = ""
     if (props.balance > 0) {

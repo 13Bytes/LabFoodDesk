@@ -174,7 +174,7 @@ export const itemRouter = createTRPCRouter({
   buyOneItem: protectedProcedure
     .input(z.object({ productID: id }))
     .mutation(async ({ ctx, input }) => {
-      buyOneItem(ctx.prisma, input.productID, ctx.session.user.id)
+      await buyOneItem(ctx.prisma, input.productID, ctx.session.user.id)
     }),
 })
 
@@ -197,23 +197,27 @@ export const buyOneItem = async (
   checkAccountBacking(user, totalPrice)
 
   await prisma.$transaction(async (tx) => {
-    await tx.transaction.create({
-      data: {
-        user: { connect: { id: userId } },
-        items: {
-          create: [
-            {
-              item: { connect: { id: product.id } },
-              categories: {
-                connect: product.categories.map((category) => ({ id: category.id })),
-              },
+    const transaction: Prisma.TransactionCreateInput = {
+      user: { connect: { id: userId } },
+      items: {
+        create: [
+          {
+            item: { connect: { id: product.id } },
+            categories: {
+              connect: product.categories.map((category) => ({ id: category.id })),
             },
-          ],
-        },
-        type: 0,
-        totalAmount: product.price,
-        groupOrder: { connect: { id: groupId } },
+          },
+        ],
       },
+      type: 0,
+      totalAmount: product.price,
+    }
+    if (groupId) {
+      transaction["groupOrder"] = { connect: { id: groupId } }
+    }
+
+    await tx.transaction.create({
+      data: transaction
     })
     await tx.user.update({
       where: { id: userId },

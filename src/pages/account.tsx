@@ -50,7 +50,7 @@ const AccountPage: NextPage = () => {
             <h1 className="text-xl">
               Account von <span className="font-bold ">{userData?.name}</span>
             </h1>
-            <div className="flex flex-row space-x-2">
+            <div className="flex flex-row space-x-2 items-center">
             <p>Guthaben: </p>
             <Balance balance={userData?.balance} />
             </div>
