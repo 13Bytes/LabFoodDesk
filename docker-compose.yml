@@ -1,6 +1,6 @@
 services:
   labfooddesk:
-    image: ghcr.io/13bytes/labfooddesk
+    image: ghcr.io/13bytes/labfooddesk:main
     restart: always
     build:
       context: .
