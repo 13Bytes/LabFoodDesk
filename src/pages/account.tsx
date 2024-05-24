@@ -1,14 +1,18 @@
 import { Transaction } from "@prisma/client"
 import { type NextPage } from "next"
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
+import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
 import { Balance } from "~/components/General/Balance"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { getTransactionFees } from "~/helper/dataProcessing"
+import { Tid } from "~/helper/zodTypes"
 import { RouterOutputs, api } from "~/utils/api"
 
 const AccountPage: NextPage = () => {
   const [page, setPage] = React.useState(0)
   const [maxPage, setMaxPage] = React.useState(Infinity)
+  const trpcUtils = api.useUtils()
+  const animationRef = useRef<AnimationHandle>(null)
 
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
   type TransactionData = RouterOutputs["transaction"]["getMineInfinite"]["items"][0]
@@ -29,7 +33,7 @@ const AccountPage: NextPage = () => {
       },
     },
   )
-
+const undoTransactionRequest = api.transaction.undoTransaction.useMutation()
   useEffect(() => {
     if (!hasNextPage) {
       setMaxPage(page)
@@ -42,6 +46,18 @@ const AccountPage: NextPage = () => {
     return transaction.moneyDestinationUserId === userData?.id
   }
 
+  async function rescind(transactionId: Tid)  {
+    await undoTransactionRequest.mutateAsync({ transactionId})
+    .then(()=>{
+      animate(animationRef, "success")
+    })
+    .catch(()=> {
+      animate(animationRef, "failure")
+    })
+    await trpcUtils.transaction.invalidate()
+    await trpcUtils.user.invalidate()
+  }
+
   return (
     <>
       <CenteredPage>
@@ -50,9 +66,9 @@ const AccountPage: NextPage = () => {
             <h1 className="text-xl">
               Account von <span className="font-bold ">{userData?.name}</span>
             </h1>
-            <div className="flex flex-row space-x-2 items-center">
-            <p>Guthaben: </p>
-            <Balance balance={userData?.balance} />
+            <div className="flex flex-row items-center space-x-2">
+              <p>Guthaben: </p>
+              <Balance balance={userData?.balance} />
             </div>
           </div>
 
@@ -65,9 +81,10 @@ const AccountPage: NextPage = () => {
                     <tr key={transaction.id}>
                       <td key={`${transaction.id}-td1`}>
                         <span className="font-bold">{transaction.totalAmount.toFixed(2)}€</span>
-                        {getTransactionFees(transaction) > 0 && (
+                        {transaction.amountWithoutFees != undefined && (
                           <span className="pl-2 text-sm font-extralight">
-                            + {getTransactionFees(transaction).toFixed(2)}€
+                            ink.{" "}
+                            {(transaction.totalAmount - transaction.amountWithoutFees).toFixed(2)}€
                           </span>
                         )}
                       </td>
@@ -77,7 +94,8 @@ const AccountPage: NextPage = () => {
                             .map((item) => item.item.name)
                             .join(", ") || transaction.note}
                         </span>{" "}
-                        wurde(n)
+                      </td>
+                      <td>
                         {transaction.type == 0 && <span className="text-red-700"> gekauft</span>}
                         {transaction.type == 1 && <span className="text-green-600"> verkauft</span>}
                         {transaction.type == 2 && userIsTransactionDestination(transaction) && (
@@ -90,6 +108,12 @@ const AccountPage: NextPage = () => {
                           <span className="text-green-600"> gutgeschrieben</span>
                         )}{" "}
                         am {transaction.createdAt.toISOString().split("T")[0]}
+                      </td>
+                      <td>{transaction.moneyDestination?.name ?? ""}</td>
+                      <td>
+                        {transaction.createdAt >= new Date(Date.now() - 1000 * 60 * 15)&&
+                        <button className="btn btn-ghost btn-xs" onClick={()=>rescind(transaction.id)}>stornieren</button>
+                        }
                       </td>
                     </tr>
                   ))}
@@ -120,6 +144,7 @@ const AccountPage: NextPage = () => {
           </div>
         </div>
       </CenteredPage>
+      <ActionResponsePopup ref={animationRef} />
     </>
   )
 }

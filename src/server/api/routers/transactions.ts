@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
+import { calculateFeesPerCategory } from "~/helper/dataProcessing"
 import { id } from "~/helper/zodTypes"
 import { sendMoneyProcurementSchema } from "~/pages/admin/procurement"
 
@@ -32,11 +33,12 @@ export const transactionRouter = createTRPCRouter({
         take: pageSize + 1, // get an extra item at the end which we'll use as next cursor
         where: {
           // userId with type 3 not shown, as user only created tranasaction, but has no monetarian stake
-          OR: [{ userId: ctx.session.user.id,  type: {lte: 2 } }, {moneyDestinationUserId: ctx.session.user.id}],   
+          OR: [{ userId: ctx.session.user.id, type: { lte: 2 } }, { moneyDestinationUserId: ctx.session.user.id }],
         },
         include: {
           items: { include: { item: { include: { categories: true } } } },
           procurementItems: { include: { item: { include: { categories: true } } } },
+          moneyDestination: {select: {name: true}}
         },
         skip: (page - 1) * pageSize,
         orderBy: {
@@ -74,8 +76,8 @@ export const transactionRouter = createTRPCRouter({
       checkAccountBacking(user, input.amount)
 
       // atomic action:
-      await prisma.$transaction([
-        prisma.transaction.create({
+      await ctx.prisma.$transaction([
+        ctx.prisma.transaction.create({
           data: {
             user: { connect: { id: ctx.session.user.id } },
             type: 2,
@@ -84,11 +86,11 @@ export const transactionRouter = createTRPCRouter({
             note: input.note,
           },
         }),
-        prisma.user.update({
+        ctx.prisma.user.update({
           where: { id: ctx.session.user.id },
           data: { balance: { decrement: input.amount } },
         }),
-        prisma.user.update({
+        ctx.prisma.user.update({
           where: { id: destinationUser.id },
           data: { balance: { increment: input.amount } },
         }),
@@ -120,4 +122,61 @@ export const transactionRouter = createTRPCRouter({
         })
       })
     }),
+
+  undoTransaction: protectedProcedure
+    .input(z.object({ transactionId: id }))
+    .mutation(async ({ ctx, input }) => {
+      const transaction = await ctx.prisma.transaction.findUniqueOrThrow({
+        where: { id: input.transactionId },
+        include: { items: { include: { item: true, categories: true } }, procurementItems: { include: { item: { include: { categories: true } } } } }
+      })
+      if (transaction.createdAt < new Date(Date.now() - 1000 * 60 * 15)) { // 15min - in ms
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Transaction is too old to be undone",
+        })
+      }
+
+      // 0: buy, 1: sell, 2: transfer, 3: procurement
+      if (transaction.type === 0) {
+        if (transaction.userId !== ctx.session.user.id) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "You can only undo your own Transactions",
+          })
+        }
+        if (!transaction.groupOrderId ) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "You can't exit from group-orders after the fact",
+          })
+        }
+        await ctx.prisma.$transaction(async (tx) => {
+          await tx.transaction.update({
+            where: { id: input.transactionId },
+            data: { type: 90 },
+          })
+          await tx.user.update({
+            where: { id: transaction.userId },
+            data: { balance: { increment: transaction.totalAmount } },
+          })
+          for (const item of transaction.items) {
+            const fees = calculateFeesPerCategory(item.item.price, item.categories)
+            for (const cat of fees.categories) {
+                await tx.clearingAccount.update({
+                  where: { id: cat.clearingAccountId },
+                  data: { balance: { decrement: cat.charges} },
+                })
+              }
+            }
+        })
+      }
+      else {
+        // TODO!
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This kind of transaction currently doesn't support undoing",
+        })
+      }
+    })
 })

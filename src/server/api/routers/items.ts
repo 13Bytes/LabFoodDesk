@@ -210,7 +210,8 @@ export const buyOneItem = async (
         ],
       },
       type: 0,
-      totalAmount: product.price,
+      amountWithoutFees: product.price,
+      totalAmount: totalPrice,
     }
     if (groupId) {
       transaction["groupOrder"] = { connect: { id: groupId } }

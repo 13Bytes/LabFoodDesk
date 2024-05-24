@@ -234,7 +234,7 @@ export const grouporderRouter = createTRPCRouter({
             (procWish) => procWish.id === wish.id,
           )
           if (userProcBilling !== undefined) {
-            let totalAmount = 0
+            let amountWithoutFees = 0
             let totalAmountWithCat = 0
             const billingItems = [...userProcBilling.items] // remove elements from this array to check if all items are billed
             const itemPriceMap: { itemId: Tid; price: number }[] = []
@@ -266,7 +266,7 @@ export const grouporderRouter = createTRPCRouter({
                 }
               }
               creditOfDest += item.price
-              totalAmount += item.price
+              amountWithoutFees += item.price
               totalAmountWithCat += item.price + categorieFees.total
               itemPriceMap.push({ itemId: dbItem.id, price: item.price })
               billingItems.splice(itemIndex, 1)
@@ -282,7 +282,8 @@ export const grouporderRouter = createTRPCRouter({
                 },
                 groupOrder: { connect: { id: group.id } },
                 type: 0,
-                totalAmount: totalAmount,
+                amountWithoutFees: amountWithoutFees,
+                totalAmount: totalAmountWithCat,
               },
               totalAmountWithCat,
             })

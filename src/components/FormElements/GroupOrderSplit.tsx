@@ -61,7 +61,7 @@ type Props = {
 const GroupOrderSplit = (props: Props) => {
   const { group } = props
 
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
 
   const allUserRequest = api.user.getAllUsers.useQuery()

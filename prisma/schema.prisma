@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
-    binaryTargets = ["native","linux-musl-openssl-3.0.x"]
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -121,11 +121,16 @@ model Transaction {
     id                     String                   @id @default(cuid())
     user                   User                     @relation("user", fields: [userId], references: [id], onDelete: NoAction)
     userId                 String
+    canceled               Boolean                  @default(false)
+    canceledDate           DateTime?
+    canceledBy             User?                    @relation("canceledBy", fields: [canceledByUserId], references: [id])
+    canceledByUserId       String?
     items                  ItemCategoryMapping[]
     procurementItems       ProcurementItemBilling[]
+    amountWithoutFees      Float? // without category-markup
     totalAmount            Float // without category-markup
     createdAt              DateTime                 @default(now())
-    type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer, 3: procurement
+    type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer, 3: procurement  |  90: rescinded buy, 91:  rescinded sell
     groupOrder             GroupOrder?              @relation(fields: [groupOrderId], references: [id])
     groupOrderId           String?
     //  --- only if transfer (type=2)
@@ -179,6 +184,7 @@ model User {
     is_transfer_destiantion Transaction[]     @relation("moneyDestination")
     ProcurementWish         ProcurementWish[]
     GroupOrder              GroupOrder[]
+    Transaction             Transaction[]     @relation("canceledBy")
 }
 
 model VerificationToken {
