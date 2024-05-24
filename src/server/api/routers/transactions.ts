@@ -145,7 +145,7 @@ export const transactionRouter = createTRPCRouter({
             message: "You can only undo your own Transactions",
           })
         }
-        if (!transaction.groupOrderId ) {
+        if (!!transaction.groupOrderId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "You can't exit from group-orders after the fact",

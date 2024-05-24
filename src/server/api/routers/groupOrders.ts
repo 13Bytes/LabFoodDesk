@@ -28,8 +28,18 @@ export const grouporderRouter = createTRPCRouter({
         ordersCloseAt: "asc",
       },
       include: {
-        orders: { include: { user: { select: { id: true, name: true } } } },
-        procurementWishes: { include: { user: { select: { id: true, name: true } } } },
+        orders: {
+          include: {
+            user: { select: { id: true, name: true } },
+            items: { include: { item: true } }
+          }
+        },
+        procurementWishes: {
+          include: {
+            user: { select: { id: true, name: true } },
+            items: { include: { categories: true } }
+          }
+        },
       },
     })
     return result
@@ -182,6 +192,33 @@ export const grouporderRouter = createTRPCRouter({
         },
       })
       return procWish
+    }),
+
+  undoProcureGroupOrderItem: protectedProcedure
+    .input(
+      z.object({
+        procurementWishId: id,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+
+      await ctx.prisma.$transaction(async (tx) => {
+        const pcWish = await tx.procurementWish.findUniqueOrThrow({
+          where: {
+            id: input.procurementWishId,
+            userId: ctx.session.user.id
+          },
+          include: { GroupOrder: true }
+        })
+        if (pcWish.GroupOrder?.status !== 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order is already closed" })
+        }
+        await tx.procurementWish.delete({
+          where: {
+            id: input.procurementWishId,
+          }
+        })
+      })
     }),
 
   stopOrders: adminProcedure.input(z.object({ groupId: id })).mutation(async ({ ctx, input }) => {
