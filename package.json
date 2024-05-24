@@ -10,6 +10,7 @@
     "start": "next start",
     "test": "vitest",
     "db:generate": "prisma generate",
+    "db:migrate": "npx prisma migrate dev",
     "db:push": "npx prisma db push",
     "db:studio": "npx prisma studio"
   },
