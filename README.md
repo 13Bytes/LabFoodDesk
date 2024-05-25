@@ -1,15 +1,15 @@
 # LabEats
 **LabEats allows a group of people to manage money in combination with item-sales, procurement and group-orders in a moderated prepaid fashion.**
 
-A tool to manage (food)(orders) in the Aerospace Lab (a awesome club in germany).\
+A tool to manage (food)(orders) in the Aerospace Lab (an awesome club in Germany).\
 It is designed with our club in mind, but can surely be adapted to fit more needs.
 
 ## Overview
 **"Kaufen":** Allows users to buy items which are already present (e.g. a beverages).
 
 **"Gruppen-Kauf":** Allows users to join a group-order for one fixed event.
-After a specified deadlinen one user can close the ordering-process (e.g. to buy the pre-ordered amount).
-Afer this, the price of the whole purchase can be split up between the participants in an arbirtary fashion.
+After a specified deadline, one user can close the ordering-process (e.g. to buy the pre-ordered amount).
+After this, the price of the whole purchase can be split up between the participants in an arbitrary fashion.
 
 **"Split" & "Aufladen":** Allows users to transfer money.\
 The system is designed the following:\
@@ -20,7 +20,7 @@ All other users can only spend their prepaid credit - which they obtain by givin
 
 **Admin-Functionality:** 
 - Users are authenticated against LDAP (with additional magic links for development).
-- All items can have an percentual and/or fixed  additional fee which cann be tracked on special clearing accounts.
+- All items can have a percentual and/or fixed additional fee which can be tracked on special clearing accounts.
 - Users can be compensated for procurement from those special clearing accounts as well as from the "main account"
 
 
@@ -68,3 +68,8 @@ Create DB Migrations (for production)
 
 
 ---
+
+## Questions & Contact
+
+Stuck somewhere? Or you want to adopt LabEats to your needs? \
+You can contact me at coding@13bytes.de or create a [issue](https://github.com/13Bytes/LabFoodDesk/issues).
