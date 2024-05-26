@@ -4,6 +4,12 @@
 A tool to manage (food)(orders) in the Aerospace Lab (an awesome club in Germany).\
 It is designed with our club in mind, but can surely be adapted to fit more needs.
 
+<img src="https://github.com/13Bytes/LabFoodDesk/assets/12069002/8f4b9923-0582-4ba9-a53a-ddfaae0f7832" height=500>
+
+<img src="https://github.com/13Bytes/LabFoodDesk/assets/12069002/c91b83b9-cdb1-4d65-b61a-1eb0d3d33fa3" height=500>
+
+<img src="https://github.com/13Bytes/LabFoodDesk/assets/12069002/02562eb3-aefb-4999-a5c3-3569c4be155a" height=500>
+
 ## Overview
 **"Kaufen":** Allows users to buy items which are already present (e.g. a beverages).
 

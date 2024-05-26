@@ -15,7 +15,7 @@ export default function Header() {
         <Link href="/grouporders">Gruppen-Kauf</Link>
       </li>
       <li>
-        <Link href="/split">Split™️</Link>
+        <Link href="/split">Split</Link>
       </li>
       <li>
         <Link href="/top-up">Aufladen</Link>
@@ -101,7 +101,7 @@ export default function Header() {
       {loggedIn && (
         <div className="navbar-end">
           <div className="placeholder dropdown-end dropdown avatar">
-            <div tabIndex={0} className="w-12 rounded-full bg-neutral-focus text-neutral-content">
+            <div tabIndex={0} className="w-12 rounded-full bg-base-300 hover:bg-base-200 text-neutral-content cursor-pointer">
               <span>{getUsernameLetters(sessionData?.user?.name)}</span>
             </div>
             <ul
