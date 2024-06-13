@@ -124,12 +124,14 @@ const GroupOrders: NextPage = () => {
                           </td>
                           <td>{pc.items.map((item) => item.name).join(", ")}</td>
                           <td>
-                            <button
-                              className="btn btn-outline btn-xs"
-                              onClick={() => rescindProcurement(pc.id)}
-                            >
-                              stornieren
-                            </button>
+                            {pc.userId === sessionUser?.id && (
+                              <button
+                                className="btn btn-outline btn-xs"
+                                onClick={() => rescindProcurement(pc.id)}
+                              >
+                                stornieren
+                              </button>
+                            )}
                           </td>
                         </tr>
                       )
@@ -215,7 +217,7 @@ const UserItem = (props: { orderId: string; userName: string | null }) => {
   return (
     <div key={props.orderId} className="tooltip tooltip-top" data-tip={props.userName}>
       <div className="avatar placeholder">
-        <div className="bg-base-100 w-12 rounded-full text-neutral-content">
+        <div className="w-12 rounded-full bg-base-100 text-neutral-content">
           <span>{getUsernameLetters(props.userName)}</span>
         </div>
       </div>

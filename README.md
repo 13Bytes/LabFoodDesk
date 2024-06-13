@@ -56,18 +56,15 @@ Create DB Migrations (for production)
 `npx prisma migrate dev`
 
 ### Open ToDos
-- Undo bei kauf
+- Gruppen-Wiederholungen
+    - cron-trigger an endpoint?
+- "stornieren" in Gruppenbestellungen angepasst anzeigen
 - money: float -> 100x int
 - Logs wer was eingetragen hat
 - Android zahlen komma auf tastatur ausgeblendet
-- Konto-History etwas übersichtlicher: überweisungen an wen / von wem anzeigen
-- Gruppen-Wiederholungen
-    - cron-trigger an endpoint?
 #### Nice Improvements:
-- Interface für Admins
 - Verrechnungkonten global anzeigen
 - Kontostand in header
-- Gruppenbestellung: was bestellt anzeigen.
 - the check if account is covered is prone to simultaneous requests (the actual credit of course not)
 - Stats wie oft man was gekauft
 - Geld anfordern (kann von anderem User bestätigt werden)

@@ -139,9 +139,11 @@ const InventoryPage = () => {
                       {order.status === 6 && "☑️"}
                       {order.status === 99 && "❌"}
                     </td>
-                    <td>
+                    <td className="flex gap-x-2 flex-wrap">
                       {order.orders.map((order) => (
+                        <>
                         <span key={order.id}>{order.user.name}</span>
+                        </>
                       ))}
                     </td>
                   </tr>

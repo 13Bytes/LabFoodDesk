@@ -19,7 +19,6 @@ export const grouporderRouter = createTRPCRouter({
       where: {
         status: 0,
         ordersCloseAt: {
-          gte: dayjs().subtract(2, "days").toDate(),
           lte: dayjs().add(14, "days").toDate(),
         },
         ordersClosedAt: null,
