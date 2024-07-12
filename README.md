@@ -33,9 +33,17 @@ All other users can only spend their prepaid credit - which they obtain by givin
 ## Deployment
 deployment via [docker compose](https://docs.docker.com/compose/)
 
-- copy `docker-compose.yml` onto the server.\
+- copy `docker-compose.yml` onto the server. Set `ENABLE_PRISMA_STUDIO`.
 - copy `.env.example` onto the server and rename it to `.env` - fill in details accordingly.
+- create file `./nginx/prismaStudio-htpasswd`.
+    - _if prisma studio is enabled:_ add entrie(s) to htpasswd. A example can be found in `prismaStudio-htpasswd.example`
 - `docker compose up -d`
+
+The docker image will publish LabEats on Port **3000**.\
+This port should be deployed behind a reverse-proxy handling HTTPS.
+`ENABLE_PRISMA_STUDIO=true` will also run a frontend for the database on port **5556**.\
+Only secured by basic HTTP auth (set in `./nginx/prismaStudio-htpasswd`), this port should not be open to the public!
+
 
 ## Development
 
@@ -59,17 +67,23 @@ Create DB Migrations (for production)
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?
 - money: float -> 100x int
+- Unangemeldet: Weiterleitung auf Startseite/Login 
 - Logs wer was eingetragen hat
 - Personen einen "Gruppentag" geben 
 - Android zahlen komma auf tastatur ausgeblendet
 - Wiederholungen -> Gruppeneinkäufe umbenennen
 #### Nice Improvements:
+- Smartphone: dynamische höhe h-dvh nutzen
+- Smartphone: Tabellen breiter als screen
+- Smartphone: Gruppen-Abrechnung breiter als screen 
+- Smartphone: Menü blendet nicht automatisch aus
 - "beenden" bei Gruppenbestellungen ändern, das es nicht irrtümlichen für speichern gehalten wird
 - Verrechnungkonten global anzeigen
 - Kontostand in header
 - the check if account is covered is prone to simultaneous requests (the actual credit of course not)
 - Stats wie oft man was gekauft
 - Geld anfordern (kann von anderem User bestätigt werden)
+- Übersicht alle Transaktionen für Admins
 
 
 ---

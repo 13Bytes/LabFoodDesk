@@ -257,7 +257,7 @@ const GroupOrderSplit = (props: Props) => {
       <div className="container">
         <label className="form-control w-full max-w-xs">
           <div className="label">
-            <span className="label-text">Kosten Gesammt</span>
+            <span className="label-text">Kosten Gesamt</span>
             {allUsersOverwritten !== undefined && (
               <span className="label-text text-warning">(verändert)</span>
             )}
@@ -270,7 +270,7 @@ const GroupOrderSplit = (props: Props) => {
             value={
               allUsersOverwritten === undefined ? totalAmount : allUsersOverwritten?.toFixed(2)
             }
-            placeholder="Gesammter Betrag"
+            placeholder="Gesamter Betrag"
             className={`\ input input-sm  input-bordered w-full max-w-xs
                ${Number.isNaN(totalAmount) ? "input-error" : ""} \
                ${allUsersOverwritten !== undefined ? "!input-warning " : ""}`}

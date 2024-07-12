@@ -1,20 +1,30 @@
 services:
+  # reverse proxy for prisma studios db-frontend (with http basic auth)
+  nginx:
+    image: nginx:latest
+    container_name: nginx_rev_proxy
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/prismaStudio-htpasswd:/etc/nginx/.htpasswd
+    ports:
+      - 5556:5556  # must no be exposed to the internet!
+
   labfooddesk:
     image: ghcr.io/13bytes/labfooddesk:main
+    container_name: labfooddesk
     restart: always
     build:
       context: .
       dockerfile: Dockerfile
-      # args:
-      #   NEXT_PUBLIC_CLIENTVAR: "clientvar"
     working_dir: /app
     ports:
-      - "3000:3000"  # nextjs
-      - "5555:5555"  # prisma studio - mustn't be acessible by public!
+      - "3000:3000"  # labfooddesk (nextjs)
+    expose:
+      - "5555:5555"  # prisma studio
     env_file:
       - .env
     volumes:
       - ./labfooddesk-docker-db/:/app/db/
     environment:
       - DATABASE_URL=file:/app/db/db.sqlite
-      - ENABLE_PRISMA_STUDIO=true
+      - ENABLE_PRISMA_STUDIO=false
