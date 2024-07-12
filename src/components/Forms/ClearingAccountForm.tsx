@@ -15,7 +15,7 @@ type Props = {
   id?: Tid
 }
 const ClearingAccountForm = (props: Props) => {
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const createRequest = api.clearingAccount.create.useMutation()
   const updateRequest = api.clearingAccount.update.useMutation()
   const clearingAccount = api.clearingAccount.get.useQuery(

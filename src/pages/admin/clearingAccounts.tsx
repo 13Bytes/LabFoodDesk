@@ -24,7 +24,7 @@ const ClearingAccountPage = () => {
   const allUserRequest = api.user.getAllUsers.useQuery()
   const allClearingAccountsRequest = api.clearingAccount.getAll.useQuery()
 
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
 
   const session = useSession()
   const [amountSend, setAmountSend] = useState<number>(1)

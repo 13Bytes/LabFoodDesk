@@ -6,7 +6,7 @@ import { localStringOptions } from "~/helper/globalTypes"
 import { api } from "~/utils/api"
 
 const GroupOrdersHistory: NextPage = () => {
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
 
   const groupOrdersLatelyClosed = api.groupOrders.getLatelyClosed.useQuery()
 

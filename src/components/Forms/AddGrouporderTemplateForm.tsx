@@ -16,7 +16,7 @@ type Props = {
   finishAction: () => void
 }
 const AddGrouporderTemplateForm = (props: Props) => {
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const createGrouporderTemplate = api.groupOrders.createTemplate.useMutation()
 
   type AddGrouporderFormInput = z.infer<typeof validationSchema>

@@ -14,7 +14,7 @@ const ProcurementItemOverview = () => {
   const [openAddItemModal, setOpenAddItemModal] = useState(false)
   const animationRef = useRef<AnimationHandle>(null)
 
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const [detailView, setDetailView] = useState<Tid>()
   const [checked, setChecked] = useState<Tid[]>([])
 

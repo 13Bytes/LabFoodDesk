@@ -15,7 +15,7 @@ const SendMoney = (props: Props) => {
   const allUserRequest = api.user.getAllUsers.useQuery()
   const animationRef = useRef<AnimationHandle>(null)
 
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
 
   const session = useSession()
   const [amountSend, setAmountSend] = useState<number>(1)

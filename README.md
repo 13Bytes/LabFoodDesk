@@ -58,11 +58,13 @@ Create DB Migrations (for production)
 ### Open ToDos
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?
-- "stornieren" in Gruppenbestellungen angepasst anzeigen
 - money: float -> 100x int
 - Logs wer was eingetragen hat
+- Personen einen "Gruppentag" geben 
 - Android zahlen komma auf tastatur ausgeblendet
+- Wiederholungen -> Gruppeneinkäufe umbenennen
 #### Nice Improvements:
+- "beenden" bei Gruppenbestellungen ändern, das es nicht irrtümlichen für speichern gehalten wird
 - Verrechnungkonten global anzeigen
 - Kontostand in header
 - the check if account is covered is prone to simultaneous requests (the actual credit of course not)

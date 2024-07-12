@@ -8,7 +8,7 @@ import { api } from "~/utils/api"
 const Me: NextPage = () => {
   const { data: sessionData, update: updateSession } = useSession()
 
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
 
   type UserFormInput = { name: string }

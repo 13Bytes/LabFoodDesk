@@ -19,7 +19,7 @@ type Props = {
   id?: Tid
 }
 const ProcurementItemForm = (props: Props) => {
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
 
   type AddProcurementItemForm = z.infer<typeof itemValidationSchema>
   const allCategoriesRequest = api.category.getAll.useQuery()

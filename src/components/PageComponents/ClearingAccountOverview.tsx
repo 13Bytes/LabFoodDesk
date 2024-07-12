@@ -14,7 +14,7 @@ const ClearingAccountOverview = () => {
   const animationRef = useRef<AnimationHandle>(null)
   const [openAddItemModal, setOpenAddItemModal] = useState(false)
 
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const [detailView, setDetailView] = useState<Tid>()
   const [checked, setChecked] = useState<Tid[]>([])
 
