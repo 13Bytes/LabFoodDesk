@@ -35,7 +35,7 @@ deployment via [docker compose](https://docs.docker.com/compose/)
 
 - copy `docker-compose.yml` onto the server. Set `ENABLE_PRISMA_STUDIO`.
 - copy `.env.example` onto the server and rename it to `.env` - fill in details accordingly.
-- create file `./nginx/prismaStudio-htpasswd`.
+- copy the `./nginx` folder from the repo and create file `./nginx/prismaStudio-htpasswd`.
     - _if prisma studio is enabled:_ add entrie(s) to htpasswd. A example can be found in `prismaStudio-htpasswd.example`
 - `docker compose up -d`
 
@@ -67,7 +67,6 @@ Create DB Migrations (for production)
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?
 - money: float -> 100x int
-- Unangemeldet: Weiterleitung auf Startseite/Login 
 - Logs wer was eingetragen hat
 - Personen einen "Gruppentag" geben 
 - Android zahlen komma auf tastatur ausgeblendet
