@@ -8,7 +8,7 @@ interface Props {
 export default function Layout({ children }: Props) {
   return (
     <>
-      <div className="h-screen">
+      <div className="h-dvh">
         <div className="flex h-full flex-col justify-between">
           <Header />
           <main>{children}</main>

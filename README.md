@@ -66,16 +66,14 @@ Create DB Migrations (for production)
 ### Open ToDos
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?
+    - Wiederholungen -> Gruppeneinkäufe umbenennen
 - money: float -> 100x int
 - Logs wer was eingetragen hat
-- Personen einen "Gruppentag" geben 
+- Personen einen "Gruppen-Tag" geben 
 - Android zahlen komma auf tastatur ausgeblendet
-- Wiederholungen -> Gruppeneinkäufe umbenennen
 #### Nice Improvements:
-- Smartphone: dynamische höhe h-dvh nutzen
 - Smartphone: Tabellen breiter als screen
 - Smartphone: Gruppen-Abrechnung breiter als screen 
-- Smartphone: Menü blendet nicht automatisch aus
 - "beenden" bei Gruppenbestellungen ändern, das es nicht irrtümlichen für speichern gehalten wird
 - Verrechnungkonten global anzeigen
 - Kontostand in header

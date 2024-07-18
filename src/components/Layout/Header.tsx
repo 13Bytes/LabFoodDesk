@@ -65,7 +65,7 @@ export default function Header() {
     <div className="navbar bg-base-100">
       <div className="navbar-start">
         <div className="dropdown">
-          <label tabIndex={0} className="btn-ghost btn lg:hidden">
+          <div tabIndex={0} role="button" className="btn-ghost btn lg:hidde">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -80,11 +80,22 @@ export default function Header() {
                 d="M3.75 6.75h16.5M3.75 12H12m-8.25 5.25h16.5"
               />
             </svg>
-          </label>
+          </div>
 
           <ul
             tabIndex={0}
             className="dropdown-content menu rounded-box menu-lg z-[1] mt-3 w-60 bg-base-100 p-2 shadow"
+            onClick={() => {
+              const elem = document.activeElement;
+              if(elem){
+                setTimeout(() => {
+                  const elem = document.activeElement;
+                  if (elem && elem.nodeName !== "SUMMARY") {
+                    (elem as HTMLInputElement).blur();
+                  }
+                }, 100)
+              }
+            }}
           >
             {navElements()}
           </ul>
