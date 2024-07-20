@@ -1,5 +1,4 @@
 ##### DEPENDENCIES
-
 FROM node:21-alpine3.18 AS deps
 RUN apk add --no-cache libc6-compat openssl1.1-compat
 WORKDIR /app

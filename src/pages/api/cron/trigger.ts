@@ -15,8 +15,9 @@ export default function handler(
   
   rateLimiter.consume("alwaysSameIdentifier")
     .then((rateLimiterRes) => {
+      // todo: do stuff: e.g.: create group-orders or send notifications
+        console.log("cron got triggered")
         res.status(200).json({ message: 'cron triggered' })
-        // todo: do stuff: e.g.: create group-orders or send notifications
       })
       .catch((rateLimiterRes) => {
         // Command already triggered in the last min
