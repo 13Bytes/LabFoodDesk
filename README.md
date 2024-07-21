@@ -67,13 +67,11 @@ Create DB Migrations (for production)
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?
     - Wiederholungen -> Gruppeneinkäufe umbenennen
-- money: float -> 100x int
+- Jedes Produkt über Verrechnungskonto abrechnen (kein Lab-eats Konto)
 - Logs wer was eingetragen hat
-- Personen einen "Gruppen-Tag" geben 
 - Android zahlen komma auf tastatur ausgeblendet
 #### Nice Improvements:
-- Smartphone: Tabellen breiter als screen
-- Smartphone: Gruppen-Abrechnung breiter als screen 
+- Personen einen "Gruppen-Tag" geben
 - "beenden" bei Gruppenbestellungen ändern, das es nicht irrtümlichen für speichern gehalten wird
 - Verrechnungkonten global anzeigen
 - Kontostand in header

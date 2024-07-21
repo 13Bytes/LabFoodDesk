@@ -43,7 +43,7 @@ const CategoryOverview = () => {
 
   return (
     <>
-      <div className="flex max-w-5xl flex-col  p-5 ">
+      <div className="flex max-w-5xl flex-col md:px-5">
         <div className="flex justify-between gap-3 align-bottom">
           <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
             <CloseWindowIcon /> Kategorie
@@ -54,7 +54,7 @@ const CategoryOverview = () => {
             </button>
           )}
         </div>
-        <div className="flex max-w-5xl grow flex-row items-center justify-center">
+        <div className="overflow-x-auto flex-row items-center justify-center">
           <table className="table">
             {/* head */}
             <thead>

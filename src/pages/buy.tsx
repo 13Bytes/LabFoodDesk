@@ -33,18 +33,18 @@ const BuyPage: NextPage = () => {
   return (
     <RegularPage>
       <div className="flex flex-grow flex-col">
-        <div className="self-end pr-3 pt-1">
+        <div className="self-end pt-1">
           <input
             type="text"
             placeholder="Suche"
-            className="input-bordered input w-full max-w-xs m-1"
+            className="input-bordered input w-full max-w-xs"
             onChange={(e) => {
               setSearchString(e.target.value)
             }}
           />
         </div>
 
-        <div className="flex flex-row flex-wrap items-center justify-start gap-2 sm:p-4 md:p-7">
+        <div className="flex flex-row flex-wrap justify-center gap-2 mt-7 sm:p-4 md:p-7">
           {displayedItems?.map((item) => (
             <BuyItemCard key={item.id} item={item} buyAction={buyAction} />
           ))}

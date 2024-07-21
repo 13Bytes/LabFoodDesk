@@ -22,7 +22,7 @@ const ProcurementItemOverview = () => {
     await Promise.all(
       checked.map(async (id) => {
         return deleteRequest.mutateAsync({ id })
-      })
+      }),
     ).catch((e) => {
       console.error(e)
       animate(animationRef, "failure")
@@ -44,16 +44,16 @@ const ProcurementItemOverview = () => {
     <>
       <div className="flex max-w-5xl flex-col">
         <div className="flex justify-between gap-3 align-bottom">
-          <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
+          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
             <CloseWindowIcon /> Vorbesteller-Item
           </button>
           {checked.length > 0 && (
-            <button className="btn-error btn-sm btn" onClick={() => deleteSelected()}>
+            <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
               <TrashIcon />
             </button>
           )}
         </div>
-        <div className="flex max-w-5xl grow flex-row items-center justify-center">
+        <div className="overflow-x-auto grow flex-row items-center justify-center">
           <table className="table">
             {/* head */}
             <thead>
@@ -82,7 +82,7 @@ const ProcurementItemOverview = () => {
                   <td>{item.categories.map((cat) => cat.name).join(", ")}</td>
                   <th>
                     <button
-                      className="btn-ghost btn-xs btn"
+                      className="btn btn-ghost btn-xs"
                       onClick={() => {
                         setDetailView(item.id)
                         setOpenAddItemModal(true)

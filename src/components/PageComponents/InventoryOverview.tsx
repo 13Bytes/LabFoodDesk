@@ -22,7 +22,7 @@ const InventoryOverview = () => {
     await Promise.all(
       checked.map(async (id) => {
         return deleteRequest.mutateAsync({ id })
-      })
+      }),
     ).catch((e) => {
       console.error(e)
       animate(animationRef, "failure")
@@ -36,7 +36,6 @@ const InventoryOverview = () => {
       <th></th>
       <th>Name</th>
       <th>Preis</th>
-      <th>Gruppe</th>
       <th>Kategorie(n)</th>
       <th></th>
     </tr>
@@ -46,16 +45,16 @@ const InventoryOverview = () => {
     <>
       <div className="flex max-w-5xl flex-col">
         <div className="flex justify-between gap-3 align-bottom">
-          <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
+          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
             <CloseWindowIcon /> Produkt
           </button>
           {checked.length > 0 && (
-            <button className="btn-error btn-sm btn" onClick={() => deleteSelected()}>
+            <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
               <TrashIcon />
             </button>
           )}
         </div>
-        <div className="flex max-w-5xl grow flex-row items-center justify-center">
+        <div className="max-w-5xl flex-row items-center justify-center overflow-x-auto">
           <table className="table">
             {/* head */}
             <thead>
@@ -78,15 +77,15 @@ const InventoryOverview = () => {
                     <div className="flex items-center space-x-3">
                       <div>
                         <div className="font-bold">{item.name}</div>
+                        {item.for_grouporders && <div className="font-extralight">(Gruppe)</div>}
                       </div>
                     </div>
                   </td>
                   <td>{item.price}€</td>
-                  <td>{item.for_grouporders ? "Gruppe" : "Einzel"}</td>
                   <td>{item.categories.map((cat) => cat.name).join(", ")}</td>
                   <th>
                     <button
-                      className="btn-ghost btn-xs btn"
+                      className="btn btn-ghost btn-xs"
                       onClick={() => {
                         setDetailView(item.id)
                         setOpenAddItemModal(true)

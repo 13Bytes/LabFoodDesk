@@ -62,7 +62,7 @@ const InventoryPage = () => {
 
   return (
     <RegularPage>
-      <div className="max-w-7xl">
+      <div className="max-w-7xl md:px-5">
         <div className="flex flex-col">
           <h2 className="text-xl">Wiederholungen</h2>
           <div className="flex max-w-5xl grow flex-row items-center justify-center">
@@ -106,10 +106,10 @@ const InventoryPage = () => {
           </div>
         </div>
 
-        <div className="mt-7 flex flex-col p-5 ">
+        <div className="mt-7 flex flex-col">
           <div className="flex flex-row justify-between">
             <h2 className="text-xl">Gruppen-Käufe</h2>
-            <div className="flex ">
+            <div className="flex">
               <button
                 className="btn-primary btn-square btn-sm btn"
                 onClick={() => setAddGrouporderModalOpen(true)}
@@ -119,7 +119,7 @@ const InventoryPage = () => {
             </div>
           </div>
 
-          <div className="flex max-w-5xl grow flex-row items-center justify-center">
+          <div className="flex max-w-5xl flex-row items-center justify-center w-screen">
             <table className="table overflow-x-auto">
               <thead>
                 <Legend />

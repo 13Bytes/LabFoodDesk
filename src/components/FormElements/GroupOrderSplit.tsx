@@ -328,8 +328,7 @@ const GroupOrderSplit = (props: Props) => {
         </div>
 
         <div className="mt-6 flex flex-row items-center gap-2">
-          <LongRightArrowIcon />
-          <p>Geld gutschreiben an:</p>
+          <p>Gezahlt von:</p>
           <select
             className={`select select-bordered select-sm w-full max-w-xs font-bold ${
               destinationError ? "select-error" : ""

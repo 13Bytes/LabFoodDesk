@@ -1,15 +1,11 @@
+import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
-import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
 import Modal from "~/components/Layout/Modal"
-import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
-import CategoryForm from "../Forms/CategoryForm"
-import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
-import { TrashIcon } from "../Icons/TrashIcon"
-import { Balance } from "../General/Balance"
-import { useSession } from "next-auth/react"
 import UserForm from "../Forms/UserForm"
+import ActionResponsePopup, { AnimationHandle } from "../General/ActionResponsePopup"
+import { Balance } from "../General/Balance"
 
 const UserOverview = () => {
   const allUsersRequest = api.user.getAllUsersDetailed.useQuery()
@@ -33,8 +29,8 @@ const UserOverview = () => {
 
   return (
     <>
-      <div className="flex max-w-5xl flex-col  p-5 ">
-        <div className="flex max-w-5xl grow flex-row items-center justify-center">
+      <div className="w-dvw max-w-5xl flex-col md:px-5">
+        <div className="mr-2 grow flex-row items-center justify-center overflow-x-auto">
           <table className="table">
             {/* head */}
             <thead>
@@ -50,21 +46,23 @@ const UserOverview = () => {
                       </div>
                     </div>
                   </td>
-                  <td><Balance balance={user.balance}/></td>
+                  <td>
+                    <Balance balance={user.balance} />
+                  </td>
                   <td>{user.allowOverdraw ? "🪙" : "❌"}</td>
                   <td>{user.is_admin ? "👑" : ""}</td>
                   {userIsAdmin && (
                     <th>
-                    <button
-                      className="btn-ghost btn-xs btn"
-                      onClick={() => {
-                        setSelectedUser(user.id)
-                      }}
+                      <button
+                        className="btn btn-ghost btn-xs"
+                        onClick={() => {
+                          setSelectedUser(user.id)
+                        }}
                       >
-                      Edit
-                    </button>
-                  </th>
-                    )}
+                        Edit
+                      </button>
+                    </th>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -74,13 +72,12 @@ const UserOverview = () => {
           </table>
         </div>
 
-        <Modal open={!!selectedUser} setOpen={(a)=>setSelectedUser(undefined)}>
-          <UserForm
-            id={selectedUser}
-            finishAction={() => setSelectedUser(undefined)}
-          />
+        <Modal open={!!selectedUser} setOpen={(a) => setSelectedUser(undefined)}>
+          <UserForm id={selectedUser} finishAction={() => setSelectedUser(undefined)} />
         </Modal>
+        <p className="text-xs font-extralight">Admin-Rolle wird aus LDAP synchronisiert</p>
       </div>
+
       <ActionResponsePopup ref={animationRef} />
     </>
   )

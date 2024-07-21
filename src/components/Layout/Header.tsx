@@ -1,6 +1,7 @@
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { getUsernameLetters } from "~/helper/generalFunctions"
+import { MenueIcon } from "../Icons/MenueIcon"
 
 export default function Header() {
   const { data: sessionData } = useSession()
@@ -64,34 +65,20 @@ export default function Header() {
   return (
     <div className="navbar bg-base-100">
       <div className="navbar-start">
-        <div className="dropdown">
-          <div tabIndex={0} role="button" className="btn-ghost btn lg:hidde">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-6 w-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6.75h16.5M3.75 12H12m-8.25 5.25h16.5"
-              />
-            </svg>
+        <div className="dropdown menu-sm">
+          <div tabIndex={0} role="button" className="lg:hidden btn btn-ghost">
+            <MenueIcon />
           </div>
-
           <ul
             tabIndex={0}
-            className="dropdown-content menu rounded-box menu-lg z-[1] mt-3 w-60 bg-base-100 p-2 shadow"
+            className="menu dropdown-content menu-lg z-[1] mt-3 w-60 rounded-box bg-base-100 p-2 shadow-lg"
             onClick={() => {
-              const elem = document.activeElement;
-              if(elem){
+              const elem = document.activeElement
+              if (elem) {
                 setTimeout(() => {
-                  const elem = document.activeElement;
+                  const elem = document.activeElement
                   if (elem && elem.nodeName !== "SUMMARY") {
-                    (elem as HTMLInputElement).blur();
+                    ;(elem as HTMLInputElement).blur()
                   }
                 }, 100)
               }
@@ -100,7 +87,7 @@ export default function Header() {
             {navElements()}
           </ul>
         </div>
-        <Link className="btn-ghost btn text-xl font-extrabold tracking-tight text-white" href="/">
+        <Link className="btn btn-ghost text-xl font-extrabold tracking-tight text-white" href="/">
           <span className="primary text-primary">Lab</span> Eats
         </Link>
       </div>
@@ -108,19 +95,23 @@ export default function Header() {
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">{navElements()}</ul>
       </div>
+
       {/* UserAccount-Icon (top right) */}
       {loggedIn && (
         <div className="navbar-end">
-          <div className="placeholder dropdown-end dropdown avatar">
-            <div tabIndex={0} className="w-12 rounded-full bg-base-300 hover:bg-base-200 text-neutral-content cursor-pointer">
+          <div className="avatar placeholder dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              className="w-12 cursor-pointer rounded-full bg-base-300 text-neutral-content hover:bg-base-200"
+            >
               <span>{getUsernameLetters(sessionData?.user?.name)}</span>
             </div>
             <ul
               tabIndex={0}
-              className="dropdown-content menu rounded-box z-[1] w-40 bg-base-100 p-2 shadow"
+              className="menu dropdown-content z-[1] w-40 rounded-box bg-base-100 p-2 shadow-lg"
             >
               <li>
-                <Link className="placeholder avatar" href="/me">
+                <Link className="avatar placeholder" href="/me">
                   Profil
                 </Link>
               </li>

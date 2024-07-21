@@ -5,7 +5,7 @@ import ClearingAccountOverview from "~/components/PageComponents/ClearingAccount
 const CategoryPage = () => {
   return (
     <RegularPage>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-4">
        <CategoryOverview />
        <ClearingAccountOverview />
       </div>

@@ -93,8 +93,8 @@ const GroupOrders: NextPage = () => {
         <div className="container">
           {groupOrderRequest.data?.map((groupOrder) => (
             <div key={groupOrder.id} className="card mb-5 max-w-5xl bg-base-200 p-3">
-              <div className="flex  flex-col justify-start gap-1 p-1">
-                <div className="flex flex-row items-end justify-between">
+              <div className="flex flex-col justify-start gap-1 p-1">
+                <div className="flex flex-col items-start justify-between md:flex-row md:items-end">
                   <h1 className="text-2xl font-bold">
                     {groupOrder.ordersCloseAt.toLocaleString("de", localStringOptions)}
                   </h1>
@@ -112,7 +112,6 @@ const GroupOrders: NextPage = () => {
                     <tr>
                       <th>Name</th>
                       <th>Artikel</th>
-                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -122,11 +121,11 @@ const GroupOrders: NextPage = () => {
                           <td>
                             <p className="font-semibold">{pc.user.name}</p>
                           </td>
-                          <td>{pc.items.map((item) => item.name).join(", ")}</td>
                           <td>
+                            {pc.items.map((item) => item.name).join(", ")}
                             {pc.userId === sessionUser?.id && (
                               <button
-                                className="btn btn-outline btn-xs"
+                                className="btn btn-outline btn-xs ml-3"
                                 onClick={() => rescindProcurement(pc.id)}
                               >
                                 stornieren
@@ -184,8 +183,8 @@ const GroupOrders: NextPage = () => {
         </div>
       </CenteredPage>
 
-      <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-9/12 !max-w-5xl pr-10">
-        <div className="flex flex-row flex-wrap gap-4">
+      <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-11/12 !max-w-5xl pt-11">
+        <div className="flex flex-row flex-wrap justify-center gap-4">
           {groupOrderProcurementItems.data?.map((item) => (
             <ItemCard
               id={item.id}

@@ -22,7 +22,7 @@ const ClearingAccountOverview = () => {
     await Promise.all(
       checked.map(async (id) => {
         return deleteRequest.mutateAsync({ id })
-      })
+      }),
     ).catch((e) => {
       console.error(e)
       animate(animationRef, "failure")
@@ -42,13 +42,13 @@ const ClearingAccountOverview = () => {
 
   return (
     <>
-      <div className="flex max-w-5xl flex-col  p-5 ">
+      <div className="flex max-w-5xl flex-col md:px-5">
         <div className="flex justify-between gap-3 align-bottom">
-          <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
+          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
             <CloseWindowIcon /> Verrechnungskonto
           </button>
           {checked.length > 0 && (
-            <button className="btn-error btn-sm btn" onClick={() => deleteSelected()}>
+            <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
               <TrashIcon />
             </button>
           )}
@@ -84,7 +84,7 @@ const ClearingAccountOverview = () => {
                   </td>
                   <th>
                     <button
-                      className="btn-ghost btn-xs btn"
+                      className="btn btn-ghost btn-xs"
                       onClick={() => {
                         setDetailView(item.id)
                         setOpenAddItemModal(true)
@@ -102,7 +102,11 @@ const ClearingAccountOverview = () => {
           </table>
         </div>
 
-        <Modal open={openAddItemModal} setOpen={setOpenAddItemModal} closeFunctionCall={() => setDetailView(undefined)}>
+        <Modal
+          open={openAddItemModal}
+          setOpen={setOpenAddItemModal}
+          closeFunctionCall={() => setDetailView(undefined)}
+        >
           <ClearingAccountForm
             finishAction={() => {
               setOpenAddItemModal(false)
