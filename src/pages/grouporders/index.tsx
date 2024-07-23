@@ -8,6 +8,7 @@ import ActionResponsePopup, {
   type AnimationHandle,
 } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
+import { ConfirmationModal } from "~/components/General/ConfirmationModal"
 import ItemCard from "~/components/General/ItemCard"
 
 import CenteredPage from "~/components/Layout/CenteredPage"
@@ -33,6 +34,16 @@ const GroupOrders: NextPage = () => {
 
   const [openBuyModal, setOpenBuyModal] = useState(false)
   const [selectedGroupOrder, setSetselectedGroupOrder] = useState<string>()
+
+  const [closeOrderId, setCloseOrderId] = useState<Tid>()
+
+  const closeOrderAction = async () => {
+    if (closeOrderId) {
+      await stopOrderRequest.mutateAsync({ groupId: closeOrderId })
+      trpcUtils.groupOrders.invalidate()
+    }
+    setCloseOrderId(undefined)
+  }
 
   const joinGroupOrder = (groupOrderID: string) => {
     setSetselectedGroupOrder(groupOrderID)
@@ -149,7 +160,7 @@ const GroupOrders: NextPage = () => {
                   </tbody>
                 </table>
 
-                <div className="flex flex-row  justify-between">
+                <div className="flex flex-row justify-between">
                   <button
                     className="btn btn-primary btn-sm mt-7"
                     onClick={() => joinGroupOrder(groupOrder.id)}
@@ -161,10 +172,9 @@ const GroupOrders: NextPage = () => {
                   </button>
                   {new Date() > groupOrder.ordersCloseAt && sessionUser?.is_admin && (
                     <button
-                      className="btn btn-warning mt-7"
+                      className="btn btn-warning btn-sm mt-7"
                       onClick={() => {
-                        stopOrderRequest.mutate({ groupId: groupOrder.id })
-                        setTimeout(() => trpcUtils.groupOrders.invalidate(), 50)
+                        setCloseOrderId(groupOrder.id)
                       }}
                     >
                       Beenden
@@ -207,6 +217,15 @@ const GroupOrders: NextPage = () => {
         </div>
       </Modal>
 
+      <ConfirmationModal
+        open={!!closeOrderId}
+        proceed={closeOrderAction}
+        close={() => setCloseOrderId(undefined)}
+      >
+        <p className="py-4">
+          Ich kaufe jetzt ein - Bestellung für <span className="font-bold">ALLE</span> stoppen!
+        </p>
+      </ConfirmationModal>
       <ActionResponsePopup ref={animationRef} />
     </>
   )
