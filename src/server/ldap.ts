@@ -22,7 +22,7 @@ export const manageLdapLogin = (
     console.log("LDAP: Error: Username or password blank")
     return Promise.resolve(null)
   }
-  const safeLdapRegex = /^[\w \.]*$/g
+  const safeLdapRegex = /^[\w\.-]*$/g
   if (!username.match(safeLdapRegex)) {
     console.log("LDAP injection-attack detected - Nice try : )")
     return Promise.resolve(null)

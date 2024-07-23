@@ -71,6 +71,7 @@ Create DB Migrations (for production)
 - Logs wer was eingetragen hat
 - Android zahlen komma auf tastatur ausgeblendet
 #### Nice Improvements:
+- User-Sortierung alphabetisch
 - Personen einen "Gruppen-Tag" geben
 - "beenden" bei Gruppenbestellungen ändern, das es nicht irrtümlichen für speichern gehalten wird
 - Verrechnungkonten global anzeigen
