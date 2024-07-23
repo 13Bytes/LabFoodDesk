@@ -72,14 +72,13 @@ Create DB Migrations (for production)
 - Android zahlen komma auf tastatur ausgeblendet
 #### Nice Improvements:
 - User-Sortierung alphabetisch
-- Personen einen "Gruppen-Tag" geben
-- "beenden" bei Gruppenbestellungen ändern, das es nicht irrtümlichen für speichern gehalten wird
-- Verrechnungkonten global anzeigen
 - Kontostand in header
-- the check if account is covered is prone to simultaneous requests (the actual credit of course not)
+- Personen einen "Gruppen-Tag" geben
+- Verrechnungkonten global anzeigen
 - Stats wie oft man was gekauft
 - Geld anfordern (kann von anderem User bestätigt werden)
 - Übersicht alle Transaktionen für Admins
+- the check if account is covered is prone to simultaneous requests (the actual credit of course not)
 
 
 ---
