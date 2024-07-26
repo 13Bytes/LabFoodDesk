@@ -17,21 +17,21 @@ export const userRouter = createTRPCRouter({
   }),
 
   getUser: adminProcedure
-  .input(z.object({ id }))
-  .query(({ ctx, input }) => {
-    return ctx.prisma.user.findUnique({
-      where: { id: input.id },
-    })
-  }),
-  
+    .input(z.object({ id }))
+    .query(({ ctx, input }) => {
+      return ctx.prisma.user.findUnique({
+        where: { id: input.id },
+      })
+    }),
+
   updateUser: adminProcedure
-  .input(z.object({ id, allowOverdraw: z.boolean() }))
-  .mutation(({ ctx, input }) => {
-    return ctx.prisma.user.update({
-      where: { id: input.id },
-      data: { allowOverdraw: input.allowOverdraw},
-    })
-  }),
+    .input(z.object({ id, allowOverdraw: z.boolean() }))
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.user.update({
+        where: { id: input.id },
+        data: { allowOverdraw: input.allowOverdraw },
+      })
+    }),
 
   getCtx: publicProcedure.query(({ ctx }) => {
     return {
@@ -59,23 +59,31 @@ export const userRouter = createTRPCRouter({
   //   }),
 
   getAllUsers: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.user.findMany({ select: { name: true, id: true } })
+    return ctx.prisma.user.findMany({
+      select: { name: true, id: true },
+      orderBy: { name: "asc" },
+    })
   }),
 
   getAllUsersWithAllowOverdraw: protectedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany({
       where: { allowOverdraw: true },
       select: { name: true, id: true },
+      orderBy: { name: "asc" },
     })
   }),
 
   getAllBalances: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.user.findMany({ select: { name: true, id: true, balance: true } })
+    return ctx.prisma.user.findMany({
+      select: { name: true, id: true, balance: true },
+      orderBy: { name: "asc" },
+    })
   }),
 
   getAllUsersDetailed: protectedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany({
       select: { name: true, id: true, is_admin: true, balance: true, allowOverdraw: true },
+      orderBy: { name: "asc" },
     })
   }),
 })

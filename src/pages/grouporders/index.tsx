@@ -8,6 +8,7 @@ import ActionResponsePopup, {
   type AnimationHandle,
 } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
+import { ConfirmationModal } from "~/components/General/ConfirmationModal"
 import ItemCard from "~/components/General/ItemCard"
 
 import CenteredPage from "~/components/Layout/CenteredPage"
@@ -33,6 +34,16 @@ const GroupOrders: NextPage = () => {
 
   const [openBuyModal, setOpenBuyModal] = useState(false)
   const [selectedGroupOrder, setSetselectedGroupOrder] = useState<string>()
+
+  const [closeOrderId, setCloseOrderId] = useState<Tid>()
+
+  const closeOrderAction = async () => {
+    if (closeOrderId) {
+      await stopOrderRequest.mutateAsync({ groupId: closeOrderId })
+      trpcUtils.groupOrders.invalidate()
+    }
+    setCloseOrderId(undefined)
+  }
 
   const joinGroupOrder = (groupOrderID: string) => {
     setSetselectedGroupOrder(groupOrderID)
@@ -93,8 +104,8 @@ const GroupOrders: NextPage = () => {
         <div className="container">
           {groupOrderRequest.data?.map((groupOrder) => (
             <div key={groupOrder.id} className="card mb-5 max-w-5xl bg-base-200 p-3">
-              <div className="flex  flex-col justify-start gap-1 p-1">
-                <div className="flex flex-row items-end justify-between">
+              <div className="flex flex-col justify-start gap-1 p-1">
+                <div className="flex flex-col items-start justify-between md:flex-row md:items-end">
                   <h1 className="text-2xl font-bold">
                     {groupOrder.ordersCloseAt.toLocaleString("de", localStringOptions)}
                   </h1>
@@ -112,7 +123,6 @@ const GroupOrders: NextPage = () => {
                     <tr>
                       <th>Name</th>
                       <th>Artikel</th>
-                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -122,11 +132,11 @@ const GroupOrders: NextPage = () => {
                           <td>
                             <p className="font-semibold">{pc.user.name}</p>
                           </td>
-                          <td>{pc.items.map((item) => item.name).join(", ")}</td>
                           <td>
+                            {pc.items.map((item) => item.name).join(", ")}
                             {pc.userId === sessionUser?.id && (
                               <button
-                                className="btn btn-outline btn-xs"
+                                className="btn btn-outline btn-xs ml-3"
                                 onClick={() => rescindProcurement(pc.id)}
                               >
                                 stornieren
@@ -150,7 +160,7 @@ const GroupOrders: NextPage = () => {
                   </tbody>
                 </table>
 
-                <div className="flex flex-row  justify-between">
+                <div className="flex flex-row justify-between">
                   <button
                     className="btn btn-primary btn-sm mt-7"
                     onClick={() => joinGroupOrder(groupOrder.id)}
@@ -162,10 +172,9 @@ const GroupOrders: NextPage = () => {
                   </button>
                   {new Date() > groupOrder.ordersCloseAt && sessionUser?.is_admin && (
                     <button
-                      className="btn btn-warning mt-7"
+                      className="btn btn-warning btn-sm mt-7"
                       onClick={() => {
-                        stopOrderRequest.mutate({ groupId: groupOrder.id })
-                        setTimeout(() => trpcUtils.groupOrders.invalidate(), 50)
+                        setCloseOrderId(groupOrder.id)
                       }}
                     >
                       Beenden
@@ -184,8 +193,8 @@ const GroupOrders: NextPage = () => {
         </div>
       </CenteredPage>
 
-      <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-9/12 !max-w-5xl pr-10">
-        <div className="flex flex-row flex-wrap gap-4">
+      <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-11/12 !max-w-5xl pt-11">
+        <div className="flex flex-row flex-wrap justify-center gap-4">
           {groupOrderProcurementItems.data?.map((item) => (
             <ItemCard
               id={item.id}
@@ -208,6 +217,15 @@ const GroupOrders: NextPage = () => {
         </div>
       </Modal>
 
+      <ConfirmationModal
+        open={!!closeOrderId}
+        proceed={closeOrderAction}
+        close={() => setCloseOrderId(undefined)}
+      >
+        <p className="py-4">
+          Ich kaufe jetzt ein - Bestellung für <span className="font-bold">ALLE</span> stoppen!
+        </p>
+      </ConfirmationModal>
       <ActionResponsePopup ref={animationRef} />
     </>
   )

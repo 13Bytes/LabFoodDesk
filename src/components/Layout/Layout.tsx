@@ -9,7 +9,7 @@ export default function Layout({ children }: Props) {
   return (
     <>
       <div className="h-dvh">
-        <div className="flex h-full flex-col justify-between">
+        <div className="flex h-full flex-col">
           <Header />
           <main>{children}</main>
 
