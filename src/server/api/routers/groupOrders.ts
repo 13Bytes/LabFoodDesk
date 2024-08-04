@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server"
 import dayjs from "dayjs"
 import { z } from "zod"
 import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
-import { validationSchema as groupOrderValidationSchema } from "~/components/Forms/AddGrouporderForm"
+import { validationSchema as groupOrderValidationSchema } from "~/components/Forms/GrouporderForm"
 import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/Forms/AddGrouporderTemplateForm"
 import { calculateFeesPerCategory, getItemsFee, getTransactionFees } from "~/helper/dataProcessing"
 import { Tid, id } from "~/helper/zodTypes"
@@ -70,6 +70,17 @@ export const grouporderRouter = createTRPCRouter({
     return result
   }),
 
+  get: protectedProcedure
+    .input(z.object({ id }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.prisma.groupOrder.findUniqueOrThrow({
+        where: {
+          id: input.id,
+        },
+      })
+      return result
+    }),
+
   getLatelyClosed: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.prisma.groupOrder.findMany({
       where: {
@@ -135,7 +146,6 @@ export const grouporderRouter = createTRPCRouter({
         },
       })
     }
-
     const payload = {
       name: input.name,
       ordersCloseAt: input.ordersCloseAt,
@@ -147,6 +157,36 @@ export const grouporderRouter = createTRPCRouter({
     })
     return item
   }),
+
+  update: adminProcedure.input(groupOrderValidationSchema.extend({ id })).mutation(async ({ ctx, input }) => {
+    const groupOrder = await ctx.prisma.groupOrder.findUniqueOrThrow({ where: { id: input.id } })
+    if (groupOrder.status !== 0) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order is already closed" })
+    }
+    const payload = {
+      name: input.name,
+      ordersCloseAt: input.ordersCloseAt,
+    }
+    const item = await prisma.groupOrder.update({ data: payload, where: { id: input.id } })
+    return item
+  }),
+
+  delete: adminProcedure
+    .input(z.object({ id }))
+    .mutation(async ({ ctx, input }) => {
+
+      await ctx.prisma.$transaction(async (tx) => {
+        
+        const groupOrder = await tx.groupOrder.findUniqueOrThrow({ where: { id: input.id }, include: { orders: true } })
+        if (groupOrder.status !== 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order is already closed" })
+        }
+        if (groupOrder.orders.length > 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order already has orders" })
+        }
+        await tx.groupOrder.delete({ where: { id: input.id } })
+      })
+    }),
 
   buyGroupOrderItem: protectedProcedure
     .input(
