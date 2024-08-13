@@ -66,12 +66,12 @@ const ClearingAccountPage = () => {
 
   return (
     <RegularPage>
-      <div className="card flex flex-col bg-base-300 shadow-sm">
+      <div className="card flex flex-col max-w-5xl bg-base-300 shadow-sm">
       <ClearingAccountOverview />
       </div>
 
-      <div className="card card-body my-3 flex flex-col bg-base-300 shadow-sm">
-        <h1 className="mb-2 text-lg font-bold">Verrechnungskonto aufwenden</h1>
+      <div className="card card-body max-w-5xl my-3 flex flex-col bg-base-300 shadow-sm">
+        <h1 className="text-lg font-bold">Verrechnungskonto aufwenden</h1>
         <div className="flex flex-row items-center">
           <div>
             <input
@@ -109,11 +109,11 @@ const ClearingAccountPage = () => {
               {allClearingAccountsRequest.data?.map((account) => {
                 if (account.id !== session.data?.user.id)
                   return (
-                    <option value={account.id} key={account.id} className="">
+                <option value={account.id} key={account.id} className="">
                       {account.name}
                     </option>
                   )
-              })}
+                })}
             </select>
           </div>
 
@@ -127,8 +127,8 @@ const ClearingAccountPage = () => {
               id="sel-dest-user"
               value={
                 !!(selectedDestinationUser && allUserRequest.data)
-                  ? selectedDestinationUser
-                  : ""
+                ? selectedDestinationUser
+                : ""
               }
               onChange={(e) => {
                 setSelectedDestinationUser(e.target.value)
@@ -140,14 +140,15 @@ const ClearingAccountPage = () => {
               {allUserRequest.data?.map((user) => {
                 if (user.id !== session.data?.user.id)
                   return (
-                    <option value={user.id} key={user.id} className="">
+                <option value={user.id} key={user.id} className="">
                       {user.name}
                     </option>
                   )
-              })}
+                })}
             </select>
           </div>
         </div>
+          <p className="text-sm font-thin mb-2">Du kannnst dir selbst keine Auszahlung genehmigen</p>
         <div>
           <button
             className={`btn ${!correctEntries ? "btn-disabled" : ""}`}

@@ -64,6 +64,7 @@ export default function Header() {
 
   return (
     <div className="navbar bg-base-100">
+    {loggedIn && <>
       <div className="navbar-start">
         <div className="dropdown menu-sm">
           <div tabIndex={0} role="button" className="lg:hidden btn btn-ghost">
@@ -95,6 +96,8 @@ export default function Header() {
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">{navElements()}</ul>
       </div>
+      </>
+    }
 
       {/* UserAccount-Icon (top right) */}
       {loggedIn && (
