@@ -7,7 +7,7 @@ import { Tid, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import type { AppRouter } from "../../server/api/root"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
-import { LongRightArrowIcon } from "../Icons/LongRightArrowIcon"
+import { ConfirmationModal } from "../General/ConfirmationModal"
 
 type RouterOutput = inferRouterOutputs<AppRouter>
 
@@ -70,6 +70,7 @@ const GroupOrderSplit = (props: Props) => {
   const [userItemList, setUserItemList] = useState<UserItemList>({})
   const [split, setSplit] = useState<Split[]>([])
   const [allUsersOverwritten, setAllUsersOverwritten] = useState<number | undefined>()
+  const [closeGroupOrderModalOpen, setCloseGroupOrderModalOpen] = useState(false)
 
   const [selectedDestination, setSelectedDestination] = useState<string>("server")
   const [destinationError, setDestinationError] = useState(false)
@@ -215,7 +216,7 @@ const GroupOrderSplit = (props: Props) => {
   }
 
   const closeGroupOrderRequest = api.groupOrders.close.useMutation()
-  const closeGroupOrder = () => {
+  const closeGroupOrder = async () => {
     if (!selectedDestination) {
       setDestinationError(true)
       return
@@ -233,7 +234,7 @@ const GroupOrderSplit = (props: Props) => {
       })),
     }))
 
-    closeGroupOrderRequest.mutate(
+    await closeGroupOrderRequest.mutateAsync(
       {
         groupId: group.id,
         destination: selectedDestination,
@@ -249,7 +250,7 @@ const GroupOrderSplit = (props: Props) => {
         },
       },
     )
-    setTimeout(() => trpcUtils.groupOrders.invalidate(), 50)
+    await trpcUtils.groupOrders.invalidate()
   }
 
   return (
@@ -351,12 +352,23 @@ const GroupOrderSplit = (props: Props) => {
         </div>
 
         <div className="flex justify-end">
-          <button className="btn btn-primary btn-sm mr-4 mt-1" onClick={closeGroupOrder}>
+          <button
+            className="btn btn-primary btn-sm mr-4 mt-1"
+            onClick={() => setCloseGroupOrderModalOpen(true)}
+          >
             Abrechnen
           </button>
         </div>
       </div>
       <ActionResponsePopup ref={animationRef} />
+
+      <ConfirmationModal
+        open={closeGroupOrderModalOpen}
+        proceed={closeGroupOrder}
+        close={() => setCloseGroupOrderModalOpen(false)}
+      >
+        <p className="py-4">Bestellung unveränderlich abrechnen</p>
+      </ConfirmationModal>
     </>
   )
 }

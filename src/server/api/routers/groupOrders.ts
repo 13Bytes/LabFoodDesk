@@ -236,6 +236,10 @@ export const grouporderRouter = createTRPCRouter({
     return updatedGroup
   }),
 
+  /**
+   * Close group order and create transactions
+   * @param input[destination] = "server" | userId
+   */
   close: adminProcedure
     .input(
       z.object({ split: splitSubmitSchema, groupId: id, destination: z.union([id, z.string()]) }),

@@ -66,11 +66,11 @@ const ClearingAccountPage = () => {
 
   return (
     <RegularPage>
-      <div className="card flex flex-col max-w-5xl bg-base-300 shadow-sm">
+      <div className="card flex flex-col max-w-5xl bg-base-200 shadow-sm">
       <ClearingAccountOverview />
       </div>
 
-      <div className="card card-body max-w-5xl my-3 flex flex-col bg-base-300 shadow-sm">
+      <div className="card card-body max-w-5xl my-3 flex flex-col bg-base-200 shadow-sm">
         <h1 className="text-lg font-bold">Verrechnungskonto aufwenden</h1>
         <div className="flex flex-row items-center">
           <div>

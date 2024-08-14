@@ -22,7 +22,7 @@ const CategoryOverview = () => {
     await Promise.all(
       checked.map(async (id) => {
         return deleteRequest.mutateAsync({ id })
-      })
+      }),
     ).catch((e) => {
       console.error(e)
       animate(animationRef, "failure")
@@ -43,18 +43,18 @@ const CategoryOverview = () => {
 
   return (
     <>
-      <div className="flex max-w-5xl flex-col md:px-5">
-        <div className="flex justify-between gap-3 align-bottom">
-          <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
+      <div className="card flex max-w-6xl flex-col bg-base-200 pt-4 md:px-5">
+        <div className="flex justify-between gap-3 align-bottom ">
+          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
             <CloseWindowIcon /> Kategorie
           </button>
           {checked.length > 0 && (
-            <button className="btn-error btn-sm btn" onClick={() => deleteSelected()}>
+            <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
               <TrashIcon />
             </button>
           )}
         </div>
-        <div className="overflow-x-auto flex-row items-center justify-center">
+        <div className="flex-row items-center justify-center overflow-x-auto">
           <table className="table">
             {/* head */}
             <thead>
@@ -84,7 +84,7 @@ const CategoryOverview = () => {
                   <td>{item.markupFixed ?? 0}€</td>
                   <th>
                     <button
-                      className="btn-ghost btn-xs btn"
+                      className="btn btn-ghost btn-xs"
                       onClick={() => {
                         setDetailView(item.id)
                         setOpenAddItemModal(true)
@@ -102,7 +102,11 @@ const CategoryOverview = () => {
           </table>
         </div>
 
-        <Modal open={openAddItemModal} setOpen={setOpenAddItemModal} closeFunctionCall={() => setDetailView(undefined)}>
+        <Modal
+          open={openAddItemModal}
+          setOpen={setOpenAddItemModal}
+          closeFunctionCall={() => setDetailView(undefined)}
+        >
           <CategoryForm
             finishAction={() => {
               setOpenAddItemModal(false)

@@ -14,7 +14,7 @@ const TopUp: NextPage = () => {
       <CenteredPage>
         {allowedOverdraftUserIds?.includes(sessionUser?.id || "x") ? (
           <>
-            <div className="my-2">
+            <div className="m-2">
               <h3 className="text-2xl">Überweisung</h3>
               <p className="text-sm font-light">
                 Wenn du von einem Nutzenden Bargeld bekommst, kannst du hier den entsprechenden
