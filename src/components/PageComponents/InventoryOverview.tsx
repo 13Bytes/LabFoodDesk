@@ -35,7 +35,7 @@ const InventoryOverview = () => {
     <tr>
       <th></th>
       <th>Name</th>
-      <th>Preis</th>
+      <th>Preis (Konto)</th>
       <th>Kategorie(n)</th>
       <th></th>
     </tr>
@@ -81,7 +81,7 @@ const InventoryOverview = () => {
                       </div>
                     </div>
                   </td>
-                  <td>{item.price}€</td>
+                  <td>{item.price}€ ({item.account.name})</td>
                   <td>{item.categories.map((cat) => cat.name).join(", ")}</td>
                   <th>
                     <button

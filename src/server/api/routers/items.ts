@@ -1,21 +1,20 @@
+import { Prisma, PrismaClient } from "@prisma/client"
 import { z } from "zod"
+import { createItemSchema } from "~/components/Forms/ItemForm"
+import { createProcItemSchema } from "~/components/Forms/ProcurementItemForm"
+import { calculateFeesPerCategory } from "~/helper/dataProcessing"
 import { Tid, id, idObj } from "~/helper/zodTypes"
 import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
   adminProcedure,
+  createTRPCRouter,
+  protectedProcedure
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
-import { createProcItemSchema } from "~/components/Forms/ProcurementItemForm"
-import { Category, Prisma, PrismaClient } from "@prisma/client"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
-import { createItemSchema } from "~/components/Forms/ItemForm"
-import { calculateFeesPerCategory } from "~/helper/dataProcessing"
 
 export const itemRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.item.findMany({ where: { is_active: true }, include: { categories: true } })
+    return ctx.prisma.item.findMany({ where: { is_active: true }, include: { categories: true, account: true } })
   }),
 
   getItem: protectedProcedure.input(idObj).query(({ ctx, input }) => {
@@ -39,6 +38,7 @@ export const itemRouter = createTRPCRouter({
     })
   }),
 
+
   createItem: adminProcedure.input(createItemSchema).mutation(async ({ ctx, input }) => {
     const categories = await Promise.all(
       input.categories.map(async (categoryId) => {
@@ -49,11 +49,11 @@ export const itemRouter = createTRPCRouter({
         })
       }),
     )
-
     const item = await prisma.item.create({
       data: {
         name: input.name,
         price: input.price,
+        account: { connect: { id: input.account } },
         categories: { connect: categories.map((category) => ({ id: category.id })) },
         is_active: true,
         for_grouporders: input.for_grouporders,
@@ -74,14 +74,13 @@ export const itemRouter = createTRPCRouter({
           })
         }),
       )
-
       const { id, ...inputData } = input
-
       await prisma.$transaction([
         prisma.item.update({ where: { id: input.id }, data: { is_active: false } }),
         prisma.item.create({
           data: {
             ...inputData,
+            account: { connect: { id: input.account } },
             categories: { connect: categories.map((category) => ({ id: category.id })) },
           },
         }),
@@ -188,15 +187,16 @@ export const buyOneItem = async (
     where: {
       id: productID,
     },
-    include: { categories: { include: { markupDestination: true } } },
+    include: { categories: { include: { markupDestination: true } }, account: true },
   })
-  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
 
   const fees = calculateFeesPerCategory(product.price, product.categories)
   const totalPrice = product.price + fees.total
-  checkAccountBacking(user, totalPrice)
 
   await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUniqueOrThrow({ where: { id: userId } })
+    checkAccountBacking(user, totalPrice)
+
     const transaction: Prisma.TransactionCreateInput = {
       user: { connect: { id: userId } },
       items: {
@@ -209,6 +209,7 @@ export const buyOneItem = async (
           },
         ],
       },
+      clearingAccount: { connect: { id: product.accountId } },
       type: 0,
       amountWithoutFees: product.price,
       totalAmount: totalPrice,
@@ -223,6 +224,10 @@ export const buyOneItem = async (
     await tx.user.update({
       where: { id: userId },
       data: { balance: { decrement: totalPrice } },
+    })
+    await tx.clearingAccount.update({
+      where: { id: product.accountId },
+      data: { balance: { increment: product.price } },
     })
     for (const cat of fees.categories) {
       if (cat.clearingAccountId) {
