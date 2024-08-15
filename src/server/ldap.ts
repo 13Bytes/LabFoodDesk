@@ -15,9 +15,11 @@ export const clientOptions = {
 }
 
 export const manageLdapLogin = (
-  username: string | undefined,
+  usernameRaw: string | undefined,
   password: string | undefined,
 ): Promise<User | null> => {
+  const username = usernameRaw?.toLowerCase()
+  
   if (!username || !password) {
     console.log("LDAP: Error: Username or password blank")
     return Promise.resolve(null)

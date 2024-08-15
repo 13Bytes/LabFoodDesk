@@ -32,13 +32,14 @@ export const transactionRouter = createTRPCRouter({
       const items = await ctx.prisma.transaction.findMany({
         take: pageSize + 1, // get an extra item at the end which we'll use as next cursor
         where: {
-          // userId with type 3 not shown, as user only created tranasaction, but has no monetarian stake
+          // userId with type 3 not shown, as user only created transaction, but has no monetarian stake
           OR: [{ userId: ctx.session.user.id, type: { lte: 2 } }, { moneyDestinationUserId: ctx.session.user.id }],
         },
         include: {
           items: { include: { item: { include: { categories: true } } } },
           procurementItems: { include: { item: { include: { categories: true } } } },
-          moneyDestination: {select: {name: true}}
+          moneyDestination: {select: {name: true}},
+          user: {select: {name: true}},
         },
         skip: (page - 1) * pageSize,
         orderBy: {
