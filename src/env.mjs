@@ -17,6 +17,8 @@ const server = z.object({
     process.env.VERCEL ? z.string().min(1) : z.string().url()
   ),
 
+  DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK: z.string().default("false"),
+
   LDAP_URL: z.string(),
   LDAP_BIND_USER: z.string(),
   LDAP_BIND_PASSWORT: z.string(),
@@ -56,6 +58,7 @@ const processEnv = {
   LDAP_BIND_PASSWORT:process.env.LDAP_BIND_PASSWORT,
   LDAP_SEARCH_BASE:process.env.LDAP_SEARCH_BASE,
   LDAP_ADMIN_GROUP:process.env.LDAP_ADMIN_GROUP,
+  DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK: process.env.DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK,
   EMAIL_SERVER_USER: process.env.EMAIL_SERVER_USER,
   EMAIL_SERVER_PASSWORD: process.env.EMAIL_SERVER_PASSWORD,
   EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,

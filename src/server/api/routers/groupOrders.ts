@@ -5,7 +5,8 @@ import { z } from "zod"
 import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
 import { validationSchema as groupOrderValidationSchema } from "~/components/Forms/AddGrouporderForm"
 import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/Forms/AddGrouporderTemplateForm"
-import { calculateFeesPerCategory, getItemsFee, getTransactionFees } from "~/helper/dataProcessing"
+import { env } from "~/env.mjs"
+import { calculateFeesPerCategory } from "~/helper/dataProcessing"
 import { Tid, id } from "~/helper/zodTypes"
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
@@ -181,7 +182,10 @@ export const grouporderRouter = createTRPCRouter({
 
       const requiredBacking = items.length * 5 // secure 5€ per item
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
-      checkAccountBacking(user, requiredBacking)
+
+      if(env.DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK !== "true"){
+        checkAccountBacking(user, requiredBacking)
+      }
 
       const procWish = await prisma.procurementWish.create({
         data: {

@@ -27,8 +27,8 @@ const Home: NextPage = () => {
                   verrechnen <span className="font-bold">(z.B.: Spezi)</span>
                 </p>
                 <p className="text">
-                  ...unter <span className="font-bold">Gruppen-Kaufen</span> Sammel-Bestellungen
-                  organisiert werden <span className="font-bold">(z.B.: Freitagspizza)</span>
+                  ...unter <span className="font-bold">Gruppen-Kauf</span> Sammel-Bestellungen
+                  organisieren <span className="font-bold">(z.B.: Freitagspizza)</span>
                 </p>
               </div>
             </div>
