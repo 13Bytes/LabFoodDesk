@@ -2,10 +2,15 @@ import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { getUsernameLetters } from "~/helper/generalFunctions"
 import { MenueIcon } from "../Icons/MenueIcon"
+import { Balance } from "../General/Balance"
+import { api } from "~/utils/api"
 
 export default function Header() {
   const { data: sessionData } = useSession()
   const loggedIn = !!sessionData?.user
+  const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery(undefined, {
+    enabled: loggedIn,
+  })
 
   const navElements = () => (
     <>
@@ -64,45 +69,52 @@ export default function Header() {
 
   return (
     <div className="navbar bg-base-100">
-    {loggedIn && <>
-      <div className="navbar-start">
-        <div className="dropdown menu-sm">
-          <div tabIndex={0} role="button" className="lg:hidden btn btn-ghost">
-            <MenueIcon />
-          </div>
-          <ul
-            tabIndex={0}
-            className="menu dropdown-content menu-lg z-[1] mt-3 w-60 rounded-box bg-base-100 p-2 shadow-lg"
-            onClick={() => {
-              const elem = document.activeElement
-              if (elem) {
-                setTimeout(() => {
+      {loggedIn && (
+        <>
+          <div className="navbar-start">
+            <div className="dropdown menu-sm">
+              <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
+                <MenueIcon />
+              </div>
+              <ul
+                tabIndex={0}
+                className="menu dropdown-content menu-lg z-[1] mt-3 w-60 rounded-box bg-base-100 p-2 shadow-lg"
+                onClick={() => {
                   const elem = document.activeElement
-                  if (elem && elem.nodeName !== "SUMMARY") {
-                    ;(elem as HTMLInputElement).blur()
+                  if (elem) {
+                    setTimeout(() => {
+                      const elem = document.activeElement
+                      if (elem && elem.nodeName !== "SUMMARY") {
+                        ;(elem as HTMLInputElement).blur()
+                      }
+                    }, 100)
                   }
-                }, 100)
-              }
-            }}
-          >
-            {navElements()}
-          </ul>
-        </div>
-        <Link className="btn btn-ghost text-xl font-extrabold tracking-tight text-white" href="/">
-          <span className="primary text-primary">Lab</span> Eats
-        </Link>
-      </div>
+                }}
+              >
+                {navElements()}
+              </ul>
+            </div>
+            <Link
+              className="btn btn-ghost text-xl font-extrabold tracking-tight text-white"
+              href="/"
+            >
+              <span className="primary text-primary">Lab</span> Eats
+            </Link>
+          </div>
 
-      <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">{navElements()}</ul>
-      </div>
-      </>
-    }
+          <div className="navbar-center hidden lg:flex">
+            <ul className="menu menu-horizontal px-1">{navElements()}</ul>
+          </div>
+        </>
+      )}
 
       {/* UserAccount-Icon (top right) */}
       {loggedIn && (
         <div className="navbar-end">
-          <div className="avatar placeholder dropdown dropdown-end">
+          <div className="text-sm font-thin">
+            <Balance balance={userData?.balance} />
+          </div>
+          <div className="avatar placeholder dropdown dropdown-end ml-3">
             <div
               tabIndex={0}
               className="w-12 cursor-pointer rounded-full bg-base-300 text-neutral-content hover:bg-base-200"
