@@ -70,6 +70,7 @@ Create DB Migrations (for production)
 - Logs wer was eingetragen hat
 - Automatisches abmelden aller Accounts nach update
 - Android zahlen komma auf tastatur ausgeblendet
+- letzte Transaktionen zeigen Verrechnungskonten-Gutschrift nicht an
 #### Nice Improvements:
 - Kontostand in header
 - Personen einen "Gruppen-Tag" geben

@@ -55,9 +55,6 @@ export default function Header() {
                 <Link href="/admin/clearingAccounts">Verrechnungskonten</Link>
               </li>
               <li>
-                <Link href="/admin/procurement">Einkauf</Link>
-              </li>
-              <li>
                 <Link href="/admin/users">User-Verwaltung</Link>
               </li>
             </ul>
