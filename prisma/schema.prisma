@@ -24,9 +24,11 @@ model Item {
     name            String
     categories      Category[]
     price           Float
+    account         ClearingAccount       @relation(fields: [accountId], references: [id])
     purchases       ItemCategoryMapping[]
     is_active       Boolean               @default(true)
     for_grouporders Boolean               @default(false)
+    accountId       String
 }
 
 model ProcurementItem {
@@ -92,10 +94,12 @@ model Category {
 }
 
 model ClearingAccount {
-    id       String     @id @default(cuid())
-    name     String
-    balance  Float      @default(0)
-    Category Category[]
+    id          String        @id @default(cuid())
+    name        String
+    balance     Float         @default(0)
+    categories  Category[]
+    items       Item[]
+    transaction Transaction[]
 }
 
 model ItemCategoryMapping {
@@ -133,6 +137,9 @@ model Transaction {
     type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer, 3: procurement  |  90: rescinded buy, 91:  rescinded sell
     groupOrder             GroupOrder?              @relation(fields: [groupOrderId], references: [id])
     groupOrderId           String?
+    //  --- if buy or transfer (type=0|2)
+    clearingAccount        ClearingAccount?         @relation(fields: [clearingAccountId], references: [id])
+    clearingAccountId      String?
     //  --- only if transfer (type=2)
     moneyDestination       User?                    @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
     moneyDestinationUserId String?

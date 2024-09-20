@@ -10,6 +10,7 @@ import CategorySelector from "../FormElements/CategorySelector"
 export const createItemSchema = z.object({
   name: z.string(),
   categories: z.array(id),
+  account: id,
   price: z.number(),
   for_grouporders: z.boolean().optional().default(false),
 })
@@ -27,6 +28,7 @@ const ItemForm = (props: Props) => {
   const allCategoriesRequest = api.category.getAll.useQuery()
   const createItemRequest = api.item.createItem.useMutation()
   const updateItemRequest = api.item.updateItem.useMutation()
+  const clearingAccounts = api.clearingAccount.getAll.useQuery().data ?? []
 
   const currentItem = api.item.getItem.useQuery({ id: props.id! }, { enabled: !!props.id })
 
@@ -37,6 +39,7 @@ const ItemForm = (props: Props) => {
     handleSubmit: addItemSubmit,
     control,
     reset,
+    setError,
     formState: { errors },
   } = useForm<AddItemForm>({
     resolver: zodResolver(itemValidationSchema),
@@ -62,15 +65,19 @@ const ItemForm = (props: Props) => {
       ...data,
       categories: data.categories.map((category) => category.value),
     }
-    if (!!props.id) {
-      await updateItemRequest.mutateAsync({ id: props.id, ...dataToSend })
+    if (data.account === "") {
+      setError("account", { type: "required" }, { shouldFocus: true })
     } else {
-      await createItemRequest.mutateAsync(dataToSend)
-    }
+      if (!!props.id) {
+        await updateItemRequest.mutateAsync({ id: props.id, ...dataToSend })
+      } else {
+        await createItemRequest.mutateAsync(dataToSend)
+      }
 
-    await trpcUtils.item.getAll.invalidate()
-    reset()
-    props.finishAction()
+      await trpcUtils.item.getAll.invalidate()
+      reset()
+      props.finishAction()
+    }
   }
 
   return (
@@ -108,14 +115,33 @@ const ItemForm = (props: Props) => {
           </div>
           <div>
             <label className="label">
-              <span className="label-text text-base">Categorien</span>
+              <span className="label-text text-base">Kategorien</span>
             </label>
             <CategorySelector control={control} categories={allCategoriesRequest.data} />
             {errors.categories && <p>{errors.categories.message}</p>}
           </div>
           <div>
-            <span className="label-text text-base">Für Gruppenkäufe</span>
-            <input type="checkbox" className="ml-3" {...addItemRegister("for_grouporders")} />
+            <label className="label">
+              <span className="label-text text-base">Verrechnungkonto für Basis-Preis</span>
+            </label>
+            <select
+              className="select select-bordered select-primary"
+              {...addItemRegister("account", { required: true })}
+            >
+              <option key="disbld" value="">
+                Auswählen:
+              </option>
+              {clearingAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name}
+                </option>
+              ))}
+            </select>
+            {errors.account && <p>{errors.account.message}</p>}
+          </div>
+          <div>
+            <input type="checkbox" className="mr-3" {...addItemRegister("for_grouporders")} />
+            <span className="label-text text-base">(Nur) Für Gruppenkäufe verwenden</span>
             {errors.for_grouporders && <p>{errors.for_grouporders.message}</p>}
           </div>
 

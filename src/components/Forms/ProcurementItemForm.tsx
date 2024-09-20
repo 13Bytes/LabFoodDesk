@@ -68,7 +68,7 @@ useEffect(() => {
 
   return (
     <>
-      <h3 className="text-lg font-bold">Neues Vorbesteller-Item</h3>
+      <h3 className="text-lg font-bold">Vorbesteller-Item</h3>
       <div className="py-4">
         <form onSubmit={addItemSubmit(onAddItemSubmit)} className="space-y-4">
           <div>
@@ -92,7 +92,7 @@ useEffect(() => {
           </div>
 
           <button className="btn-primary btn-block btn mt-1" type="submit">
-            Item Anlegen
+            {!!props.id ? "Item Speichern": "Item Anlegen"}
           </button>
         </form>
       </div>

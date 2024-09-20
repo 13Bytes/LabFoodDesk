@@ -20,7 +20,7 @@ const ClearingAccountForm = (props: Props) => {
   const updateRequest = api.clearingAccount.update.useMutation()
   const clearingAccount = api.clearingAccount.get.useQuery(
     { id: props.id ?? "-" },
-    { enabled: !!props.id }
+    { enabled: !!props.id },
   )
 
   type FormType = z.infer<typeof validationSchema>
@@ -51,7 +51,7 @@ const ClearingAccountForm = (props: Props) => {
   return (
     <>
       <h3 className="text-lg font-bold">Neues Verrechnungskonto</h3>
-      <div className="py-4">
+      <div className="max-w-md py-4">
         <form onSubmit={addItemSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="label">
@@ -61,12 +61,12 @@ const ClearingAccountForm = (props: Props) => {
               type="text"
               {...addItemRegister("name")}
               defaultValue={clearingAccount.data?.name ?? ""}
-              className="input-bordered input-primary input w-full max-w-md"
+              className="input input-bordered input-primary w-full"
               placeholder="Name"
             />
           </div>
 
-          <button className="btn-primary btn-block btn mt-1" type="submit">
+          <button className="btn btn-primary btn-block mt-1" type="submit">
             {!!props.id ? "Aktualisieren" : "Anlegen"}
           </button>
         </form>

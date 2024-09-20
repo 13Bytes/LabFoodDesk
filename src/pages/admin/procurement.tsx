@@ -57,7 +57,7 @@ const ProcurementPage = () => {
 
   return (
     <RegularPage>
-      <div className="card card-body flex flex-col bg-base-300 shadow-sm">
+      <div className="card card-body flex flex-col bg-base-200 shadow-sm">
         <h1 className="mb-2 text-lg font-bold">Einkauf vergüten</h1>
         <div className="flex flex-row items-center">
           <div>

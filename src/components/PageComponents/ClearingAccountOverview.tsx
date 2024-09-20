@@ -42,18 +42,13 @@ const ClearingAccountOverview = () => {
 
   return (
     <>
-      <div className="flex max-w-5xl flex-col md:px-5">
-        <div className="flex justify-between gap-3 align-bottom">
-          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
+      <div className="card flex flex-col max-w-6xl md:p-3 pt-4 bg-base-200">
+        <div className="flex flex-row justify-between">
+        <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
             <PlusButtonIcon /> Verrechnungskonto
           </button>
-          {checked.length > 0 && (
-            <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
-              <TrashIcon />
-            </button>
-          )}
         </div>
-        <div className="flex max-w-5xl grow flex-row items-center justify-center">
+        <div className="flex grow flex-row items-center justify-center">
           <table className="table">
             {/* head */}
             <thead>

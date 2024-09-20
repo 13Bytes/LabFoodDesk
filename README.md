@@ -67,18 +67,17 @@ Create DB Migrations (for production)
 - Gruppen-Wiederholungen
     - cron-trigger an endpoint?
     - Wiederholungen -> Gruppeneinkäufe umbenennen
-- Jedes Produkt über Verrechnungskonto abrechnen (kein Lab-eats Konto)
 - Logs wer was eingetragen hat
+- Automatisches abmelden aller Accounts nach update
 - Android zahlen komma auf tastatur ausgeblendet
 #### Nice Improvements:
--   
 - Kontostand in header
 - Personen einen "Gruppen-Tag" geben
 - Verrechnungkonten global anzeigen
+- Bestellungs-Übersicht (wie viele Pizzen von was kaufen)
 - Stats wie oft man was gekauft
 - Geld anfordern (kann von anderem User bestätigt werden)
 - Übersicht alle Transaktionen für Admins
-- the check if account is covered is prone to simultaneous requests (the actual credit of course not)
 
 
 ---

@@ -38,9 +38,9 @@ const CategorySelector = (props: Props) => {
               control: (baseStyles, _props) => ({
                 ...baseStyles,
                 backgroundColor: "transparent",
-                borderColor: "#6419E6",
+                borderColor: "#7480ff",
                 boxShadow: "none",
-                ":hover": { borderColor: "#6419E6" },
+                ":hover": { borderColor: "#7480ff" },
               }),
             }}
           />

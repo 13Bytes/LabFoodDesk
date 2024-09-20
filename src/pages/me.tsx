@@ -41,7 +41,7 @@ const Me: NextPage = () => {
         </button>
       </form> */}
 
-      <div className="flex items-center flex-col">
+      <div className="flex flex-col items-center">
         <p className="font-semibold">Username</p>
         <div className="mt-1">
           <input
@@ -52,11 +52,9 @@ const Me: NextPage = () => {
             className="disabled input input-bordered w-full max-w-xs"
           />
         </div>
-
       </div>
-      <div className="collapse mt-10">
-        <input type="checkbox" />
-        <div className="collapse-title text-sm font-thin">Debugging infos</div>
+      <details className="collapse mt-10">
+        <summary className="collapse-title  text-sm font-thin">Debugging infos</summary>
         <div className="collapse-content">
           <p className="font-bold">Debugging sessionData</p>
           {sessionData && JSON.stringify(sessionData)}
@@ -64,7 +62,7 @@ const Me: NextPage = () => {
           <p className="font-bold">Debugging userData</p>
           {userData && JSON.stringify(userData)}
         </div>
-      </div>
+      </details>
     </CenteredPage>
   )
 }

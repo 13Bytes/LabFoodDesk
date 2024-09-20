@@ -1,10 +1,12 @@
 import { Transaction } from "@prisma/client"
 import { type NextPage } from "next"
 import React, { useEffect, useRef } from "react"
-import ActionResponsePopup, { AnimationHandle, animate } from "~/components/General/ActionResponsePopup"
+import ActionResponsePopup, {
+  AnimationHandle,
+  animate,
+} from "~/components/General/ActionResponsePopup"
 import { Balance } from "~/components/General/Balance"
 import CenteredPage from "~/components/Layout/CenteredPage"
-import { getTransactionFees } from "~/helper/dataProcessing"
 import { Tid } from "~/helper/zodTypes"
 import { RouterOutputs, api } from "~/utils/api"
 
@@ -33,7 +35,7 @@ const AccountPage: NextPage = () => {
       },
     },
   )
-const undoTransactionRequest = api.transaction.undoTransaction.useMutation()
+  const undoTransactionRequest = api.transaction.undoTransaction.useMutation()
   useEffect(() => {
     if (!hasNextPage) {
       setMaxPage(page)
@@ -46,14 +48,15 @@ const undoTransactionRequest = api.transaction.undoTransaction.useMutation()
     return transaction.moneyDestinationUserId === userData?.id
   }
 
-  async function rescind(transactionId: Tid)  {
-    await undoTransactionRequest.mutateAsync({ transactionId})
-    .then(()=>{
-      animate(animationRef, "success")
-    })
-    .catch(()=> {
-      animate(animationRef, "failure")
-    })
+  async function rescind(transactionId: Tid) {
+    await undoTransactionRequest
+      .mutateAsync({ transactionId })
+      .then(() => {
+        animate(animationRef, "success")
+      })
+      .catch(() => {
+        animate(animationRef, "failure", "Nicht stornierbar")
+      })
     await trpcUtils.transaction.invalidate()
     await trpcUtils.user.invalidate()
   }
@@ -109,11 +112,23 @@ const undoTransactionRequest = api.transaction.undoTransaction.useMutation()
                         )}{" "}
                         am {transaction.createdAt.toISOString().split("T")[0]}
                       </td>
-                      <td>{transaction.moneyDestination?.name ?? ""}</td>
                       <td>
-                        {transaction.createdAt >= new Date(Date.now() - 1000 * 60 * 15)&&
-                        <button className="btn btn-ghost btn-xs" onClick={()=>rescind(transaction.id)}>stornieren</button>
-                        }
+                        {transaction.type == 2 &&
+                          userIsTransactionDestination(transaction) &&
+                          "von: " + transaction.user.name}
+                        {transaction.type == 2 &&
+                          !userIsTransactionDestination(transaction) &&
+                          "an: " + transaction.moneyDestination?.name}
+                      </td>
+                      <td>
+                        {transaction.createdAt >= new Date(Date.now() - 1000 * 60 * 15) && (
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => rescind(transaction.id)}
+                          >
+                            stornieren
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

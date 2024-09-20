@@ -5,6 +5,7 @@ import { z } from "zod"
 import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
 import { validationSchema as groupOrderValidationSchema } from "~/components/Forms/GrouporderForm"
 import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/Forms/GrouporderTemplateForm"
+import { env } from "~/env.mjs"
 import { calculateFeesPerCategory, timeToDate } from "~/helper/dataProcessing"
 import { Tid, id } from "~/helper/zodTypes"
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
@@ -221,7 +222,10 @@ export const grouporderRouter = createTRPCRouter({
 
       const requiredBacking = items.length * 5 // secure 5€ per item
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
-      checkAccountBacking(user, requiredBacking)
+
+      if(env.DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK !== "true"){
+        checkAccountBacking(user, requiredBacking)
+      }
 
       const procWish = await prisma.procurementWish.create({
         data: {
@@ -276,6 +280,10 @@ export const grouporderRouter = createTRPCRouter({
     return updatedGroup
   }),
 
+  /**
+   * Close group order and create transactions
+   * @param input[destination] = "server" | userId
+   */
   close: protectedProcedure
     .input(
       z.object({ split: splitSubmitSchema, groupId: id, destination: z.union([id, z.string()]) }),
