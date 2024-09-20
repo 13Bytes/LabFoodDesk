@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
+import { PlusButtonIcon } from "~/components/Icons/PlusButtonIcon"
 import Modal from "~/components/Layout/Modal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
@@ -46,7 +46,7 @@ const CategoryOverview = () => {
       <div className="flex max-w-5xl flex-col md:px-5">
         <div className="flex justify-between gap-3 align-bottom">
           <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
-            <CloseWindowIcon /> Kategorie
+            <PlusButtonIcon /> Kategorie
           </button>
           {checked.length > 0 && (
             <button className="btn-error btn-sm btn" onClick={() => deleteSelected()}>

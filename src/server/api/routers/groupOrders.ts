@@ -4,8 +4,8 @@ import dayjs from "dayjs"
 import { z } from "zod"
 import { splitSubmitSchema } from "~/components/FormElements/GroupOrderSplit"
 import { validationSchema as groupOrderValidationSchema } from "~/components/Forms/GrouporderForm"
-import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/Forms/AddGrouporderTemplateForm"
-import { calculateFeesPerCategory, getItemsFee, getTransactionFees } from "~/helper/dataProcessing"
+import { validationSchema as groupOrderTemplateValidationSchema } from "~/components/Forms/GrouporderTemplateForm"
+import { calculateFeesPerCategory, timeToDate } from "~/helper/dataProcessing"
 import { Tid, id } from "~/helper/zodTypes"
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
@@ -176,7 +176,7 @@ export const grouporderRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
 
       await ctx.prisma.$transaction(async (tx) => {
-        
+
         const groupOrder = await tx.groupOrder.findUniqueOrThrow({ where: { id: input.id }, include: { orders: true } })
         if (groupOrder.status !== 0) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order is already closed" })
@@ -276,7 +276,7 @@ export const grouporderRouter = createTRPCRouter({
     return updatedGroup
   }),
 
-  close: adminProcedure
+  close: protectedProcedure
     .input(
       z.object({ split: splitSubmitSchema, groupId: id, destination: z.union([id, z.string()]) }),
     )
@@ -435,6 +435,14 @@ export const grouporderRouter = createTRPCRouter({
     return result
   }),
 
+  getTemplate: protectedProcedure
+    .input(z.object({ id }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.prisma.groupOrderTemplate.findUniqueOrThrow({ where: { active: true, id: input.id } })
+      const { ordersCloseAt, ...data } = result
+      return { ordersCloseAt_h: ordersCloseAt.getHours(), ordersCloseAt_min: ordersCloseAt.getMinutes(), ...data }
+    }),
+
   createTemplate: adminProcedure
     .input(groupOrderTemplateValidationSchema)
     .mutation(async ({ ctx, input }) => {
@@ -443,10 +451,32 @@ export const grouporderRouter = createTRPCRouter({
           name: input.name,
           weekday: input.weekday,
           repeatWeeks: input.repeatWeeks,
-          ordersCloseAt: input.ordersCloseAt,
+          ordersCloseAt: timeToDate(input.ordersCloseAt_h, input.ordersCloseAt_min),
           active: true,
         },
       })
       return item
+    }),
+
+  updateTemplate: adminProcedure
+    .input(groupOrderTemplateValidationSchema.extend({ id }))
+    .mutation(async ({ ctx, input }) => {
+      const { id, ordersCloseAt_h, ordersCloseAt_min, ...inputWithoutID } = input
+      const item = await prisma.groupOrderTemplate.update({
+        where: { id: id },
+        data: {
+          ...inputWithoutID,
+          ordersCloseAt: timeToDate(ordersCloseAt_h, input.ordersCloseAt_min),
+        },
+      })
+      return item
+    }),
+
+  deleteTemplate: adminProcedure
+    .input(z.object({ id }))
+    .mutation(async ({ ctx, input }) => {
+      const item = await prisma.groupOrderTemplate.delete({
+        where: { id: input.id },
+      })
     }),
 })

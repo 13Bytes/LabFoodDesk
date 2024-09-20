@@ -64,8 +64,8 @@ const AddGrouporderForm = (props: Props) => {
   const deleteGroupOrder = async () => {
     if (!!props.id) {
       try {
-        props.finishAction()
         await deleteGrouporder.mutateAsync({ id: props.id })
+        props.finishAction()
         await trpcUtils.groupOrders.invalidate()
       } catch (e) {
         animate(animationRef, "failure")
@@ -75,7 +75,7 @@ const AddGrouporderForm = (props: Props) => {
 
   return (
     <>
-      <h3 className="text-lg font-bold">Neuer Gruppen-Kauf</h3>
+      <h3 className="text-lg font-bold">Gruppen-Kauf</h3>
       <div className="py-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>

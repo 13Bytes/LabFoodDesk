@@ -68,8 +68,8 @@ model GroupOrderTemplate {
     id            String       @id @default(cuid())
     name          String
     weekday       Int //0:mon, ..., 6:sun
-    ordersCloseAt DateTime
-    repeatWeeks   Int          @default(1)
+    ordersCloseAt DateTime // only time relevant - date not important
+    repeatWeeks   Int          @default(1) // repeat every x weeks
     active        Boolean      @default(true)
     GroupOrders   GroupOrder[]
 }

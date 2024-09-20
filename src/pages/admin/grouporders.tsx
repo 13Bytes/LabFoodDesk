@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react"
 import { boolean } from "zod"
 import GrouporderForm from "~/components/Forms/GrouporderForm"
-import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
+import GrouporderTemplateForm from "~/components/Forms/GrouporderTemplateForm"
+import { PlusButtonIcon } from "~/components/Icons/PlusButtonIcon"
 import Modal from "~/components/Layout/Modal"
 import RegularPage from "~/components/Layout/RegularPage"
 import { localStringOptions, weekdays } from "~/helper/globalTypes"
@@ -37,13 +38,13 @@ const InventoryPage = () => {
     }
   }, [setMaxPage, hasNextPage])
 
-  // todo:
-  // const createTemplateRequest = api.groupOrders.createTemplate.useMutation()
   const [addGrouporderModalOpen, setAddGrouporderModalOpen] = useState<Tid | boolean>(false)
+  const [grouporderTemplateModalOpen, setGrouporderTemplateModalOpen] = useState<Tid | boolean>(
+    false,
+  )
 
   const LegendTemplates = () => (
     <tr>
-      <th></th>
       <th>Aktiv</th>
       <th>Name</th>
       <th>Wochentag</th>
@@ -64,9 +65,20 @@ const InventoryPage = () => {
 
   return (
     <RegularPage>
-      <div className="max-w-7xl md:px-5">
+      <div className="mt-7 max-w-7xl md:px-5">
         <div className="flex flex-col">
-          <h2 className="text-xl">Wiederholungen</h2>
+          <div className="flex flex-row justify-between">
+            <h2 className="text-xl">Wiederholungen</h2>
+            <div className="flex">
+              <button
+                className="btn btn-square btn-primary btn-sm"
+                onClick={() => setGrouporderTemplateModalOpen(true)}
+              >
+                <PlusButtonIcon />
+              </button>
+            </div>
+          </div>
+
           <div className="flex max-w-5xl grow flex-row items-center justify-center">
             <table className="table">
               {/* head */}
@@ -76,27 +88,17 @@ const InventoryPage = () => {
               <tbody>
                 {allOrderTemplateRequest.data?.map((item) => (
                   <tr key={item.id}>
-                    <th>
-                      <label>
-                        <input type="checkbox" className="checkbox" />
-                      </label>
-                    </th>
-                    <td>
-                      <div className="flex items-center space-x-3">
-                        <div className="avatar">
-                          <div className="mask mask-squircle h-12 w-12">{/* Empty icon */}</div>
-                        </div>
-                        <div>
-                          <div className="font-bold">{item.name}</div>
-                        </div>
-                      </div>
-                    </td>
                     <td>{item.active ? "✅" : "❌"}</td>
                     <td>{item.name}</td>
                     <td>{weekdays[item.weekday]}</td>
                     <td>alle {item.repeatWeeks} Wochen</td>
                     <th>
-                      <button className="btn btn-ghost btn-xs">Details</button>
+                      <button
+                        className="btn btn-ghost btn-xs"
+                        onClick={() => setGrouporderTemplateModalOpen(item.id)}
+                      >
+                        Details
+                      </button>
                     </th>
                   </tr>
                 ))}
@@ -116,7 +118,7 @@ const InventoryPage = () => {
                 className="btn btn-square btn-primary btn-sm"
                 onClick={() => setAddGrouporderModalOpen(true)}
               >
-                <CloseWindowIcon />
+                <PlusButtonIcon />
               </button>
             </div>
           </div>
@@ -192,6 +194,18 @@ const InventoryPage = () => {
               setAddGrouporderModalOpen(false)
             }}
             id={typeof addGrouporderModalOpen === "string" ? addGrouporderModalOpen : undefined}
+          />
+        </Modal>
+        <Modal setOpen={setGrouporderTemplateModalOpen} open={!!grouporderTemplateModalOpen}>
+          <GrouporderTemplateForm
+            finishAction={() => {
+              setGrouporderTemplateModalOpen(false)
+            }}
+            id={
+              typeof grouporderTemplateModalOpen === "string"
+                ? grouporderTemplateModalOpen
+                : undefined
+            }
           />
         </Modal>
       </div>

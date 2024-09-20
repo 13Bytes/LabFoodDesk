@@ -71,7 +71,7 @@ Create DB Migrations (for production)
 - Logs wer was eingetragen hat
 - Android zahlen komma auf tastatur ausgeblendet
 #### Nice Improvements:
-- User-Sortierung alphabetisch
+-   
 - Kontostand in header
 - Personen einen "Gruppen-Tag" geben
 - Verrechnungkonten global anzeigen
