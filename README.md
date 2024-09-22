@@ -71,6 +71,8 @@ Create DB Migrations (for production)
 - Automatisches abmelden aller Accounts nach update
 - Android zahlen komma auf tastatur ausgeblendet
 - letzte Transaktionen zeigen Verrechnungskonten-Gutschrift nicht an
+- daily backup
+- Verrechnungskonten löschen können
 #### Nice Improvements:
 - Kontostand in header
 - Personen einen "Gruppen-Tag" geben
@@ -79,6 +81,7 @@ Create DB Migrations (for production)
 - Stats wie oft man was gekauft
 - Geld anfordern (kann von anderem User bestätigt werden)
 - Übersicht alle Transaktionen für Admins
+- Ofengebühr für mehrfachbestellungen optional deaktivieren
 
 
 ---

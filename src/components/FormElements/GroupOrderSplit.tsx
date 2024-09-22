@@ -8,6 +8,7 @@ import { api } from "~/utils/api"
 import type { AppRouter } from "../../server/api/root"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { ConfirmationModal } from "../General/ConfirmationModal"
+import { useSession } from "next-auth/react"
 
 type RouterOutput = inferRouterOutputs<AppRouter>
 
@@ -63,6 +64,7 @@ const GroupOrderSplit = (props: Props) => {
 
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
+  const { data: sessionData } = useSession()
 
   const allUserRequest = api.user.getAllUsers.useQuery()
 
@@ -72,7 +74,7 @@ const GroupOrderSplit = (props: Props) => {
   const [allUsersOverwritten, setAllUsersOverwritten] = useState<number | undefined>()
   const [closeGroupOrderModalOpen, setCloseGroupOrderModalOpen] = useState(false)
 
-  const [selectedDestination, setSelectedDestination] = useState<string>("server")
+  const [selectedDestination, setSelectedDestination] = useState(sessionData?.user.id.toString() ?? "")
   const [destinationError, setDestinationError] = useState(false)
 
   // restructure data from group into (user)ItemList
@@ -340,9 +342,6 @@ const GroupOrderSplit = (props: Props) => {
               setSelectedDestination(e.target.value)
             }}
           >
-            <option value="server" key="server" className="text-primary">
-              LabEats (Systemuser)
-            </option>
             {allUserRequest.data?.map((user) => (
               <option value={user.id} key={user.id} className="">
                 {user.name}

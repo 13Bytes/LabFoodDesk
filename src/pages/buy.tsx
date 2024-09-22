@@ -9,6 +9,7 @@ const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
   const [searchString, setSearchString] = useState("")
   const animationRef = useRef<AnimationHandle>(null)
+  const trpcUtils = api.useUtils()
 
   const displayedItems = allItemsRequest.data?.filter((item) => {
     return item.name.toLowerCase().includes(searchString.toLowerCase())
@@ -23,8 +24,9 @@ const BuyPage: NextPage = () => {
             console.error(error)
             animate(animationRef, "failure", error.message)
           },
-          onSuccess: () => {
+          onSuccess: async () => {
             animate(animationRef, "success")
+            await trpcUtils.user.invalidate()
           }
         }
       )
