@@ -282,11 +282,10 @@ export const grouporderRouter = createTRPCRouter({
 
   /**
    * Close group order and create transactions
-   * @param input[destination] = "server" | userId
    */
   close: protectedProcedure
     .input(
-      z.object({ split: splitSubmitSchema, groupId: id, destination: z.union([id, z.string()]) }),
+      z.object({ split: splitSubmitSchema, groupId: id, destination: id }),
     )
     .mutation(async ({ ctx, input }) => {
       const split = input.split
@@ -405,7 +404,6 @@ export const grouporderRouter = createTRPCRouter({
           })
         }
 
-        if (input.destination !== "server") {
           const destinationUser = await ctx.prisma.user.findUniqueOrThrow({
             where: { id: input.destination },
           })
@@ -429,7 +427,6 @@ export const grouporderRouter = createTRPCRouter({
               id: destinationUser.id,
             },
           })
-        }
         // close group order (by setting status)
         await tx.groupOrder.update({
           where: { id: group.id },

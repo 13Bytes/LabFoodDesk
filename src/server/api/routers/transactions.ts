@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { calculateFeesPerCategory } from "~/helper/dataProcessing"
 import { id } from "~/helper/zodTypes"
-import { sendMoneyProcurementSchema } from "~/pages/admin/procurement"
 
 import {
   createTRPCRouter,
@@ -11,6 +10,12 @@ import {
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
+
+export const sendMoneyProcurementSchema = z.object({
+  destinationUserId: id,
+  amount: z.number(),
+  note: z.string().optional(),
+})
 
 const pageSize = 20
 export const transactionRouter = createTRPCRouter({
@@ -38,8 +43,8 @@ export const transactionRouter = createTRPCRouter({
         include: {
           items: { include: { item: { include: { categories: true } } } },
           procurementItems: { include: { item: { include: { categories: true } } } },
-          moneyDestination: {select: {name: true}},
-          user: {select: {name: true}},
+          moneyDestination: { select: { name: true } },
+          user: { select: { name: true } },
         },
         skip: (page - 1) * pageSize,
         orderBy: {
@@ -164,12 +169,12 @@ export const transactionRouter = createTRPCRouter({
           for (const item of transaction.items) {
             const fees = calculateFeesPerCategory(item.item.price, item.categories)
             for (const cat of fees.categories) {
-                await tx.clearingAccount.update({
-                  where: { id: cat.clearingAccountId },
-                  data: { balance: { decrement: cat.charges} },
-                })
-              }
+              await tx.clearingAccount.update({
+                where: { id: cat.clearingAccountId },
+                data: { balance: { decrement: cat.charges } },
+              })
             }
+          }
         })
       }
       else {

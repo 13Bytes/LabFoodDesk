@@ -78,7 +78,6 @@ const ClearingAccountPage = () => {
               type="number"
               className="input-bordered input w-20"
               value={amountSend}
-              min={0}
               step={0.01}
               onChange={(e) => setAmountSend(parseFloat(e.target.value))}
             />

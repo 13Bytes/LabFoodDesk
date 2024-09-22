@@ -59,15 +59,7 @@ export const clearingAccountRouter = createTRPCRouter({
           },
         })
     
-        // 2. Verify that the sender's balance didn't go below zero.
-        if (sender.balance < 0) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "The account hasn't enough credit",
-          })
-        }
-    
-        // 3. Increment the recipient's balance
+        // 2. Increment the recipient's balance
         const recipient = await tx.user.update({
           data: {
             balance: {
