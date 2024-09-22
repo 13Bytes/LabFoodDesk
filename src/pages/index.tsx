@@ -1,6 +1,7 @@
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { AuthButton } from "~/components/General/AuthButton"
+import { GitHubIcon } from "~/components/Icons/GitHubIcon"
 import { InfoIcon } from "~/components/Icons/InfoIcon"
 
 import CenteredPage from "~/components/Layout/CenteredPage"
@@ -10,7 +11,7 @@ const Home: NextPage = () => {
 
   return (
     <CenteredPage>
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+      <div className="container flex flex-col items-center justify-center gap-10 px-4 py-16 ">
         <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
           <span className="primary text-primary">Lab</span> Eats
         </h1>
@@ -33,6 +34,14 @@ const Home: NextPage = () => {
               </div>
             </div>
           )}
+          <a
+            className="btn btn-ghost"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://github.com/13bytes/labfooddesk"
+          >
+            <GitHubIcon />
+          </a>
         </div>
       </div>
     </CenteredPage>
