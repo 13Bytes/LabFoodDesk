@@ -58,7 +58,6 @@ export const clearingAccountRouter = createTRPCRouter({
             id: input.sourceClearingAccountId,
           },
         })
-    
         // 2. Increment the recipient's balance
         const recipient = await tx.user.update({
           data: {
@@ -69,6 +68,17 @@ export const clearingAccountRouter = createTRPCRouter({
           where: {
             id: input.destinationUserId,
           },
+        })
+        // 3. Create transaction
+        const transaction = await tx.transaction.create({
+          data: {
+            type: 3,
+            totalAmount: input.amount,
+            user: {connect: {id: ctx.session.user.id}},
+            moneyDestination: {connect: {id: input.destinationUserId}},
+            clearingAccount: {connect: {id: input.sourceClearingAccountId}},
+            note: input.note,
+          }
         })
       })
   }),

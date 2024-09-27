@@ -64,12 +64,9 @@ Create DB Migrations (for production)
 `npx prisma migrate dev`
 
 ### Open ToDos
-- Logs wer was eingetragen hat
 - Automatisches abmelden aller Accounts nach update
 - Android zahlen komma auf tastatur ausgeblendet
-- letzte Transaktionen zeigen Verrechnungskonten-Gutschrift nicht an
 - daily backup
-- Verrechnungskonten löschen können
 #### Nice Improvements:
 - Personen einen "Gruppen-Tag" geben
 - Verrechnungkonten global anzeigen

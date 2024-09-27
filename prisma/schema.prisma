@@ -133,7 +133,7 @@ model Transaction {
     amountWithoutFees      Float? // without category-markup
     totalAmount            Float // without category-markup
     createdAt              DateTime                 @default(now())
-    type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer, 3: procurement  |  90: rescinded buy, 91:  rescinded sell
+    type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer, 3: procurement (of grouporder)  |  90: rescinded buy, 91:  rescinded sell
     groupOrder             GroupOrder?              @relation(fields: [groupOrderId], references: [id])
     groupOrderId           String?
     //  --- if buy or transfer (type=0|2)
