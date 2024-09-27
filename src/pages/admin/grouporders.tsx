@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react"
-import AddGrouporderForm from "~/components/Forms/AddGrouporderForm"
-import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
+import { boolean } from "zod"
+import GrouporderForm from "~/components/Forms/GrouporderForm"
+import GrouporderTemplateForm from "~/components/Forms/GrouporderTemplateForm"
+import { PlusButtonIcon } from "~/components/Icons/PlusButtonIcon"
 import Modal from "~/components/Layout/Modal"
 import RegularPage from "~/components/Layout/RegularPage"
 import { localStringOptions, weekdays } from "~/helper/globalTypes"
+import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 const InventoryPage = () => {
@@ -23,7 +26,7 @@ const InventoryPage = () => {
           return undefined
         }
       },
-    }
+    },
   )
   const [page, setPage] = React.useState(0)
   const [maxPage, setMaxPage] = React.useState(Infinity)
@@ -35,17 +38,16 @@ const InventoryPage = () => {
     }
   }, [setMaxPage, hasNextPage])
 
-  // todo:
-  // const createTemplateRequest = api.groupOrders.createTemplate.useMutation()
-  const [addGrouporderModalOpen, setAddGrouporderModalOpen] = useState(false)
+  const [addGrouporderModalOpen, setAddGrouporderModalOpen] = useState<Tid | boolean>(false)
+  const [grouporderTemplateModalOpen, setGrouporderTemplateModalOpen] = useState<Tid | boolean>(
+    false,
+  )
 
   const LegendTemplates = () => (
     <tr>
-      <th></th>
       <th>Aktiv</th>
       <th>Name</th>
       <th>Wochentag</th>
-      <th>Wiederholung</th>
       <th></th>
     </tr>
   )
@@ -62,9 +64,20 @@ const InventoryPage = () => {
 
   return (
     <RegularPage>
-      <div className="max-w-7xl md:px-5">
+      <div className="mt-7 max-w-7xl md:px-5">
         <div className="flex flex-col">
-          <h2 className="text-xl">Wiederholungen</h2>
+          <div className="flex flex-row justify-between">
+            <h2 className="text-xl">Wiederholungen</h2>
+            <div className="flex">
+              <button
+                className="btn btn-square btn-primary btn-sm"
+                onClick={() => setGrouporderTemplateModalOpen(true)}
+              >
+                <PlusButtonIcon />
+              </button>
+            </div>
+          </div>
+
           <div className="flex max-w-5xl grow flex-row items-center justify-center">
             <table className="table">
               {/* head */}
@@ -74,27 +87,16 @@ const InventoryPage = () => {
               <tbody>
                 {allOrderTemplateRequest.data?.map((item) => (
                   <tr key={item.id}>
-                    <th>
-                      <label>
-                        <input type="checkbox" className="checkbox" />
-                      </label>
-                    </th>
-                    <td>
-                      <div className="flex items-center space-x-3">
-                        <div className="avatar">
-                          <div className="mask mask-squircle h-12 w-12">{/* Empty icon */}</div>
-                        </div>
-                        <div>
-                          <div className="font-bold">{item.name}</div>
-                        </div>
-                      </div>
-                    </td>
                     <td>{item.active ? "✅" : "❌"}</td>
                     <td>{item.name}</td>
                     <td>{weekdays[item.weekday]}</td>
-                    <td>alle {item.repeatWeeks} Wochen</td>
                     <th>
-                      <button className="btn-ghost btn-xs btn">Details</button>
+                      <button
+                        className="btn btn-ghost btn-xs"
+                        onClick={() => setGrouporderTemplateModalOpen(item.id)}
+                      >
+                        Details
+                      </button>
                     </th>
                   </tr>
                 ))}
@@ -111,16 +113,16 @@ const InventoryPage = () => {
             <h2 className="text-xl">Gruppen-Käufe</h2>
             <div className="flex">
               <button
-                className="btn-primary btn-square btn-sm btn"
+                className="btn btn-square btn-primary btn-sm"
                 onClick={() => setAddGrouporderModalOpen(true)}
               >
-                <CloseWindowIcon />
+                <PlusButtonIcon />
               </button>
             </div>
           </div>
 
-          <div className="flex max-w-5xl flex-row items-center justify-center w-screen">
-            <table className="table overflow-x-auto">
+          <div className="max-w-5xl flex-row items-center justify-center overflow-x-auto">
+            <table className="table">
               <thead>
                 <Legend />
               </thead>
@@ -139,12 +141,22 @@ const InventoryPage = () => {
                       {order.status === 6 && "☑️"}
                       {order.status === 99 && "❌"}
                     </td>
-                    <td className="flex gap-x-2 flex-wrap">
+                    <td className="flex flex-wrap gap-x-2">
                       {order.orders.map((order) => (
                         <>
-                        <span key={order.id}>{order.user.name}</span>
+                          <span key={order.id}>{order.user.name}</span>
                         </>
                       ))}
+                    </td>
+                    <td>
+                      <div>
+                        <button
+                          className="btn btn-sm"
+                          onClick={() => setAddGrouporderModalOpen(order.id)}
+                        >
+                          details
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -156,14 +168,14 @@ const InventoryPage = () => {
           </div>
           <div className="join mt-2">
             <button
-              className={`join-item btn ${page < 1 ? "btn-disabled" : ""}`}
+              className={`btn join-item ${page < 1 ? "btn-disabled" : ""}`}
               onClick={() => setPage((prev) => prev - 1)}
             >
               «
             </button>
-            <button className="join-item btn pointer-events-none">Seite {page + 1}</button>
+            <button className="btn join-item pointer-events-none">Seite {page + 1}</button>
             <button
-              className={`join-item btn ${page >= maxPage ? "btn-disabled": ""}`}
+              className={`btn join-item ${page >= maxPage ? "btn-disabled" : ""}`}
               onClick={() => {
                 void fetchNextPage()
                 setPage((prev) => prev + 1)
@@ -174,8 +186,25 @@ const InventoryPage = () => {
           </div>
         </div>
 
-        <Modal setOpen={setAddGrouporderModalOpen} open={addGrouporderModalOpen}>
-          <AddGrouporderForm finishAction={() => setAddGrouporderModalOpen(false)} />
+        <Modal setOpen={setAddGrouporderModalOpen} open={!!addGrouporderModalOpen}>
+          <GrouporderForm
+            finishAction={() => {
+              setAddGrouporderModalOpen(false)
+            }}
+            id={typeof addGrouporderModalOpen === "string" ? addGrouporderModalOpen : undefined}
+          />
+        </Modal>
+        <Modal setOpen={setGrouporderTemplateModalOpen} open={!!grouporderTemplateModalOpen}>
+          <GrouporderTemplateForm
+            finishAction={() => {
+              setGrouporderTemplateModalOpen(false)
+            }}
+            id={
+              typeof grouporderTemplateModalOpen === "string"
+                ? grouporderTemplateModalOpen
+                : undefined
+            }
+          />
         </Modal>
       </div>
     </RegularPage>

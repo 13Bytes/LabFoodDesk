@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
+import { PlusButtonIcon } from "~/components/Icons/PlusButtonIcon"
 import Modal from "~/components/Layout/Modal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
@@ -45,7 +45,7 @@ const ClearingAccountOverview = () => {
       <div className="card flex flex-col max-w-6xl md:p-3 pt-4 bg-base-200">
         <div className="flex flex-row justify-between">
         <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
-            <CloseWindowIcon /> Verrechnungskonto
+            <PlusButtonIcon /> Verrechnungskonto
           </button>
         </div>
         <div className="flex grow flex-row items-center justify-center">
