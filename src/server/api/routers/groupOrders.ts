@@ -185,7 +185,7 @@ export const grouporderRouter = createTRPCRouter({
         if (groupOrder.orders.length > 0) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order already has orders" })
         }
-        await tx.groupOrder.delete({ where: { id: input.id } })
+        await tx.groupOrder.update({ where: { id: input.id }, data: { status: 99 } })
       })
     }),
 
@@ -455,7 +455,6 @@ export const grouporderRouter = createTRPCRouter({
         data: {
           name: input.name,
           weekday: input.weekday,
-          repeatWeeks: input.repeatWeeks,
           ordersCloseAt: timeToDate(input.ordersCloseAt_h, input.ordersCloseAt_min),
           active: true,
         },

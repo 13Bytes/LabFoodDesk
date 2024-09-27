@@ -11,14 +11,12 @@ import { getTimeFromDateString } from "~/helper/dataProcessing"
 export const validationSchema = z.object({
   name: z.string(),
   weekday: z.number().min(0).max(6),
-  repeatWeeks: z.number().positive().optional(),
   ordersCloseAt_h: z.number().nonnegative(),
   ordersCloseAt_min: z.number().nonnegative(),
 })
 export const formSchema = z.object({
   name: z.string(),
   weekday: z.number().min(0).max(6),
-  repeatWeeks: z.number().positive().optional(),
   ordersCloseAt: z.string(),
 })
 
@@ -62,7 +60,7 @@ const AddGrouporderTemplateForm = (props: Props) => {
         reset({})
       }
     } else {
-      reset({ name: "", weekday: undefined, ordersCloseAt: undefined, repeatWeeks: undefined })
+      reset({ name: "", weekday: undefined, ordersCloseAt: undefined })
     }
   }, [currentGroupOrderTemplate.data, props.id ?? ""])
 
@@ -133,20 +131,6 @@ const AddGrouporderTemplateForm = (props: Props) => {
               type="time"
               {...register("ordersCloseAt", { required: true })}
               className="input input-bordered input-primary w-full max-w-md"
-            />
-          </div>
-          <div>
-            <label className="label">
-              <span className="label-text text-base">Wiederholung alle x Wochen</span>
-            </label>
-            <input
-              type="number"
-              {...register("repeatWeeks", { required: true, valueAsNumber: true })}
-              className="input input-bordered input-primary w-full max-w-md"
-              placeholder="Name"
-              defaultValue={1}
-              min={1}
-              step={1}
             />
           </div>
 

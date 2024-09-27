@@ -48,7 +48,6 @@ const InventoryPage = () => {
       <th>Aktiv</th>
       <th>Name</th>
       <th>Wochentag</th>
-      <th>Wiederholung</th>
       <th></th>
     </tr>
   )
@@ -91,7 +90,6 @@ const InventoryPage = () => {
                     <td>{item.active ? "✅" : "❌"}</td>
                     <td>{item.name}</td>
                     <td>{weekdays[item.weekday]}</td>
-                    <td>alle {item.repeatWeeks} Wochen</td>
                     <th>
                       <button
                         className="btn btn-ghost btn-xs"
