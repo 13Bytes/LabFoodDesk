@@ -68,6 +68,7 @@ Create DB Migrations (for production)
 - Android zahlen komma auf tastatur ausgeblendet
 - daily backup
 #### Nice Improvements:
+- Gruppen-split
 - Personen einen "Gruppen-Tag" geben
 - Verrechnungkonten global anzeigen
 - Bestellungs-Übersicht (wie viele Pizzen von was kaufen)

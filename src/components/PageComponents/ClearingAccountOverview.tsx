@@ -80,7 +80,7 @@ const ClearingAccountOverview = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="font-bold">{item.balance}€</div>
+                    <div className="font-bold">{item.balance.toFixed(2)}€</div>
                   </td>
                   <th>
                     <button
