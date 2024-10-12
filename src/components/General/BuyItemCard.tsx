@@ -27,7 +27,7 @@ const BuyItemCard = ({ item, buyAction }: Props) => {
         <div>
           <span className="text-base font-bold ">{item.price}€</span>
           {additionalPricing > 0 && (
-            <span className="font ml-1 text-sm">+{additionalPricing}€</span>
+            <span className="ml-1 text-sm">+{additionalPricing}€</span>
           )}
         </div>
         <div className="card-actions flex flex-row justify-end">

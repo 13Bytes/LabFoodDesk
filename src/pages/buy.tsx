@@ -7,6 +7,7 @@ import { api } from "~/utils/api"
 
 const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
+  const trpcUtils = api.useUtils()
   const [searchString, setSearchString] = useState("")
   const animationRef = useRef<AnimationHandle>(null)
 
@@ -15,19 +16,20 @@ const BuyPage: NextPage = () => {
   })
 
   const apiBuyOneItem = api.item.buyOneItem.useMutation()
-  const buyAction = (itemID: string) => {
-      apiBuyOneItem.mutate(
-        { productID: itemID },
-        {
-          onError: (error) => {
-            console.error(error)
-            animate(animationRef, "failure", error.message)
-          },
-          onSuccess: () => {
-            animate(animationRef, "success")
-          }
-        }
-      )
+  const buyAction = async (itemID: string) => {
+    await apiBuyOneItem.mutateAsync(
+      { productID: itemID },
+      {
+        onError: (error) => {
+          console.error(error)
+          animate(animationRef, "failure", error.message)
+        },
+        onSuccess: async () => {
+          animate(animationRef, "success")
+          await trpcUtils.user.invalidate()
+        },
+      },
+    )
   }
 
   return (
