@@ -64,21 +64,18 @@ Create DB Migrations (for production)
 `npx prisma migrate dev`
 
 ### Open ToDos
-- Gruppen-Wiederholungen
-    - cron-trigger an endpoint?
-    - Wiederholungen -> Gruppeneinkäufe umbenennen
-- Logs wer was eingetragen hat
 - Automatisches abmelden aller Accounts nach update
 - Android zahlen komma auf tastatur ausgeblendet
-- letzte Transaktionen zeigen Verrechnungskonten-Gutschrift nicht an
+- daily backup
 #### Nice Improvements:
-- Kontostand in header
+- Gruppen-split
 - Personen einen "Gruppen-Tag" geben
 - Verrechnungkonten global anzeigen
 - Bestellungs-Übersicht (wie viele Pizzen von was kaufen)
 - Stats wie oft man was gekauft
 - Geld anfordern (kann von anderem User bestätigt werden)
 - Übersicht alle Transaktionen für Admins
+- Ofengebühr für mehrfachbestellungen optional deaktivieren
 
 
 ---

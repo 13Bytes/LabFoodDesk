@@ -1,11 +1,11 @@
 import { useRef, useState } from "react"
-import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
 import Modal from "~/components/Layout/Modal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import ProcurementItemForm from "../Forms/ProcurementItemForm"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
+import { PlusIcon } from "../Icons/PlusIcon"
 import { TrashIcon } from "../Icons/TrashIcon"
 
 const ProcurementItemOverview = () => {
@@ -45,7 +45,7 @@ const ProcurementItemOverview = () => {
       <div className="flex max-w-5xl flex-col">
         <div className="flex justify-between gap-3 align-bottom">
           <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
-            <CloseWindowIcon /> Vorbesteller-Item
+            <PlusIcon /> Vorbesteller-Item
           </button>
           {checked.length > 0 && (
             <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
@@ -53,7 +53,7 @@ const ProcurementItemOverview = () => {
             </button>
           )}
         </div>
-        <div className="overflow-x-auto grow flex-row items-center justify-center">
+        <div className="grow flex-row items-center justify-center overflow-x-auto">
           <table className="table">
             {/* head */}
             <thead>

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
+import { PlusButtonIcon } from "~/components/Icons/PlusButtonIcon"
 import Modal from "~/components/Layout/Modal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
@@ -7,6 +7,7 @@ import { api } from "~/utils/api"
 import ItemForm from "../Forms/ItemForm"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { TrashIcon } from "../Icons/TrashIcon"
+import { PlusIcon } from "../Icons/PlusIcon"
 
 const InventoryOverview = () => {
   const allItemsRequest = api.item.getAll.useQuery()
@@ -46,7 +47,7 @@ const InventoryOverview = () => {
       <div className="flex max-w-5xl flex-col">
         <div className="flex justify-between gap-3 align-bottom">
           <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
-            <CloseWindowIcon /> Produkt
+            <PlusIcon /> Produkt
           </button>
           {checked.length > 0 && (
             <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>

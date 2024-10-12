@@ -64,3 +64,16 @@ export const getItemsFee = (
 export const getTransactionFees = (transaction: TransactionData) => {
   return getItemsFee(transaction.items, transaction.procurementItems)
 }
+
+export const getTimeFromDateString = (h: number, min: number) => {
+  const hOut = h >= 10 ? h : "0" + h
+  const minOut = min >= 10 ? min : "0" + min
+  return hOut + ":" + minOut
+}
+
+export const timeToDate = (h: number, min: number) => {
+  const date = new Date(Date.now())
+  date.setHours(h)
+  date.setMinutes(min)
+  return date
+}

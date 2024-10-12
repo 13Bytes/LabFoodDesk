@@ -1,11 +1,11 @@
 export const weekdays = [
+  "Sonntag",
   "Montag",
   "Dienstag",
   "Mittwoch",
   "Donnerstag",
   "Freitag",
   "Samstag",
-  "Sonntag",
 ]
 
 export const localStringOptions: Intl.DateTimeFormatOptions = {

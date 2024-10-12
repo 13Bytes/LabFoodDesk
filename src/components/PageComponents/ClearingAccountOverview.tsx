@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { CloseWindowIcon } from "~/components/Icons/CloseWindowIcon"
+import { PlusButtonIcon } from "~/components/Icons/PlusButtonIcon"
 import Modal from "~/components/Layout/Modal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
@@ -42,11 +42,16 @@ const ClearingAccountOverview = () => {
 
   return (
     <>
-      <div className="card flex flex-col max-w-6xl md:p-3 pt-4 bg-base-200">
+      <div className="card flex max-w-6xl flex-col bg-base-200 pt-4 md:p-3">
         <div className="flex flex-row justify-between">
-        <button className="btn-primary btn" onClick={() => setOpenAddItemModal(true)}>
-            <CloseWindowIcon /> Verrechnungskonto
+          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
+            <PlusButtonIcon /> Verrechnungskonto
           </button>
+          {checked.length > 0 && (
+            <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
+              <TrashIcon />
+            </button>
+          )}
         </div>
         <div className="flex grow flex-row items-center justify-center">
           <table className="table">
@@ -75,7 +80,7 @@ const ClearingAccountOverview = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="font-bold">{item.balance}€</div>
+                    <div className="font-bold">{item.balance.toFixed(2)}€</div>
                   </td>
                   <th>
                     <button
