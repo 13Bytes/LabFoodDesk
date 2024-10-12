@@ -7,6 +7,7 @@ export type AnimationHandle = {
 
 type Status = "failure" | "success"
 
+export const DISPLAY_TIME = 1800
 export const animate = (
   handle: RefObject<AnimationHandle>,
   status: Status,
@@ -35,7 +36,6 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
     setMessage("")
   }
 
-  const DISPLAY_TIME = 1800
   useImperativeHandle(ref, () => ({
     success() {
       setStatus("success")
