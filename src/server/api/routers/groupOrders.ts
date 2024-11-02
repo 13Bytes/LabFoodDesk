@@ -223,7 +223,7 @@ export const grouporderRouter = createTRPCRouter({
       const requiredBacking = items.length * 5 // secure 5€ per item
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
 
-      if(env.DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK !== "true"){
+      if (env.DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK !== "true") {
         checkAccountBacking(user, requiredBacking)
       }
 
@@ -370,7 +370,6 @@ export const grouporderRouter = createTRPCRouter({
               },
               totalAmountWithCat,
             })
-
             continue
           }
         }
@@ -404,34 +403,124 @@ export const grouporderRouter = createTRPCRouter({
           })
         }
 
-          const destinationUser = await ctx.prisma.user.findUniqueOrThrow({
-            where: { id: input.destination },
-          })
-          // Compensate destination-user
-          await tx.transaction.create({
-            data: {
-              user: { connect: { id: ctx.session.user.id } },
-              moneyDestination: { connect: { id: destinationUser.id } },
-              groupOrder: { connect: { id: group.id } },
-              type: 3,
-              totalAmount: creditOfDest,
+        const destinationUser = await ctx.prisma.user.findUniqueOrThrow({
+          where: { id: input.destination },
+        })
+        // Compensate destination-user
+        await tx.transaction.create({
+          data: {
+            user: { connect: { id: ctx.session.user.id } },
+            moneyDestination: { connect: { id: destinationUser.id } },
+            groupOrder: { connect: { id: group.id } },
+            type: 3,
+            totalAmount: creditOfDest,
+          },
+        })
+        await tx.user.update({
+          data: {
+            balance: {
+              increment: creditOfDest,
             },
-          })
-          await tx.user.update({
-            data: {
-              balance: {
-                increment: creditOfDest,
-              },
-            },
-            where: {
-              id: destinationUser.id,
-            },
-          })
+          },
+          where: {
+            id: destinationUser.id,
+          },
+        })
         // close group order (by setting status)
         await tx.groupOrder.update({
           where: { id: group.id },
           data: { status: 6, closedBy: { connect: { id: ctx.session.user.id } } },
         })
+      })
+    }),
+
+  /**
+ * Revert the transactions of a closed group
+ */
+  revertClosed: protectedProcedure
+    .input(
+      z.object({ groupId: id }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
+        where: { id: input.groupId },
+        include: {
+          orders: { include: { procurementItems: { include: { item: { include: { categories: true } } } }, items: true } },
+          procurementWishes: { include: { items: { include: { categories: true } } } },
+        },
+      })
+
+      if (group.status !== 6) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Orders are not closed yet - can't revert!",
+        })
+      }
+
+      if ((group.orders.filter(order => order.type === 3)).length >= 1) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "GroupOrder should have only one (or zero) compensation transaction!",
+        })
+      }
+
+      await ctx.prisma.$transaction(async (tx) => {
+
+        for (const transaction of group.orders) {
+          if (!transaction.canceled) {
+            continue
+          }
+          // Only undo procurement items; regular items should already be fulfilled
+          if (transaction.type === 0 && transaction.procurementItems.length > 0) {
+            if (transaction.items.length > 0) {
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "Combined transactions are currently not supported - please contact an admin",
+              })
+            }
+
+            // remove category fees from clearing accounts
+            for (const procItem of transaction.procurementItems) {
+              const feesPerCat = calculateFeesPerCategory(procItem.cost, procItem.item.categories)
+              for (const catFee of feesPerCat.categories) {
+                await tx.clearingAccount.update({
+                  where: { id: catFee.clearingAccountId },
+                  data: { balance: { decrement: catFee.charges } },
+                })
+              }
+            }
+            // undo user-transactions
+            await tx.transaction.update({
+              where: { id: transaction.id },
+              data: { canceled: true, canceledBy: { connect: { id: ctx.session.user.id } }, note: transaction.note + "(grouporder reverted)" },
+            })
+            // revert user-balance
+            await tx.user.update({
+              where: { id: transaction.userId },
+              data: { balance: { increment: transaction.totalAmount } },
+            })
+          }
+          else if (transaction.type === 3) {
+            // Undo compensation for destination-user
+            await tx.transaction.update({
+              where: { id: transaction.id },
+              data: {
+                canceled: true,
+              },
+            })
+            await tx.user.update({
+              where: { id: transaction.moneyDestinationUserId! },
+              data: { balance: { decrement: transaction.totalAmount } },
+            })
+          }
+        }
+
+        // revert group order status
+        await tx.groupOrder.update({
+          where: { id: group.id },
+          data: { status: 5, revertedBy: { connect: { id: ctx.session.user.id } } },
+        })
+
       })
     }),
 

@@ -67,14 +67,18 @@ Create DB Migrations (for production)
 - Automatisches abmelden aller Accounts nach update
 - Android zahlen komma auf tastatur ausgeblendet
 - daily backup
+- Revert von Gruppen-Abrechnungen
+    - write test-cases
 #### Nice Improvements:
 - Gruppen-split
+- Gruppen-Kauf auf eine/mehrere Kategorien beschränken
 - Personen einen "Gruppen-Tag" geben
 - Verrechnungkonten global anzeigen
 - Bestellungs-Übersicht (wie viele Pizzen von was kaufen)
 - Stats wie oft man was gekauft
 - Geld anfordern (kann von anderem User bestätigt werden)
 - Übersicht alle Transaktionen für Admins
+- Vorbesteller-Items mit Fix-Preis (Default-Feld vorausfüllen)
 - Ofengebühr für mehrfachbestellungen optional deaktivieren
 
 

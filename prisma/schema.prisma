@@ -59,8 +59,10 @@ model GroupOrder {
     procurementWishes    ProcurementWish[]
     ordersCloseAt        DateTime
     ordersClosedAt       DateTime?
-    closedBy             User?               @relation(fields: [closedById], references: [id])
+    closedBy             User?               @relation("closedBy", fields: [closedById], references: [id])
+    revertedBy           User?               @relation("revertedBy", fields: [revertedById], references: [id])
     closedById           String?
+    revertedById         String?
     status               Int                 @default(0) // 0: open, 5: incoming orders stoped, 6: orders fulfilled, 99: aborted (orders not fulfilled)
     GroupOrderTemplate   GroupOrderTemplate? @relation(fields: [groupOrderTemplateId], references: [id])
     groupOrderTemplateId String?
@@ -189,8 +191,9 @@ model User {
     transactions            Transaction[]     @relation("user")
     is_transfer_destiantion Transaction[]     @relation("moneyDestination")
     ProcurementWish         ProcurementWish[]
-    GroupOrder              GroupOrder[]
     Transaction             Transaction[]     @relation("canceledBy")
+    groupOrdersClosed       GroupOrder[]      @relation("closedBy")
+    groupOrdersReverted     GroupOrder[]      @relation("revertedBy")
 }
 
 model VerificationToken {
