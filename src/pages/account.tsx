@@ -107,8 +107,11 @@ const AccountPage: NextPage = () => {
                         {transaction.type == 2 && !userIsTransactionDestination(transaction) && (
                           <span className="text-red-700"> überwiesen</span>
                         )}{" "}
-                        {transaction.type == 3 && (
+                        {transaction.type == 3 && transaction.totalAmount >= 0 &&(
                           <span className="text-green-600"> gutgeschrieben</span>
+                        )}{" "}
+                        {transaction.type == 3 && transaction.totalAmount < 0 &&(
+                          <span className="text-red-700"> gutgeschrieben</span>
                         )}{" "}
                         am {transaction.createdAt.toISOString().split("T")[0]}
                       </td>
