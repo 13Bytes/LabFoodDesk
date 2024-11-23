@@ -76,7 +76,7 @@ const ClearingAccountPage = () => {
           <div>
             <input
               type="number"
-              className="input-bordered input w-20"
+              className="input-bordered input w-28 m"
               value={amountSend}
               step={0.01}
               onChange={(e) => setAmountSend(parseFloat(e.target.value))}
@@ -103,7 +103,7 @@ const ClearingAccountPage = () => {
               }}
             >
               <option key="dis" value="" className="disabled">
-                Verrechnungskonto wählen:
+                Verrechnungskonto wählen: &nbsp;
               </option>
               {allClearingAccountsRequest.data?.map((account) => {
                 if (account.id !== session.data?.user.id)
@@ -134,7 +134,7 @@ const ClearingAccountPage = () => {
               }}
             >
               <option key="dis" value="" className="disabled">
-                User wählen:
+                User wählen: &nbsp;
               </option>
               {allUserRequest.data?.map((user) => {
                 if (user.id !== session.data?.user.id)
