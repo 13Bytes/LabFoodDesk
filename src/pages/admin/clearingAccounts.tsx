@@ -76,7 +76,7 @@ const ClearingAccountPage = () => {
           <div>
             <input
               type="number"
-              className="input-bordered input w-28 m"
+              className="input-bordered input w-28"
               value={amountSend}
               step={0.01}
               onChange={(e) => setAmountSend(parseFloat(e.target.value))}
