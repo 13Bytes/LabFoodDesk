@@ -169,10 +169,12 @@ export const transactionRouter = createTRPCRouter({
           for (const item of transaction.items) {
             const fees = calculateFeesPerCategory(item.item.price, item.categories)
             for (const cat of fees.categories) {
-              await tx.clearingAccount.update({
-                where: { id: cat.clearingAccountId },
-                data: { balance: { decrement: cat.charges } },
-              })
+              if (cat.charges !== 0) {
+                await tx.clearingAccount.update({
+                  where: { id: cat.clearingAccountId },
+                  data: { balance: { decrement: cat.charges } },
+                })
+              }
             }
           }
         })
