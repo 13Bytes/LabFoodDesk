@@ -69,6 +69,8 @@ Create DB Migrations (for production)
 - daily backup
 #### Nice Improvements:
 - Gruppen-split
+- Verrechnungskonten-Auszahlung für Admins auch selbst möglich
+- Gruppen-Kauf auf eine/mehrere Kategorien beschränken
 - Personen einen "Gruppen-Tag" geben
 - Verrechnungkonten global anzeigen
 - Bestellungs-Übersicht (wie viele Pizzen von was kaufen)
