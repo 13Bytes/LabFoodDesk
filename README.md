@@ -65,7 +65,7 @@ Create DB Migrations (for production)
 
 ### Open ToDos
 - Automatisches abmelden aller Accounts nach update
-- Android zahlen komma auf tastatur ausgeblendet
+- Android Zahlentastatur Komma ausgeblendet
 - daily backup
 #### Nice Improvements:
 - Gruppen-split
