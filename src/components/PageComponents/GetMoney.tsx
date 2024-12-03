@@ -11,7 +11,7 @@ type Props = {
   sendDescription?: string
 }
 
-const SendMoney = (props: Props) => {
+const GetMoney = (props: Props) => {
   const allUserRequest = api.user.getAllUsers.useQuery()
   const animationRef = useRef<AnimationHandle>(null)
 
@@ -20,18 +20,18 @@ const SendMoney = (props: Props) => {
   const session = useSession()
   const [amountSend, setAmountSend] = useState<number>(1)
   const [noteSend, setNoteSend] = useState(props.comment || "")
-  const [selectedDestinationUser, setSelectedDestinationUser] = useState<string>()
+  const [selectedUser, setSelectedUser] = useState<string>()
   const [errorMessage, setErrorMessage] = useState("")
 
-  const apiSendMoney = api.transaction.sendMoney.useMutation()
+  const apiRetractMoney = api.transaction.retractMoney.useMutation()
 
-  const sendMoneyAction = async () => {
-    if (selectedDestinationUser) {
+  const getMoneyAction = async () => {
+    if (selectedUser) {
       setErrorMessage("")
-      await apiSendMoney.mutateAsync(
+      await apiRetractMoney.mutateAsync(
         {
           amount: amountSend,
-          destinationUserId: selectedDestinationUser,
+          moneySourceUserId: selectedUser,
           note: noteSend,
         },
         {
@@ -41,7 +41,7 @@ const SendMoney = (props: Props) => {
           },
           onSuccess: async () => {
             animate(animationRef, "success")
-            setSelectedDestinationUser(undefined)
+            setSelectedUser(undefined)
             setAmountSend(1)
             setNoteSend("")
             await trpcUtils.user.invalidate()
@@ -49,7 +49,7 @@ const SendMoney = (props: Props) => {
         }
       )
     } else {
-      setErrorMessage("Bitte wähle einen Empfänger aus")
+      setErrorMessage("Bitte wähle einen User aus")
     }
   }
 
@@ -72,7 +72,7 @@ const SendMoney = (props: Props) => {
           </div>
 
           <div className="mx-1">
-            von <span className="font-bold">dir</span> an
+            von 
           </div>
 
           <div>
@@ -80,12 +80,12 @@ const SendMoney = (props: Props) => {
               className="select-bordered select w-full max-w-xs font-bold "
               id="sel-dest-user"
               value={
-                !!(selectedDestinationUser && allUserRequest.data)
-                  ? selectedDestinationUser
+                !!(selectedUser && allUserRequest.data)
+                  ? selectedUser
                   : "Auswählen:"
               }
               onChange={(e) => {
-                setSelectedDestinationUser(e.target.value)
+                setSelectedUser(e.target.value)
               }}
             >
               <option key="dis" className="disabled">
@@ -102,12 +102,17 @@ const SendMoney = (props: Props) => {
             </select>
           </div>
 
+          <div className="mx-1">
+            an <span className="font-bold">dich</span>
+          </div>
+
+
           <div>
             <button
-              className={`btn ml-5 ${!selectedDestinationUser ? "btn-disabled" : ""}`}
-              onClick={() => sendMoneyAction()}
+              className={`btn ml-5 ${!selectedUser ? "btn-disabled" : ""}`}
+              onClick={() => getMoneyAction()}
             >
-              {props.sendDescription ?? "Senden"}
+              {props.sendDescription ?? "Einziehen"}
             </button>
           </div>
         </div>
@@ -128,4 +133,4 @@ const SendMoney = (props: Props) => {
   )
 }
 
-export default SendMoney
+export default GetMoney

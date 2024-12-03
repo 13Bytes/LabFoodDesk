@@ -1,6 +1,6 @@
 import { Transaction } from "@prisma/client"
 import { type NextPage } from "next"
-import React, { useEffect, useRef } from "react"
+import React, { ComponentProps, useEffect, useRef } from "react"
 import ActionResponsePopup, {
   AnimationHandle,
   animate,
@@ -48,17 +48,76 @@ const AccountPage: NextPage = () => {
     return transaction.moneyDestinationUserId === userData?.id
   }
 
+  function transactionDisplayDetails(transaction: Transaction) {
+    const subtraction: ComponentProps<"span">["className"] = "text-red-700"
+    const addition: ComponentProps<"span">["className"] = "text-green-600"
+    const transactionDetails: {
+      color: ComponentProps<"span">["className"]
+      text: string
+      directionText: string
+    } = {
+      color: undefined,
+      text: "",
+      directionText: "",
+    }
+
+    if (transaction.type == 0) {
+      transactionDetails.color = subtraction
+      transactionDetails.text = "gekauft"
+    } else if (transaction.type == 1) {
+      transactionDetails.color = addition
+      transactionDetails.text = "verkauft"
+    } else if (transaction.type == 2) {
+      const isDestinationUser = userIsTransactionDestination(transaction)
+
+      let userIsBenefiting = isDestinationUser
+      if (transaction.totalAmount >= 0) {
+        transactionDetails.text = "überwiesen"
+        transactionDetails.directionText = "an"
+      } else {
+        userIsBenefiting = !userIsBenefiting
+        transactionDetails.text = "eingezogen"
+        transactionDetails.directionText = "von"
+      }
+      if (userIsBenefiting) {
+        transactionDetails.color = addition
+        if (transaction.totalAmount >= 0) {
+          transactionDetails.directionText = "von"
+        }
+      } else {
+        transactionDetails.color = subtraction
+      }
+    } else if (transaction.type == 3) {
+      if (transaction.totalAmount >= 0) {
+        transactionDetails.text = "gutgeschrieben"
+        transactionDetails.color = addition
+      } else {
+        transactionDetails.text = "abgezogen"
+        transactionDetails.color = subtraction
+      }
+    }
+
+    return transactionDetails
+  }
+
   async function rescind(transactionId: Tid) {
     await undoTransactionRequest
       .mutateAsync({ transactionId })
       .then(() => {
         animate(animationRef, "success")
       })
-      .catch(() => {
-        animate(animationRef, "failure", "Nicht stornierbar")
+      .catch((e) => {
+        animate(animationRef, "failure", e.message)
       })
     await trpcUtils.transaction.invalidate()
     await trpcUtils.user.invalidate()
+  }
+
+  const isTransactionRevertable = (transaction: Transaction) => {
+    if(transaction.type !== 0) {
+      return false
+    }
+    return transaction.createdAt >= new Date(Date.now() - 1000 * 60 * 15)
   }
 
   return (
@@ -80,58 +139,60 @@ const AccountPage: NextPage = () => {
             <div className="overflow-x-auto">
               <table className="table">
                 <tbody>
-                  {transactionData?.pages[page]?.items.map((transaction) => (
-                    <tr key={transaction.id}>
-                      <td key={`${transaction.id}-td1`}>
-                        <span className="font-bold">{transaction.totalAmount.toFixed(2)}€</span>
-                        {transaction.amountWithoutFees != undefined && (
-                          <span className="pl-2 text-sm font-extralight">
-                            ink.{" "}
-                            {(transaction.totalAmount - transaction.amountWithoutFees).toFixed(2)}€
+                  {transactionData?.pages[page]?.items.map((transaction) => {
+                    const transactionDisplay = transactionDisplayDetails(transaction)
+                    return (
+                      <tr key={transaction.id}>
+                        <td key={`${transaction.id}-td1`}>
+                          <span className="font-bold">
+                            {Math.abs(transaction.totalAmount).toFixed(2)}€
                           </span>
-                        )}
-                      </td>
-                      <td key={`${transaction.id}-td2`}>
-                        <span className="pl-8 font-semibold">
-                          {[...transaction.items, ...transaction.procurementItems]
-                            .map((item) => item.item.name)
-                            .join(", ") || transaction.note}
-                        </span>{" "}
-                      </td>
-                      <td>
-                        {transaction.type == 0 && <span className="text-red-700"> gekauft</span>}
-                        {transaction.type == 1 && <span className="text-green-600"> verkauft</span>}
-                        {transaction.type == 2 && userIsTransactionDestination(transaction) && (
-                          <span className="text-green-600"> überwiesen</span>
-                        )}
-                        {transaction.type == 2 && !userIsTransactionDestination(transaction) && (
-                          <span className="text-red-700"> überwiesen</span>
-                        )}{" "}
-                        {transaction.type == 3 && (
-                          <span className="text-green-600"> gutgeschrieben</span>
-                        )}{" "}
-                        am {transaction.createdAt.toISOString().split("T")[0]}
-                      </td>
-                      <td>
-                        {transaction.type == 2 &&
-                          userIsTransactionDestination(transaction) &&
-                          "von: " + transaction.user.name}
-                        {transaction.type == 2 &&
-                          !userIsTransactionDestination(transaction) &&
-                          "an: " + transaction.moneyDestination?.name}
-                      </td>
-                      <td>
-                        {transaction.createdAt >= new Date(Date.now() - 1000 * 60 * 15) && (
-                          <button
-                            className="btn btn-ghost btn-xs"
-                            onClick={() => rescind(transaction.id)}
-                          >
-                            stornieren
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                          {transaction.amountWithoutFees != undefined && (
+                            <span className="pl-2 text-sm font-extralight">
+                              ink.{" "}
+                              {(transaction.totalAmount - transaction.amountWithoutFees).toFixed(2)}
+                              €
+                            </span>
+                          )}
+                        </td>
+                        <td key={`${transaction.id}-td2`}>
+                          <span className="pl-8 font-semibold">
+                            {[...transaction.items, ...transaction.procurementItems]
+                              .map((item) => item.item.name)
+                              .join(", ") || transaction.note}
+                          </span>{" "}
+                        </td>
+                        <td>
+                          <span className={`${transactionDisplay.color}`}>
+                            {" "}
+                            {transactionDisplay.text}
+                          </span>{" "}
+                          am {transaction.createdAt.toISOString().split("T")[0]}
+                        </td>
+                        <td>
+                          {transactionDisplay.directionText}{" "}
+                          <span className="font-semibold">
+                            {transaction.type == 2 &&
+                              userIsTransactionDestination(transaction) &&
+                              transaction.user.name}
+                            {transaction.type == 2 &&
+                              !userIsTransactionDestination(transaction) &&
+                              transaction.moneyDestination?.name}
+                          </span>
+                        </td>
+                        <td>
+                          {isTransactionRevertable(transaction) && (
+                            <button
+                              className="btn btn-ghost btn-xs"
+                              onClick={() => rescind(transaction.id)}
+                            >
+                              stornieren
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

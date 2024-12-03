@@ -25,7 +25,7 @@ const ClearingAccountOverview = () => {
       }),
     ).catch((e) => {
       console.error(e)
-      animate(animationRef, "failure")
+      animate(animationRef, "failure", e.message)
     })
     setChecked([])
     await trpcUtils.clearingAccount.invalidate()
