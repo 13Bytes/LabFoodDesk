@@ -65,12 +65,13 @@ Create DB Migrations (for production)
 
 ### Open ToDos
 - Automatisches abmelden aller Accounts nach update
-- Android zahlen komma auf tastatur ausgeblendet
+- Android Zahlentastatur Komma ausgeblendet
 - daily backup
 - Revert von Gruppen-Abrechnungen
     - write test-cases
 #### Nice Improvements:
 - Gruppen-split
+- Verrechnungskonten-Auszahlung für Admins auch selbst möglich
 - Gruppen-Kauf auf eine/mehrere Kategorien beschränken
 - Personen einen "Gruppen-Tag" geben
 - Verrechnungkonten global anzeigen

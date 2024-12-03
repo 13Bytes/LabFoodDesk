@@ -1,5 +1,9 @@
 import { type NextPage } from "next"
+import Link from "next/link"
+import { ArrowDownSquareStack } from "~/components/Icons/ArrowDownSquareStack"
+import { ArrowUpSquareStack } from "~/components/Icons/ArrowUpSquareStack"
 import CenteredPage from "~/components/Layout/CenteredPage"
+import GetMoney from "~/components/PageComponents/GetMoney"
 import SendMoney from "~/components/PageComponents/SendMoney"
 import { api } from "~/utils/api"
 
@@ -9,25 +13,21 @@ const SplitPage: NextPage = () => {
   return (
     <>
       <CenteredPage>
-        <h3 className="mt-12 self-start py-2 text-xl">Geld senden</h3>
+        <div className="mt-10 flex flex-row gap-1 py-2 text-xl">
+          <h3>Geld senden</h3> <ArrowUpSquareStack />
+        </div>
         <SendMoney />
 
-        <h3 className="mt-12 self-start text-xl">Übersicht</h3>
+        <div className="mt-10 flex flex-row gap-1 py-2 text-xl">
+          <h3>Geld einfordern</h3> <ArrowDownSquareStack />
+        </div>
+        <GetMoney />
+
+        <h3 className="mb-3 mt-12 text-xl">Übersicht</h3>
         <div className="flex flex-row flex-wrap items-center gap-1">
-          <div className="flex flex-row items-center overflow-x-auto">
-            <table className="table">
-              <tbody>
-                {allBalancesRequest.data?.map((user) => (
-                  <tr key={user.id}>
-                    <th>{user.name}</th>
-                    <td className={`${user.balance >= 0 ? "text-green-600" : "text-red-700"}`}>
-                      {user.balance.toFixed(2)}€
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Link href="/all-users">
+            <button className="btn btn-primary">Kontostände aller User</button>
+          </Link>
         </div>
       </CenteredPage>
     </>
