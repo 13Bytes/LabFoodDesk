@@ -103,6 +103,43 @@ export const transactionRouter = createTRPCRouter({
       ])
     }),
 
+  retractMoney: protectedProcedure
+    .input(z.object({ moneySourceUserId: id, amount: z.number(), note: z.string().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const moneySourceUser = await prisma.user.findUniqueOrThrow({
+        where: { id: input.moneySourceUserId },
+      })
+      const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
+
+      if (input.amount <= 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't request a negative amount - send money instead",
+        })
+      }
+
+      // atomic action:
+      await ctx.prisma.$transaction([
+        ctx.prisma.transaction.create({
+          data: {
+            user: { connect: { id: ctx.session.user.id } },
+            type: 2,
+            moneyDestination: { connect: { id: moneySourceUser.id } },
+            totalAmount: -input.amount,  // send negative amount to retract money but still indicate the executing user
+            note: input.note,
+          },
+        }),
+        ctx.prisma.user.update({
+          where: { id: ctx.session.user.id },
+          data: { balance: { increment: input.amount } },
+        }),
+        ctx.prisma.user.update({
+          where: { id: moneySourceUser.id },
+          data: { balance: { decrement: input.amount } },
+        }),
+      ])
+    }),
+
   sendMoneyProcurement: adminProcedure
     .input(sendMoneyProcurementSchema)
     .mutation(async ({ ctx, input }) => {
