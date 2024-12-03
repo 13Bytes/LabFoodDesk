@@ -39,12 +39,12 @@ const GetMoney = (props: Props) => {
             console.error(error)
             animate(animationRef, "failure", error.message)
           },
-          onSuccess: () => {
+          onSuccess: async () => {
             animate(animationRef, "success")
             setSelectedUser(undefined)
             setAmountSend(1)
             setNoteSend("")
-            void trpcUtils.user.getAllBalances.invalidate()
+            await trpcUtils.user.invalidate()
           },
         }
       )

@@ -106,11 +106,18 @@ const AccountPage: NextPage = () => {
       .then(() => {
         animate(animationRef, "success")
       })
-      .catch(() => {
-        animate(animationRef, "failure", "Nicht stornierbar")
+      .catch((e) => {
+        animate(animationRef, "failure", e.message)
       })
     await trpcUtils.transaction.invalidate()
     await trpcUtils.user.invalidate()
+  }
+
+  const isTransactionRevertable = (transaction: Transaction) => {
+    if(transaction.type !== 0) {
+      return false
+    }
+    return transaction.createdAt >= new Date(Date.now() - 1000 * 60 * 15)
   }
 
   return (
@@ -174,7 +181,7 @@ const AccountPage: NextPage = () => {
                           </span>
                         </td>
                         <td>
-                          {transaction.createdAt >= new Date(Date.now() - 1000 * 60 * 15) && (
+                          {isTransactionRevertable(transaction) && (
                             <button
                               className="btn btn-ghost btn-xs"
                               onClick={() => rescind(transaction.id)}
