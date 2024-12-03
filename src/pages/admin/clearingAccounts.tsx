@@ -103,7 +103,7 @@ const ClearingAccountPage = () => {
               }}
             >
               <option key="dis" value="" className="disabled">
-                Verrechnungskonto wählen: &nbsp;
+                Verrechnungskonto wählen:&nbsp;
               </option>
               {allClearingAccountsRequest.data?.map((account) => {
                 if (account.id !== session.data?.user.id)
