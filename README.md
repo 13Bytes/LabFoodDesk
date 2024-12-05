@@ -68,12 +68,14 @@ Create DB Migrations (for production)
 - Android Zahlentastatur Komma ausgeblendet
 - daily backup
 - Revert von Gruppen-Abrechnungen
-    - write test-cases
+    - fixen
+    - write test-cases (https://www.prisma.io/docs/orm/prisma-client/testing/integration-testing)
 #### Nice Improvements:
+- Gruppenbestellungen von allen schließen, Admins können wieder öffnen
 - Gruppen-split
 - Verrechnungskonten-Auszahlung für Admins auch selbst möglich
 - Gruppen-Kauf auf eine/mehrere Kategorien beschränken
-- Personen einen "Gruppen-Tag" geben
+- Personen einen "Projekt-Tag" geben
 - Verrechnungkonten global anzeigen
 - Bestellungs-Übersicht (wie viele Pizzen von was kaufen)
 - Stats wie oft man was gekauft

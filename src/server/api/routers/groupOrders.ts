@@ -445,7 +445,7 @@ export const grouporderRouter = createTRPCRouter({
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
         include: {
-          orders: { include: { procurementItems: { include: { item: { include: { categories: true } } } }, items: true } },
+          orders: { include: { procurementItems: { include: { item: { include: { categories: { include: { markupDestination: true } } } } } }, items: true, clearingAccount: true } },
           procurementWishes: { include: { items: { include: { categories: true } } } },
         },
       })
@@ -457,7 +457,7 @@ export const grouporderRouter = createTRPCRouter({
         })
       }
 
-      if ((group.orders.filter(order => order.type === 3)).length >= 1) {
+      if ((group.orders.filter(order => order.type === 3)).length > 1) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "GroupOrder should have only one (or zero) compensation transaction!",
@@ -467,7 +467,7 @@ export const grouporderRouter = createTRPCRouter({
       await ctx.prisma.$transaction(async (tx) => {
 
         for (const transaction of group.orders) {
-          if (!transaction.canceled) {
+          if (transaction.canceled) {
             continue
           }
           // Only undo procurement items; regular items should already be fulfilled
