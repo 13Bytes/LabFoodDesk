@@ -54,6 +54,7 @@ export const grouporderRouter = createTRPCRouter({
         ordersCloseAt: "asc",
       },
       include: {
+        closedBy: { select: { id: true, name: true } },
         orders: {
           include: {
             user: { select: { id: true, name: true } },
@@ -94,6 +95,7 @@ export const grouporderRouter = createTRPCRouter({
         ordersCloseAt: "desc",
       },
       include: {
+        revertedBy: { select: { id: true, name: true } },
         orders: {
           include: {
             user: { select: { id: true, name: true } },
@@ -457,7 +459,7 @@ export const grouporderRouter = createTRPCRouter({
         })
       }
 
-      if ((group.orders.filter(order => order.type === 3)).length > 1) {
+      if (group.orders.filter(order => order.type === 3).filter(order => order.canceled === false).length > 1) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "GroupOrder should have only one (or zero) compensation transaction!",
@@ -492,7 +494,10 @@ export const grouporderRouter = createTRPCRouter({
             // undo user-transactions
             await tx.transaction.update({
               where: { id: transaction.id },
-              data: { canceled: true, canceledBy: { connect: { id: ctx.session.user.id } }, note: transaction.note + "(grouporder reverted)" },
+              data: { canceled: true, 
+                canceledBy: { connect: { id: ctx.session.user.id } },
+                canceledDate: new Date(),
+                 note: transaction.note + "(grouporder reverted)" },
             })
             // revert user-balance
             await tx.user.update({
@@ -506,6 +511,8 @@ export const grouporderRouter = createTRPCRouter({
               where: { id: transaction.id },
               data: {
                 canceled: true,
+                canceledBy: { connect: { id: ctx.session.user.id } },
+                canceledDate: new Date(),
               },
             })
             await tx.user.update({

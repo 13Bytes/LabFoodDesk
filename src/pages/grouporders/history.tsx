@@ -56,7 +56,15 @@ const GroupOrdersHistory: NextPage = () => {
                   </div>
 
                   <div>
-                    <div className="flex flex-row flex-wrap gap-2 overflow-x-auto">
+                    <div className="flex flex-col flex-wrap gap-2 overflow-x-auto">
+                      <div>
+                        {!!group.revertedBy && (
+                          <p className="text-sm text-red-500">
+                            davor Storniert von{" "}
+                            <span className="font-bold">{group.revertedBy?.name}</span>
+                          </p>
+                        )}
+                      </div>
                       <h2 className="font-bold">Artikel-Übersicht</h2>
                       <table className="table table-zebra table-sm">
                         <thead>
@@ -93,7 +101,12 @@ const GroupOrdersHistory: NextPage = () => {
                   <div className="flex justify-between px-3">
                     <div className="flex ">
                       {userIsAdmin && (
-                        <button className="btn btn-primary btn-sm mr-4 mt-1" onClick={() => {setAnnulateOrderConfirmation(group.id)}}>
+                        <button
+                          className="btn btn-primary btn-sm mr-4 mt-1"
+                          onClick={() => {
+                            setAnnulateOrderConfirmation(group.id)
+                          }}
+                        >
                           Abrechung annullieren
                         </button>
                       )}
@@ -123,7 +136,7 @@ const GroupOrdersHistory: NextPage = () => {
 
       <ConfirmationModal
         open={!!annulateOrderConfirmation}
-        proceed={async() => await annulateCurrentGroupOrder(annulateOrderConfirmation!)}
+        proceed={async () => await annulateCurrentGroupOrder(annulateOrderConfirmation!)}
         close={() => setAnnulateOrderConfirmation(undefined)}
       >
         <p className="py-4">
