@@ -2,8 +2,8 @@ import { PropsWithChildren } from "react"
 
 type Props = {
   open: boolean
-  close: () => void
-  proceed: () => void
+  close: (() => void) | (() => Promise<void>)
+  proceed: (() => void) | (() => Promise<void>)
 }
 export const ConfirmationModal = (props: PropsWithChildren<Props>) => {
   const onProceedClick = () => {

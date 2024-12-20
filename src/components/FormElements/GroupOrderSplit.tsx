@@ -218,6 +218,7 @@ const GroupOrderSplit = (props: Props) => {
   }
 
   const closeGroupOrderRequest = api.groupOrders.close.useMutation()
+  
   const closeGroupOrder = async () => {
     if (!selectedDestination) {
       setDestinationError(true)
@@ -252,6 +253,7 @@ const GroupOrderSplit = (props: Props) => {
         },
       },
     )
+    await trpcUtils.user.invalidate()
     await trpcUtils.groupOrders.invalidate()
   }
 

@@ -54,22 +54,23 @@ export const categoryRouter = createTRPCRouter({
       }
 
       const oldCategory = await ctx.prisma.category.findUniqueOrThrow({ where: { id } })
+      const {markupDestinationId, itemPurchaseId, ...oldCategoryWithoutMoneyDest} = oldCategory
       const oldCategoryWithInclude = await ctx.prisma.category.findUniqueOrThrow({
         where: { id },
-        include: { markupDestination: true, items: true, procurementItems: true },
+        include: { items: true, procurementItems: true },
       })
 
       await prisma.$transaction([
         prisma.category.create({
           data: {
-            ...oldCategory,
+            ...oldCategoryWithoutMoneyDest,
+            markupDestination:  markupDestination ? { connect: { id: markupDestination } } : undefined,
             id: undefined,
             items: { connect: oldCategoryWithInclude.items.map((item) => ({ id: item.id })) },
             procurementItems: {
               connect: oldCategoryWithInclude.procurementItems.map((item) => ({ id: item.id })),
             },
             ...data,
-            markupDestinationId: oldCategory.markupDestinationId,
           },
         }),
         prisma.category.update({
