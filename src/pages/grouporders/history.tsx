@@ -57,14 +57,6 @@ const GroupOrdersHistory: NextPage = () => {
 
                   <div>
                     <div className="flex flex-col flex-wrap gap-2 overflow-x-auto">
-                      <div>
-                        {!!group.revertedBy && (
-                          <p className="text-sm text-red-500">
-                            davor Storniert von{" "}
-                            <span className="font-bold">{group.revertedBy?.name}</span>
-                          </p>
-                        )}
-                      </div>
                       <h2 className="font-bold">Artikel-Übersicht</h2>
                       <table className="table table-zebra table-sm">
                         <thead>
@@ -113,6 +105,12 @@ const GroupOrdersHistory: NextPage = () => {
                     </div>
                     <div className="flex">
                       <div className="flex flex-col items-end">
+                        {!!group.revertedBy && (
+                          <p className="text-sm text-red-500">
+                            Frühere Abrechnung Storniert von{" "}
+                            <span className="font-bold">{group.revertedBy?.name}</span>
+                          </p>
+                        )}
                         <p className="text-xs">
                           Abgerechnet durch{" "}
                           <span className="font-semibold">{group.closedBy?.name}</span>

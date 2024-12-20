@@ -19,7 +19,7 @@ const GroupOrderDetailView = (props: Props) => {
             <h1 className="text-2xl font-bold">{group.name}</h1>
             {!!group.closedBy && (
               <p className="text-sm text-red-500">
-                Zuletzt Storniert durch <span className="font-bold">{group.closedBy?.name}</span>
+                <span className="font-bold">{group.revertedBy?.name} </span> hat Abrechnung von {group.closedBy?.name} storniert!
               </p>
             )}
             <p className="text-md font-bold">
@@ -50,7 +50,7 @@ const GroupOrderDetailView = (props: Props) => {
                 <div className="flex flex-row flex-wrap gap-2">
                   <table className="table">
                     <tbody>
-                      {group.orders.map((o) => (
+                      {group.orders.filter((o)=>!o.canceled).map((o) => (
                         <tr key={o.id}>
                           <th>{o.user?.name}</th>
                           <td>{o.items.map((mpng) => mpng.item.name)}</td>

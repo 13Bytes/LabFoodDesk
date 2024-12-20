@@ -55,6 +55,7 @@ export const grouporderRouter = createTRPCRouter({
       },
       include: {
         closedBy: { select: { id: true, name: true } },
+        revertedBy: { select: { id: true, name: true } },
         orders: {
           include: {
             user: { select: { id: true, name: true } },
