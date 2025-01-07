@@ -4,9 +4,9 @@ import { calculateFeesPerCategory } from "~/helper/dataProcessing"
 import { id } from "~/helper/zodTypes"
 
 import {
+  adminProcedure,
   createTRPCRouter,
   protectedProcedure,
-  adminProcedure,
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
@@ -45,6 +45,45 @@ export const transactionRouter = createTRPCRouter({
           procurementItems: { include: { item: { include: { categories: true } } } },
           moneyDestination: { select: { name: true } },
           user: { select: { name: true } },
+        },
+        skip: (page - 1) * pageSize,
+        orderBy: {
+          createdAt: "desc",
+        },
+      })
+
+      // Last element is to check if list extends past current page
+      const nextPageExists = items.length > pageSize
+      if (nextPageExists) {
+        items.pop()
+      }
+
+      return {
+        items,
+        pageNumber: page,
+        nextPageExists,
+      }
+    }),
+
+  getAllInfinite: adminProcedure
+    .input(
+      z.object({
+        cursor: z.number().min(1).optional().default(1),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const page = input.cursor ?? 1
+      const items = await ctx.prisma.transaction.findMany({
+        take: pageSize + 1, // get an extra item at the end which we'll use as next cursor
+        where: {
+        },
+        include: {
+          items: { include: { item: { include: { categories: true } } } },
+          procurementItems: { include: { item: { include: { categories: true } } } },
+          moneyDestination: { select: { name: true } },
+          user: { select: { name: true } },
+          canceledBy: { select: { name: true } },
+          clearingAccount: { select: { name: true } },
         },
         skip: (page - 1) * pageSize,
         orderBy: {

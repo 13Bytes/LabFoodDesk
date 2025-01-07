@@ -65,7 +65,6 @@ Create DB Migrations (for production)
 
 ### Open ToDos
 - Bestellung zusammenrechnen aller gleichen Pizzen
-- Übersicht alle Transaktionen für Admins
 - Automatisches abmelden aller Accounts nach update (via changes )
 - Android Zahlentastatur Komma ausgeblendet
 #### Nice Improvements:

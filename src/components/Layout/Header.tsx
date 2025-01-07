@@ -57,6 +57,9 @@ export default function Header() {
               <li>
                 <Link href="/admin/users">User-Verwaltung</Link>
               </li>
+              <li>
+                <Link href="/admin/allTransactions">Alle Transaktionen</Link>
+              </li>
             </ul>
           </details>
         </li>
