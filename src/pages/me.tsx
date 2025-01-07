@@ -10,6 +10,7 @@ const Me: NextPage = () => {
 
   const trpcUtils = api.useUtils()
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
+  const statsRequest = api.user.getStats.useQuery()
 
   type UserFormInput = { name: string }
   const { register: userFormRegister, handleSubmit: handleUserSubmit } = useForm<UserFormInput>()
@@ -53,8 +54,29 @@ const Me: NextPage = () => {
           />
         </div>
       </div>
-      <details className="collapse mt-10">
-        <summary className="collapse-title  text-sm font-thin">Debugging infos</summary>
+
+      <div className="mt-8 flex flex-col items-center" hidden={statsRequest.isLoading}>
+        <p className="mb-2 text-2xl font-semibold">Stats</p>
+        <div className="text-center">
+          <p className="">
+            <span className="font-bold">{statsRequest.data?.prepaidVolumePlacement}. Platz</span>{" "}
+            durch dein aktuelles Guthaben
+          </p>
+          <p className="">
+            Du hast dir für{" "}
+            <span className="font-bold">{statsRequest.data?.totalAmountBought.toFixed(2)}€</span>{" "}
+            Dinge gekauft
+          </p>
+          <p className="">
+            Du hast für LabEats{" "}
+            <span className="font-bold">{statsRequest.data?.totalAmountProcured.toFixed(2)}€</span>{" "}
+            eingekauft
+          </p>
+        </div>
+      </div>
+
+      <details className="collapse mt-10 text-center">
+        <summary className="collapse-title text-sm font-thin">Debugging Infos</summary>
         <div className="collapse-content">
           <p className="font-bold">Debugging sessionData</p>
           {sessionData && JSON.stringify(sessionData)}

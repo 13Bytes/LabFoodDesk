@@ -16,6 +16,36 @@ export const userRouter = createTRPCRouter({
     })
   }),
 
+  getStats: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.prisma.user.findUniqueOrThrow({
+      where: { id: ctx.session.user.id },
+    })
+    const buyTransactions = await ctx.prisma.transaction.findMany({
+      where: {
+        userId: ctx.session.user.id,
+        type: 0,
+        canceled: false,
+      },
+    })
+    const procurementTransactions = await ctx.prisma.transaction.findMany({
+      where: {
+        moneyDestinationUserId: ctx.session.user.id,
+        type: 3,
+        canceled: false,
+      },
+    })
+    const usersWithMoreMoney = await ctx.prisma.user.findMany({
+      where: {
+        balance: { gt: user.balance },
+      },
+    })
+    return {
+      prepaidVolumePlacement: usersWithMoreMoney.length + 1,
+      totalAmountBought: buyTransactions.reduce((acc, curr) => acc + curr.totalAmount, 0),
+      totalAmountProcured: procurementTransactions.reduce((acc, curr) => acc + curr.totalAmount, 0)
+    }
+  }),
+
   getUser: adminProcedure
     .input(z.object({ id }))
     .query(({ ctx, input }) => {

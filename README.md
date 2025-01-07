@@ -64,26 +64,21 @@ Create DB Migrations (for production)
 `npx prisma migrate dev`
 
 ### Open ToDos
-- Automatisches abmelden aller Accounts nach update
+- Bestellung zusammenrechnen aller gleichen Pizzen
+- Übersicht alle Transaktionen für Admins
+- Automatisches abmelden aller Accounts nach update (via changes )
 - Android Zahlentastatur Komma ausgeblendet
-- daily backup
-- Revert von Gruppen-Abrechnungen
-    - fixen
-    - write test-cases (https://www.prisma.io/docs/orm/prisma-client/testing/integration-testing)
 #### Nice Improvements:
-- Gruppenbestellungen von allen schließen, Admins können wieder öffnen
-- Gruppen-split
+- Gruppen-Split
 - Verrechnungskonten-Auszahlung für Admins auch selbst möglich
 - Gruppen-Kauf auf eine/mehrere Kategorien beschränken
 - Personen einen "Projekt-Tag" geben
 - Verrechnungkonten global anzeigen
 - Bestellungs-Übersicht (wie viele Pizzen von was kaufen)
 - Stats wie oft man was gekauft
-- Geld anfordern (kann von anderem User bestätigt werden)
-- Übersicht alle Transaktionen für Admins
 - Vorbesteller-Items mit Fix-Preis (Default-Feld vorausfüllen)
 - Ofengebühr für mehrfachbestellungen optional deaktivieren
-
+- write test-cases (https://www.prisma.io/docs/orm/prisma-client/testing/integration-testing)
 
 ---
 
