@@ -1,16 +1,13 @@
 import type { ProcurementItem } from "@prisma/client"
-import type { inferRouterOutputs } from "@trpc/server"
+import { useSession } from "next-auth/react"
 import { ChangeEvent, useEffect, useRef, useState } from "react"
 import { z } from "zod"
 import { calculateAdditionalPricing } from "~/helper/dataProcessing"
 import { Tid, id } from "~/helper/zodTypes"
-import { api } from "~/utils/api"
-import type { AppRouter } from "../../server/api/root"
+import { RouterOutputs, api } from "~/utils/api"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { ConfirmationModal } from "../General/ConfirmationModal"
-import { useSession } from "next-auth/react"
 
-type RouterOutput = inferRouterOutputs<AppRouter>
 
 type UserItemList = {
   [user: Tid]: {
@@ -39,7 +36,7 @@ export const splitSubmitSchema = z.array(
 type SplitSubmit = z.infer<typeof splitSubmitSchema>
 
 type Item =
-  RouterOutput["groupOrders"]["getInProgress"][number]["procurementWishes"][number]["items"][number]
+  RouterOutputs["groupOrders"]["getInProgress"][number]["procurementWishes"][number]["items"][number]
 
 // only one entry per user id
 type Split = {
@@ -56,7 +53,7 @@ type Split = {
 }
 
 type Props = {
-  group: RouterOutput["groupOrders"]["getInProgress"][number]
+  group: RouterOutputs["groupOrders"]["getInProgress"][number]
 }
 
 const GroupOrderSplit = (props: Props) => {

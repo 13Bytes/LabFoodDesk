@@ -64,7 +64,6 @@ Create DB Migrations (for production)
 `npx prisma migrate dev`
 
 ### Open ToDos
-- Bestellung zusammenrechnen aller gleichen Pizzen
 - Automatisches abmelden aller Accounts nach update (via changes )
 - Android Zahlentastatur Komma ausgeblendet
 #### Nice Improvements:
