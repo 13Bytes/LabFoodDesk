@@ -114,7 +114,8 @@ export default function Header() {
           <div className="text-sm font-thin">
             <li>
               <Link href="/account">
-                <Balance balance={userData?.balance} /></Link>
+                <Balance balance={userData?.balance} />
+              </Link>
             </li> 
           </div>
           <div className="avatar placeholder dropdown dropdown-end ml-3">
