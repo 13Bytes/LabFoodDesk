@@ -112,7 +112,10 @@ export default function Header() {
       {loggedIn && (
         <div className="navbar-end">
           <div className="text-sm font-thin">
-            <Balance balance={userData?.balance} />
+            <li>
+              <Link href="/account">
+                <Balance balance={userData?.balance} /></Link>
+            </li> 
           </div>
           <div className="avatar placeholder dropdown dropdown-end ml-3">
             <div
