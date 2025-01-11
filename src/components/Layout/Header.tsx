@@ -110,7 +110,7 @@ export default function Header() {
 
       {/* UserAccount-Icon (top right) */}
       {loggedIn && (
-        <div className="navbar-end">
+        <div className="navbar-end pe-4">
           <div className="text-sm font-thin">
             <li>
               <Link href="/account">
