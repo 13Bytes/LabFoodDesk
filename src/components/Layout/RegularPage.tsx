@@ -3,7 +3,7 @@ import { PropsWithChildren } from "react"
 export default function RegularPage(props: PropsWithChildren) {
   return (
     <>
-      <div className="py-3 px-10">
+      <div className="p-3">
           {props.children}
       </div>
     </>
