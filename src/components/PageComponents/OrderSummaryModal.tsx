@@ -8,22 +8,24 @@ type Props = {
 }
 const OrderSummaryModal = (props: Props) => {
   const { order } = props
-  const wishList = order.procurementWishes.map((o) => o.items.map((item, id) => item.name))
-  const orderList = order.orders.filter((o) => !o.canceled).map((o) => o.items.map((mpng) => mpng.item.name))
-  const flatWishList = wishList.reduce((acc, val) => acc.concat(val), [])
+  const procurementList = order.procurementWishes.map((o) => o.items.map((item, id) => item.name))
+  const orderList = order.orders
+    .filter((o) => !o.canceled)
+    .map((o) => o.items.map((items) => items.item.name))
+
+  const flatProcurementList = procurementList.reduce((acc, val) => acc.concat(val), [])
   const flatOrderList = orderList.reduce((acc, val) => acc.concat(val), [])
 
-  const wishOccurrences = flatWishList.reduce((acc:{[index:string]: number}, value) => {
+  const procurementOccurrences = flatProcurementList.reduce((acc: { [index: string]: number }, value) => {
+    acc[value] = (acc[value] || 0) + 1
+    return acc
+  }, {})
+  const orderOccurrences = flatOrderList.reduce((acc: { [index: string]: number }, value) => {
     acc[value] = (acc[value] || 0) + 1
     return acc
   }, {})
 
-  const orderOccurrences = flatOrderList.reduce((acc:{[index:string]: number}, value) => {
-    acc[value] = (acc[value] || 0) + 1
-    return acc
-  }, {})
-
-  const totalWishItems = Object.entries(wishOccurrences).reduce((acc, val) => acc + val[1] , 0)
+  const totalProcurementItems = Object.entries(procurementOccurrences).reduce((acc, val) => acc + val[1], 0)
 
   return (
     <Modal
@@ -33,13 +35,21 @@ const OrderSummaryModal = (props: Props) => {
         props.setOpen(false)
       }}
     >
-        <p className="font-bold text-lg my-2">Bestellte Items</p>
-        {Object.entries(wishOccurrences).map(([item, count]) => (<p key={item}>{item}: <span className="font-bold">{count}</span></p>))}
-        <p className="font-light mt-2">Insgesamt gewünscht: {totalWishItems}</p>
-      
-        <p className="font-bold text-lg my-2">Gekaufte Items</p>
-        {Object.entries(orderOccurrences).map(([item, count]) => (<p key={item}>{item}: <span className="font-bold">{count}</span></p>))}
+      <p className="my-2 text-lg font-bold">Angefragte Items</p>
+      {Object.entries(procurementOccurrences).map(([item, count]) => (
+        <p key={item}>
+          {item}: <span className="font-bold">{count}</span>
+        </p>
+      ))}
+      <p className="font-extralight">Insgesamt: {totalProcurementItems}</p>
 
+      <p className="mb-2 mt-7 text-lg font-bold">Gekaufte Items</p>
+      {Object.entries(orderOccurrences).map(([item, count]) => (
+        <p key={item}>
+          {item}: <span className="font-bold">{count}</span>
+        </p>
+      ))}
+      <p className="font-extralight">Insgesamt: {totalProcurementItems}</p>
     </Modal>
   )
 }
