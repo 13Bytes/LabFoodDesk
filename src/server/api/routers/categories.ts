@@ -33,7 +33,6 @@ export const categoryRouter = createTRPCRouter({
       correctedData.markupFixed = 0
       correctedData.markupPercentage = 0
     }
-
     const category = await ctx.prisma.category.create({
       data: {
         markupDestination: entryWithMarkup ? { connect: { id: markupDestination } } : undefined,

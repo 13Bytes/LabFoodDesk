@@ -64,16 +64,17 @@ Create DB Migrations (for production)
 `npx prisma migrate dev`
 
 ### Open ToDos
-- Automatisches abmelden aller Accounts nach update (via changes )
+- Automatisches abmelden aller Accounts nach update (via changes)
 - Android Zahlentastatur Komma ausgeblendet
 #### Nice Improvements:
+- Kaufen: Item-Reihenfolge anpassbar machen
+- Kaufen: nach Kategorien filter / anzeigen
+    - manche Kategorien stadardmäßig ausblenden
 - Gruppen-Split
 - Verrechnungskonten-Auszahlung für Admins auch selbst möglich
 - Gruppen-Kauf auf eine/mehrere Kategorien beschränken
 - Personen einen "Projekt-Tag" geben
 - Verrechnungkonten global anzeigen
-- Bestellungs-Übersicht (wie viele Pizzen von was kaufen)
-- Stats wie oft man was gekauft
 - Vorbesteller-Items mit Fix-Preis (Default-Feld vorausfüllen)
 - Ofengebühr für mehrfachbestellungen optional deaktivieren
 - write test-cases (https://www.prisma.io/docs/orm/prisma-client/testing/integration-testing)
