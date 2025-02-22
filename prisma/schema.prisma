@@ -80,18 +80,19 @@ model GroupOrderTemplate {
 model Category {
     // items must be immutable and shouldn't be deleted (if linked with item) 
     // - create copy instead and set is_active=false
-    id                  String               @id @default(cuid())
-    is_active           Boolean              @default(true)
-    name                String
-    items               Item[]
-    procurementItems    ProcurementItem[]
-    markupDescription   String?
-    markupPercentage    Int? // integer ->  [%] = value/100
-    markupFixed         Float? // in €
-    markupDestination   ClearingAccount?     @relation(fields: [markupDestinationId], references: [id], onDelete: NoAction)
-    markupDestinationId String?
-    ItemPurchase        ItemCategoryMapping? @relation(fields: [itemPurchaseId], references: [id])
-    itemPurchaseId      String?
+    id                     String               @id @default(cuid())
+    is_active              Boolean              @default(true)
+    name                   String
+    defaultUnfoldedDisplay Boolean              @default(true)
+    items                  Item[]
+    procurementItems       ProcurementItem[]
+    markupDescription      String?
+    markupPercentage       Int? // integer ->  [%] = value/100
+    markupFixed            Float? // in €
+    markupDestination      ClearingAccount?     @relation(fields: [markupDestinationId], references: [id], onDelete: NoAction)
+    markupDestinationId    String?
+    ItemPurchase           ItemCategoryMapping? @relation(fields: [itemPurchaseId], references: [id])
+    itemPurchaseId         String?
 }
 
 model ClearingAccount {

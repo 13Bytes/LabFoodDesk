@@ -12,6 +12,7 @@ export const addCategoryValidationSchem = z.object({
   markupPercentage: z.number().min(0).max(100).optional(),
   markupFixed: z.number().nonnegative().optional(),
   markupDestination: z.string().optional(),
+  defaultUnfoldedDisplay: z.boolean().optional(),
 })
 
 type Props = {
@@ -45,6 +46,7 @@ const CategoryForm = (props: Props) => {
     setValue("markupPercentage", category.data?.markupPercentage ?? 0)
     setValue("markupFixed", category.data?.markupFixed ?? 0)
     setValue("markupDescription", category.data?.markupDescription ?? "")
+    setValue("defaultUnfoldedDisplay", category.data?.defaultUnfoldedDisplay ?? true)
   },[category.data, props.id??''])
 
   const onSubmit: SubmitHandler<AddCategoryInput> = async (data) => {
@@ -126,7 +128,7 @@ const CategoryForm = (props: Props) => {
             <select
               className="select-bordered select"
               {...addItemRegister("markupDestination")}
-            >
+              >
               <option key="disbld" value="">
                 Auswählen:
               </option>
@@ -138,6 +140,16 @@ const CategoryForm = (props: Props) => {
             </select>
             {errors.markupDestination && <p>{errors.markupDestination.message}</p>}
           </div>
+
+          <label className="label cursor-pointer">
+            <span className="label-text">Kategorie standardmäßig anzeigen</span>
+            <input
+              type="checkbox"
+              className="checkbox"
+              {...addItemRegister("defaultUnfoldedDisplay")}
+            />
+            {errors.markupFixed && <p>{errors.markupFixed.message}</p>}
+          </label>
 
           <button className="btn-primary btn-block btn mt-1" type="submit">
             {!!props.id ? "Aktualisieren" : "Anlegen"}

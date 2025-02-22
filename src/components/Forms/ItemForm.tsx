@@ -52,7 +52,9 @@ const ItemForm = (props: Props) => {
         categories: currentItem.data?.categories.map((category) => ({
           label: category.name,
           value: category.id,
-        })),
+        }),
+      ),
+      account: currentItem.data?.accountId
       }
       reset(mappedData)
     } else {
@@ -126,6 +128,7 @@ const ItemForm = (props: Props) => {
             </label>
             <select
               className="select select-bordered select-primary"
+              value={currentItem.data?.accountId ?? ""}
               {...addItemRegister("account", { required: true })}
             >
               <option key="disbld" value="">
