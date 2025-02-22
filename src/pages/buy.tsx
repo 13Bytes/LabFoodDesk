@@ -20,7 +20,7 @@ const BuyPage: NextPage = () => {
     const categoryShown = item.categories.some((category) => displayCategories[category.id] == true)
     const searchShown = item.name.toLowerCase().includes(searchString.toLowerCase())
     return (categoryShown && searchShown)
-  })
+  }).sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
 
   const apiBuyOneItem = api.item.buyOneItem.useMutation()
   const buyAction = async (itemID: string) => {
