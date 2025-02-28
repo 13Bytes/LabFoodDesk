@@ -26,6 +26,7 @@ const OrderSummaryModal = (props: Props) => {
   }, {})
 
   const totalProcurementItems = Object.entries(procurementOccurrences).reduce((acc, val) => acc + val[1], 0)
+  const totalOrderItems = Object.entries(orderOccurrences).reduce((acc, val) => acc + val[1], 0)
 
   return (
     <Modal
@@ -49,7 +50,7 @@ const OrderSummaryModal = (props: Props) => {
           {item}: <span className="font-bold">{count}</span>
         </p>
       ))}
-      <p className="font-extralight">Insgesamt: {totalProcurementItems}</p>
+      <p className="font-extralight">Insgesamt: {totalOrderItems}</p>
     </Modal>
   )
 }
