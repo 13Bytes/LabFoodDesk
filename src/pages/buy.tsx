@@ -67,7 +67,13 @@ const BuyPage: NextPage = () => {
         </div>
 
         <div className="mt-3 flex flex-row flex-wrap justify-center gap-2">
-          {allCategoriesRequest.data?.map((category) => (
+          {allCategoriesRequest.data?.filter( 
+            (category) => allItemsRequest.data?.filter( 
+              (item) => {
+                return item.categories.some((item_category) => item_category == category)
+              }).length !== 0 
+            )
+            .map((category) => (
             <div
               className={`badge ${displayCategories[category.id] == true ? "badge-outline" : "badge-ghost"}  cursor-pointer`}
               onClick={() => {
