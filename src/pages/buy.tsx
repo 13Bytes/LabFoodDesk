@@ -1,5 +1,5 @@
 import { type NextPage } from "next"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import ActionResponsePopup, {
   AnimationHandle,
   animate,
@@ -10,17 +10,21 @@ import { api } from "~/utils/api"
 
 const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
-  const allCategoriesRequest = api.category.getAll.useQuery()
+  const allCategoriesRequest = api.category.getAllWithItems.useQuery()
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
   const [searchString, setSearchString] = useState("")
   const [displayCategories, setDisplayCategories] = useState<{ [index: string]: boolean }>({})
 
-  const displayedItems = allItemsRequest.data?.filter((item) => {
-    const categoryShown = item.categories.some((category) => displayCategories[category.id] == true)
-    const searchShown = item.name.toLowerCase().includes(searchString.toLowerCase())
-    return (categoryShown && searchShown)
-  }).sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+  const displayedItems = allItemsRequest.data
+    ?.filter((item) => {
+      const categoryShown = item.categories.some(
+        (category) => displayCategories[category.id] == true,
+      )
+      const searchShown = item.name.toLowerCase().includes(searchString.toLowerCase())
+      return categoryShown && searchShown
+    })
+    .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
 
   const apiBuyOneItem = api.item.buyOneItem.useMutation()
   const buyAction = async (itemID: string) => {
@@ -39,16 +43,20 @@ const BuyPage: NextPage = () => {
     )
   }
 
+  const allRelevantCategories = useMemo(() => {
+    return allCategoriesRequest.data?.filter((category) => {
+      // filter out categories that are not relevant for the buy page (e.g. group orders)
+      return category.items.filter((item) => !item.for_grouporders).length > 0
+    })
+  }, [allCategoriesRequest.data])
+
   useEffect(() => {
-    if (allCategoriesRequest.data) {
-      const categories = allCategoriesRequest.data
-      const displayCategories: { [index: string]: boolean } = {}
-      categories.forEach((category) => {
-        displayCategories[category.id] = category.defaultUnfoldedDisplay
-      })
-      setDisplayCategories(displayCategories)
-    }
-  }, [setDisplayCategories, allCategoriesRequest.data])
+    const displayCategories: { [index: string]: boolean } = {}
+    allRelevantCategories?.forEach((category) => {
+      displayCategories[category.id] = category.defaultUnfoldedDisplay
+    })
+    setDisplayCategories(displayCategories)
+  }, [setDisplayCategories, allRelevantCategories])
 
   return (
     <RegularPage>
@@ -67,7 +75,7 @@ const BuyPage: NextPage = () => {
         </div>
 
         <div className="mt-3 flex flex-row flex-wrap justify-center gap-2">
-          {allCategoriesRequest.data?.map((category) => (
+          {allRelevantCategories?.map((category) => (
             <div
               className={`badge ${displayCategories[category.id] == true ? "badge-outline" : "badge-ghost"}  cursor-pointer`}
               onClick={() => {

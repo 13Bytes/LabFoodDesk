@@ -15,6 +15,14 @@ export const categoryRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.category.findMany({
       where: { is_active: true },
+      include: { items: true, procurementItems: true },
+    })
+  }),
+
+  getAllWithItems: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.category.findMany({
+      where: { is_active: true },
+      include: { items: true, procurementItems: true },
     })
   }),
 
@@ -53,7 +61,7 @@ export const categoryRouter = createTRPCRouter({
       }
 
       const oldCategory = await ctx.prisma.category.findUniqueOrThrow({ where: { id } })
-      const {markupDestinationId, itemPurchaseId, ...oldCategoryWithoutMoneyDest} = oldCategory
+      const { markupDestinationId, itemPurchaseId, ...oldCategoryWithoutMoneyDest } = oldCategory
       const oldCategoryWithInclude = await ctx.prisma.category.findUniqueOrThrow({
         where: { id },
         include: { items: true, procurementItems: true },
@@ -63,7 +71,7 @@ export const categoryRouter = createTRPCRouter({
         prisma.category.create({
           data: {
             ...oldCategoryWithoutMoneyDest,
-            markupDestination:  markupDestination ? { connect: { id: markupDestination } } : undefined,
+            markupDestination: markupDestination ? { connect: { id: markupDestination } } : undefined,
             id: undefined,
             items: { connect: oldCategoryWithInclude.items.map((item) => ({ id: item.id })) },
             procurementItems: {
