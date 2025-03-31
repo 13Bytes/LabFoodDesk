@@ -67,9 +67,8 @@ Create DB Migrations (for production)
 - Automatisches abmelden aller Accounts nach update (via changes)
 - Android Zahlentastatur Komma ausgeblendet
 #### Nice Improvements:
-- Kaufen: Item-Reihenfolge anpassbar machen
-- Kaufen: nach Kategorien filter / anzeigen
-    - manche Kategorien stadardmäßig ausblenden
+- Item-Page: Item-Reihenfolge anpassbar machen (persistent)
+- Item-Page: Kategorie-filter für user persistieren
 - Gruppen-Split
 - Verrechnungskonten-Auszahlung für Admins auch selbst möglich
 - Gruppen-Kauf auf eine/mehrere Kategorien beschränken
