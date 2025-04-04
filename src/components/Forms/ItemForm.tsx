@@ -128,7 +128,6 @@ const ItemForm = (props: Props) => {
             </label>
             <select
               className="select select-bordered select-primary"
-              value={currentItem.data?.accountId ?? ""}
               {...addItemRegister("account", { required: true })}
             >
               <option key="disbld" value="">
