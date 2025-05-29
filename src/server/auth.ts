@@ -50,6 +50,10 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  pages: {
+    signIn: "/",
+    error: "/auth/error",
+  },
   callbacks: {
     session: ({ session, token }) => ({
       ...session,
@@ -70,7 +74,7 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "ASL-Account",
       credentials: {
-        username: { label: "ASL-Username", type: "text", placeholder: "sally.ride"},
+        username: { label: "ASL-Username", type: "text", placeholder: "sally.ride" },
         password: { label: "Password", type: "password", placeholder: "sUper $ecr3t" },
       },
       async authorize(credentials, req) {
@@ -90,6 +94,11 @@ export const authOptions: NextAuthOptions = {
                 user: env.EMAIL_SERVER_USER,
                 pass: env.EMAIL_SERVER_PASSWORD,
               },
+            },
+            sendVerificationRequest(params) {
+              console.log("\n", "=".repeat(40))
+              console.log(`🔗 Verification URL: ${params.url}`)
+              console.log("=".repeat(40), "\n")
             },
             from: env.EMAIL_FROM,
           }),
