@@ -400,10 +400,18 @@ export const grouporderRouter = createTRPCRouter({
         }
         // add money to clearing-account
         for (const cat of allCategorieFees) {
-          await tx.clearingAccount.update({
-            where: { id: cat.balanceAccountId },
-            data: { balance: { increment: cat.charges } },
-          })
+          if(cat.charges !== 0){
+            if(!cat.balanceAccountId) {
+              throw new TRPCError({
+                code: "METHOD_NOT_SUPPORTED",
+                message: "Category has no clearing-account set - please contact an admin and let them fix it",
+              })
+            }
+            await tx.clearingAccount.update({
+              where: { id: cat.balanceAccountId },
+              data: { balance: { increment: cat.charges } },
+            })
+          }
         }
 
         const destinationUser = await ctx.prisma.user.findUniqueOrThrow({

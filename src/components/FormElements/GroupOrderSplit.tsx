@@ -243,7 +243,7 @@ const GroupOrderSplit = (props: Props) => {
       {
         onError: (error) => {
           console.error(error)
-          animate(animationRef, "failure")
+          animate(animationRef, "failure", error.message)
         },
         onSuccess: () => {
           animate(animationRef, "success")
