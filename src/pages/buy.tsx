@@ -166,9 +166,9 @@ const BuyPage: NextPage = () => {
               </div>
               
               <div className="flex flex-wrap gap-2">
-                {allRelevantCategories?.map((category) => {
+                {allRelevantCategories?.filter(i => i.is_active).map((category) => {
                   const isSelected = displayCategories[category.id] === true
-                  const itemCount = category.items.filter(item => !item.for_grouporders).length
+                  const itemCount = category.items.filter(item => !item.for_grouporders && item.is_active).length
                   
                   return (
                     <button
