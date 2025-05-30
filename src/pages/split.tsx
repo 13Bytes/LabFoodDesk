@@ -181,7 +181,7 @@ const SplitPage: NextPage = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {allBalancesRequest.data.slice(0, 12).map((user) => (
                   <div key={user.id} className="bg-base-100 p-3 rounded-lg border border-base-300 hover:border-primary/50 transition-colors">
-                    <div className="text-sm font-medium truncate" title={user.name}>
+                    <div className="text-sm font-medium truncate" title={user.name || undefined}>
                       {user.name}
                     </div>
                     <div className={`font-bold text-sm ${user.balance >= 0 ? "text-success" : "text-error"}`}>
