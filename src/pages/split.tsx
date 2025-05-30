@@ -12,16 +12,8 @@ import { Balance } from "~/components/General/Balance"
 import { api } from "~/utils/api"
 
 const SplitPage: NextPage = () => {
-  const allBalancesRequest = api.user.getAllBalances.useQuery()
   const session = useSession()
   const userData = api.user.getMe.useQuery();
-
-  // Quick stats for the overview
-  const totalPositiveBalance = allBalancesRequest.data?.reduce((sum, user) => 
-    sum + Math.max(0, user.balance), 0) || 0
-  const totalNegativeBalance = allBalancesRequest.data?.reduce((sum, user) => 
-    sum + Math.min(0, user.balance), 0) || 0
-  const userCount = allBalancesRequest.data?.length || 0
 
   return (
     <>
@@ -50,42 +42,6 @@ const SplitPage: NextPage = () => {
             <p className="text-lg text-base-content/70 max-w-2xl mx-auto">
               Verwalte dein Geld einfach und schnell. Sende Geld an Freunde oder fordere ausstehende Beträge ein.
             </p>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="stat bg-base-200 rounded-box shadow-sm">
-              <div className="stat-figure text-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-8 h-8 stroke-current">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-              </div>
-              <div className="stat-title">Aktive Nutzer</div>
-              <div className="stat-value text-primary">{userCount}</div>
-              <div className="stat-desc">im System registriert</div>
-            </div>
-            
-            <div className="stat bg-base-200 rounded-box shadow-sm">
-              <div className="stat-figure text-success">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-8 h-8 stroke-current">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-              </div>
-              <div className="stat-title">Positives Guthaben</div>
-              <div className="stat-value text-success">{totalPositiveBalance.toFixed(2)}€</div>
-              <div className="stat-desc">verfügbares Geld</div>
-            </div>
-            
-            <div className="stat bg-base-200 rounded-box shadow-sm">
-              <div className="stat-figure text-warning">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-8 h-8 stroke-current">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <div className="stat-title">Offene Schulden</div>
-              <div className="stat-value text-warning">{Math.abs(totalNegativeBalance).toFixed(2)}€</div>
-              <div className="stat-desc">noch auszugleichen</div>
-            </div>
           </div>
 
           {/* Main Actions Grid */}
@@ -168,37 +124,6 @@ const SplitPage: NextPage = () => {
               </Link>
             </div>
           </div>
-
-          {/* Recent Activity Preview */}
-          {allBalancesRequest.data && allBalancesRequest.data.length > 0 && (
-            <div className="bg-base-200 rounded-2xl p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-                Kontostand-Übersicht
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {allBalancesRequest.data.slice(0, 12).map((user) => (
-                  <div key={user.id} className="bg-base-100 p-3 rounded-lg border border-base-300 hover:border-primary/50 transition-colors">
-                    <div className="text-sm font-medium truncate" title={user.name || undefined}>
-                      {user.name}
-                    </div>
-                    <div className={`font-bold text-sm ${user.balance >= 0 ? "text-success" : "text-error"}`}>
-                      {user.balance.toFixed(2)}€
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {allBalancesRequest.data.length > 12 && (
-                <div className="mt-4 text-center">
-                  <Link href="/all-users" className="btn btn-ghost btn-sm">
-                    Alle {allBalancesRequest.data.length} Nutzer anzeigen →
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </CenteredPage>
     </>
