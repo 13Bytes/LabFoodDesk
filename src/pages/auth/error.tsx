@@ -3,16 +3,16 @@ import Link from "next/link"
 import CenteredPage from "~/components/Layout/CenteredPage"
 
 const errorMessages: { [key: string]: string } = {
-  Signin: "Versuchen Sie, sich mit einem anderen Account anzumelden.",
-  OAuthSignin: "Versuchen Sie, sich mit einem anderen Account anzumelden.",
-  OAuthCallback: "Versuchen Sie, sich mit einem anderen Account anzumelden.",
-  OAuthCreateAccount: "Versuchen Sie, sich mit einem anderen Account anzumelden.",
-  EmailCreateAccount: "Versuchen Sie, sich mit einem anderen Account anzumelden.",
-  Callback: "Versuchen Sie, sich mit einem anderen Account anzumelden.",
-  OAuthAccountNotLinked: "Um die Sicherheit Ihres Accounts zu bestätigen, melden Sie sich mit demselben Account an, den Sie ursprünglich verwendet haben.",
-  EmailSignin: "Der E-Mail konnte nicht gesendet werden.",
-  CredentialsSignin: "Anmeldung fehlgeschlagen. Überprüfen Sie die angegebenen Daten.",
-  SessionRequired: "Bitte melden Sie sich an, um auf diese Seite zuzugreifen.",
+  Signin: "Versuche dich mit einem anderen Account anzumelden.",
+  OAuthSignin: "Versuche dich mit einem anderen Account anzumelden.",
+  OAuthCallback: "Versuche dich mit einem anderen Account anzumelden.",
+  OAuthCreateAccount: "Versuche dich mit einem anderen Account anzumelden.",
+  EmailCreateAccount: "Versuche dich mit einem anderen Account anzumelden.",
+  Callback: "Versuche dich mit einem anderen Account anzumelden.",
+  OAuthAccountNotLinked: "Um die Sicherheit deines Accounts zu bestätigen, melde dich mit demselben Account an, den du ursprünglich verwendet hast.",
+  EmailSignin: "Die E-Mail konnte nicht gesendet werden.",
+  CredentialsSignin: "Anmeldung fehlgeschlagen. Überprüfe die angegebenen Daten.",
+  SessionRequired: "Bitte melde dich an, um auf diese Seite zuzugreifen.",
   default: "Ein unbekannter Fehler ist aufgetreten.",
 }
 

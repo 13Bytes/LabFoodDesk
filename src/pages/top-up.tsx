@@ -81,7 +81,7 @@ const TopUp: NextPage = () => {
                         <h2 className="text-2xl font-bold text-base-content mb-2">So funktioniert's</h2>
                         <p className="text-base-content/80 leading-relaxed">
                           LabEats funktioniert mit Prepaid-Guthaben. Um dein Konto aufzuladen, 
-                          gib einem der unten aufgeführten Nutzer Geld 
+                          gib einem der unten aufgeführten Nutzern Geld 
                           und bitte sie, den Betrag auf dein Konto zu übertragen.
                         </p>
                       </div>

@@ -39,19 +39,19 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
       if (result?.error) {
         console.error("Login error:", result.error)
         if (result.error === "CredentialsSignin") {
-          setError("Ungültige Anmeldedaten. Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort.")
+          setError("Ungültige Anmeldedaten. Bitte überprüfe deinen Benutzernamen und dein Passwort.")
         } else {
-          setError("Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.")
+          setError("Anmeldung fehlgeschlagen. Bitte versuche es erneut.")
         }
       } else if (result?.ok) {
         const callbackUrl = (router.query.callbackUrl as string) || "/buy"
         await router.push(callbackUrl)
       } else {
-        setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.")
+        setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.")
       }
     } catch (err) {
       console.error("Login exception:", err)
-      setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.")
+      setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.")
     }
   }
 
@@ -65,12 +65,12 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
       })
 
       if (result?.error) {
-        setError("Fehler beim Senden der E-Mail. Bitte versuchen Sie es erneut.")
+        setError("Fehler beim Senden der E-Mail. Bitte versuche es erneut.")
       } else if (result?.ok) {
-        setSuccess("Ein Magic Link wurde an Ihre E-Mail-Adresse gesendet. Bitte überprüfen Sie Ihr Postfach.")
+        setSuccess("Ein Magic Link wurde in der Serverkonsole generiert.")
       }
     } catch (err) {
-      setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.")
+      setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.")
     }
   }
 
@@ -104,7 +104,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
                     className={`tab tab-lg flex-1 ${activeTab === "email" ? "tab-active" : ""}`}
                     onClick={() => setActiveTab("email")}
                   >
-                    Magic Link
+                    Server Konsole
                   </button>
                 </div>
               )}
@@ -188,8 +188,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
                     <InfoIcon />
                     <div>
                       <p className="text-sm">
-                        <strong>Entwicklungsmodus:</strong> Sie können sich mit einem Magic Link anmelden, 
-                        der an Ihre E-Mail-Adresse gesendet wird.
+                        <strong>Entwicklungsmodus:</strong> Du kannst dich mit einem Magic Link anmelden.
                       </p>
                     </div>
                   </div>
@@ -232,7 +231,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
               <div className="text-center">
                 <p className="text-sm text-base-content opacity-70">
                   {isProduction 
-                    ? "Melden Sie sich mit Ihrem ASL-Account an, um auf LabEats zuzugreifen."
+                    ? "Melde dich mit deinem ASL-Account an, um auf LabEats zuzugreifen."
                     : "Im Entwicklungsmodus stehen sowohl ASL-Account als auch Magic Link zur Verfügung."
                   }
                 </p>
@@ -256,7 +255,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
           {/* Footer */}
           <div className="text-center">
             <p className="text-sm text-white opacity-60">
-              © 2024 LabEats - Laboratorium Essen Management System
+              © 2025 LabEats
             </p>
           </div>
         </div>
