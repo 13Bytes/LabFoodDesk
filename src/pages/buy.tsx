@@ -142,7 +142,7 @@ const BuyPage: NextPage = () => {
 
             {/* Category Filters */}
             <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
+              <div className="flex flex-row gap-2 items-center justify-start flex-wrap">
                 <label className="label">
                   <span className="label-text font-medium">Kategorien filtern</span>
                 </label>

@@ -2,6 +2,8 @@ import { useRouter } from "next/router"
 import Link from "next/link"
 import CenteredPage from "~/components/Layout/CenteredPage"
 
+// Errors from NextAuth.js: will be passed as query parameters
+// https://next-auth.js.org/configuration/pages
 const errorMessages: { [key: string]: string } = {
   Signin: "Versuche dich mit einem anderen Account anzumelden.",
   OAuthSignin: "Versuche dich mit einem anderen Account anzumelden.",
@@ -13,7 +15,7 @@ const errorMessages: { [key: string]: string } = {
   EmailSignin: "Die E-Mail konnte nicht gesendet werden.",
   CredentialsSignin: "Anmeldung fehlgeschlagen. Überprüfe die angegebenen Daten.",
   SessionRequired: "Bitte melde dich an, um auf diese Seite zuzugreifen.",
-  default: "Ein unbekannter Fehler ist aufgetreten.",
+  Default: "Ein unbekannter Fehler ist aufgetreten.",
 }
 
 export default function AuthError() {
@@ -24,16 +26,13 @@ export default function AuthError() {
 
   return (
     <CenteredPage>
-      <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="flex items-center justify-center px-4 py-12">
         <div className="max-w-md w-full space-y-8">
           {/* Header */}
           <div className="text-center">
             <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
               <span className="text-primary">Lab</span> Eats
             </h1>
-            <p className="mt-6 text-lg text-white">
-              Anmeldefehler
-            </p>
           </div>
 
           {/* Error Card */}
@@ -66,7 +65,7 @@ export default function AuthError() {
               )}
 
               <div className="card-actions justify-center">
-                <Link href="/auth/signin" className="btn btn-primary">
+                <Link href="/" className="btn btn-primary">
                   Erneut versuchen
                 </Link>
                 <Link href="/" className="btn btn-ghost">
@@ -74,13 +73,6 @@ export default function AuthError() {
                 </Link>
               </div>
             </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center">
-            <p className="text-sm text-white opacity-60">
-              © 2024 LabEats - Laboratorium Essen Management System
-            </p>
           </div>
         </div>
       </div>

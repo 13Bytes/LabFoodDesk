@@ -117,7 +117,7 @@ const Me: NextPage = () => {
               />
               <label className="label">
                 <span className="label-text-alt text-base-content/60">
-                  Dein Benutzername wird aus dem LDAP synchronisiert
+                  Dein Benutzername wird aus dem AD synchronisiert
                 </span>
               </label>
             </div>

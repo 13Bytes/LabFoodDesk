@@ -55,7 +55,7 @@ const SplitPage: NextPage = () => {
                 <div>
                   <h2 className="text-2xl font-bold text-base-content flex items-center gap-2">
                     Geld senden
-                    <div className="badge badge-success badge-sm">Beliebt</div>
+                    <div className="badge badge-success badge-sm">Standard</div>
                   </h2>
                   <p className="text-base-content/70">Überweise Geld schnell und einfach</p>
                 </div>
