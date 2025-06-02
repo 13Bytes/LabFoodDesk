@@ -1,10 +1,25 @@
 import { type GetServerSidePropsContext, type InferGetServerSidePropsType, type NextPage } from "next"
 import { getProviders, getSession, signIn } from "next-auth/react"
 import { useRouter } from "next/router"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { Github, Info, XCircle, CheckCircle } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
+
+// NextAuth error messages (moved from auth/error.tsx)
+const nextAuthErrorMessages: Record<string, string> = {
+  Signin: "Versuche dich mit einem anderen Account anzumelden.",
+  OAuthSignin: "Versuche dich mit einem anderen Account anzumelden.",
+  OAuthCallback: "Versuche dich mit einem anderen Account anzumelden.",
+  OAuthCreateAccount: "Versuche dich mit einem anderen Account anzumelden.",
+  EmailCreateAccount: "Versuche dich mit einem anderen Account anzumelden.",
+  Callback: "Versuche dich mit einem anderen Account anzumelden.",
+  OAuthAccountNotLinked: "Um die Sicherheit deines Accounts zu bestätigen, melde dich mit demselben Account an, den du ursprünglich verwendet hast.",
+  EmailSignin: "Die E-Mail konnte nicht gesendet werden.",
+  CredentialsSignin: "Anmeldung fehlgeschlagen. Überprüfe die angegebenen Daten.",
+  SessionRequired: "Bitte melde dich an, um auf diese Seite zuzugreifen.",
+  default: "Ein unbekannter Fehler ist aufgetreten.",
+}
 
 type FormData = {
   username: string
@@ -21,8 +36,21 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"credentials" | "email">("credentials")
-  const router = useRouter()
-  
+  const router = useRouter()  // Handle NextAuth errors from query parameters
+  useEffect(() => {
+    const { error: authError } = router.query
+    if (authError && typeof authError === 'string') {
+      const errorMessage = nextAuthErrorMessages[authError] || nextAuthErrorMessages.default
+      if (errorMessage) {
+        setError(errorMessage)
+      }
+      
+      // Clear the error from URL to prevent it from persisting
+      const { error: _, ...restQuery } = router.query
+      void router.replace({ pathname: router.pathname, query: restQuery }, undefined, { shallow: true })
+    }
+  }, [router])
+
   const isDevelopment = !isProduction
   const onCredentialsSubmit: SubmitHandler<FormData> = async (data) => {
     setError(null)
