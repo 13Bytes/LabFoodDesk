@@ -95,11 +95,13 @@ export const authOptions: NextAuthOptions = {
                 pass: env.EMAIL_SERVER_PASSWORD,
               },
             },
-            sendVerificationRequest(params) {
-              console.log("\n", "=".repeat(40))
-              console.log(`🔗 Verification URL: ${params.url}`)
-              console.log("=".repeat(40), "\n")
-            },
+            ...(env.EMAIL_DEV_PRINT_TOKEN === "true" && env.NODE_ENV === "development" && {
+              sendVerificationRequest(params) {
+                console.log("\n", "=".repeat(40))
+                console.log(`🔗 Verification URL: ${params.url}`)
+                console.log("=".repeat(40), "\n")
+              },
+            }),
             from: env.EMAIL_FROM,
           }),
         ]
