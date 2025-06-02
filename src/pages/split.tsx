@@ -1,10 +1,7 @@
 import { type NextPage } from "next"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
-import { ArrowDownSquareStack } from "~/components/Icons/ArrowDownSquareStack"
-import { ArrowUpSquareStack } from "~/components/Icons/ArrowUpSquareStack"
-import { SendMoneyIcon } from "~/components/Icons/SendMoneyIcon"
-import { RequestMoneyIcon } from "~/components/Icons/RequestMoneyIcon"
+import { Download, Upload, Send, ArrowDownToLine, ArrowUpRight, ArrowDownLeft } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import GetMoney from "~/components/PageComponents/GetMoney"
 import SendMoney from "~/components/PageComponents/SendMoney"
@@ -47,10 +44,9 @@ const SplitPage: NextPage = () => {
           {/* Main Actions Grid */}
           <div className="grid lg:grid-cols-2 gap-8 mb-8">
             {/* Send Money Section */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
+            <div className="space-y-6">              <div className="flex items-center gap-4">
                 <div className="p-4 bg-gradient-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
-                  <SendMoneyIcon />
+                  <ArrowUpRight className="h-6 w-6" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-base-content flex items-center gap-2">
@@ -64,10 +60,9 @@ const SplitPage: NextPage = () => {
             </div>
 
             {/* Get Money Section */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
+            <div className="space-y-6">              <div className="flex items-center gap-4">
                 <div className="p-4 bg-gradient-to-br from-warning/20 to-warning/5 rounded-2xl border border-warning/20">
-                  <RequestMoneyIcon />
+                  <ArrowDownLeft className="h-6 w-6" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-base-content">Geld einfordern</h2>

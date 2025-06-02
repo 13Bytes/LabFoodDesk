@@ -1,8 +1,6 @@
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
-import { InfoIcon } from "~/components/Icons/InfoIcon"
-import { SendMoneyIcon } from "~/components/Icons/SendMoneyIcon"
-import { PlusIcon } from "~/components/Icons/PlusIcon"
+import { Info, Send, Plus } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import SendMoney from "~/components/PageComponents/SendMoney"
 import { Balance } from "~/components/General/Balance"
@@ -21,9 +19,8 @@ const TopUp: NextPage = () => {
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
           {/* Page Header */}
           <div className="text-center space-y-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border border-primary/20">
-                <PlusIcon />
+            <div className="flex items-center justify-center gap-3">              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border border-primary/20">
+                <Plus className="h-6 w-6" />
               </div>
               <h1 className="text-4xl font-bold text-base-content">Geld einzahlen</h1>
             </div>
@@ -47,9 +44,8 @@ const TopUp: NextPage = () => {
             <div className="space-y-6">
               <div className="card bg-gradient-to-br from-success/10 to-success/5 border border-success/20 shadow-lg">
                 <div className="card-body p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="p-3 bg-gradient-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
-                      <SendMoneyIcon />
+                  <div className="flex items-center gap-4 mb-4">                    <div className="p-3 bg-gradient-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
+                      <Send className="h-6 w-6" />
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold text-base-content">Geld übertragen</h2>
@@ -72,9 +68,8 @@ const TopUp: NextPage = () => {
             <div className="space-y-6">
               <div className="card bg-gradient-to-br from-info/10 to-info/5 border border-info/20 shadow-lg">
                 <div className="card-body p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-gradient-to-br from-info/20 to-info/5 rounded-2xl border border-info/20 flex-shrink-0">
-                      <InfoIcon />
+                  <div className="flex items-start gap-4">                    <div className="p-3 bg-gradient-to-br from-info/20 to-info/5 rounded-2xl border border-info/20 flex-shrink-0">
+                      <Info className="h-6 w-6" />
                     </div>
                     <div className="space-y-4">
                       <div>

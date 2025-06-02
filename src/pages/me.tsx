@@ -2,7 +2,7 @@ import { NextPage } from "next"
 import { useSession } from "next-auth/react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { Balance } from "~/components/General/Balance"
-import { InfoIcon } from "~/components/Icons/InfoIcon"
+import { Info } from "lucide-react"
 import { api } from "~/utils/api"
 
 const Me: NextPage = () => {
@@ -99,9 +99,8 @@ const Me: NextPage = () => {
 
         {/* Profile Information Card */}
         <div className="card bg-base-100 shadow-xl mb-6">
-          <div className="card-body">
-            <h2 className="card-title text-xl mb-4">
-              <InfoIcon />
+          <div className="card-body">            <h2 className="card-title text-xl mb-4">
+              <Info className="h-6 w-6" />
               Profil Information
             </h2>
             <div className="form-control">

@@ -1,12 +1,12 @@
 import { useRef, useState } from "react"
-import { PlusButtonIcon } from "~/components/Icons/PlusButtonIcon"
+import { Plus } from "lucide-react"
 import Modal from "~/components/Layout/Modal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import CategoryForm from "../Forms/CategoryForm"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
-import { TrashIcon } from "../Icons/TrashIcon"
+import { Trash2 } from "lucide-react"
 
 const CategoryOverview = () => {
   const allItemsRequest = api.category.getAll.useQuery()
@@ -44,13 +44,12 @@ const CategoryOverview = () => {
   return (
     <>
       <div className="card flex max-w-6xl flex-col bg-base-200 pt-4 md:px-5">
-        <div className="flex justify-between gap-3 align-bottom ">
-          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
-            <PlusButtonIcon /> Kategorie
+        <div className="flex justify-between gap-3 align-bottom ">          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
+            <Plus className="h-6 w-6" /> Kategorie
           </button>
           {checked.length > 0 && (
             <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
-              <TrashIcon />
+              <Trash2 className="h-6 w-6" />
             </button>
           )}
         </div>

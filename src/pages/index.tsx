@@ -3,8 +3,7 @@ import { getProviders, getSession, signIn } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useState } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
-import { GitHubIcon } from "~/components/Icons/GitHubIcon"
-import { InfoIcon } from "~/components/Icons/InfoIcon"
+import { Github, Info } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 
 type FormData = {
@@ -183,9 +182,8 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
 
               {/* Magic Link Login Form (Development only) */}
               {isDevelopment && activeTab === "email" && (
-                <form onSubmit={handleSubmit(onEmailSubmit)} className="space-y-4">
-                  <div className="alert alert-info">
-                    <InfoIcon />
+                <form onSubmit={handleSubmit(onEmailSubmit)} className="space-y-4">                  <div className="alert alert-info">
+                    <Info className="h-6 w-6" />
                     <div>
                       <p className="text-sm">
                         <strong>Entwicklungsmodus:</strong> Du kannst dich mit einem Magic Link anmelden.
@@ -247,7 +245,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
               rel="noopener noreferrer"
               href="https://github.com/13bytes/labfooddesk"
             >
-              <GitHubIcon />
+              <Github className="h-6 w-6" />
               <span className="ml-2">GitHub</span>
             </a>
           </div>

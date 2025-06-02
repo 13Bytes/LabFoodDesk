@@ -2,7 +2,7 @@ import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { getUsernameLetters } from "~/helper/generalFunctions"
-import { MenueIcon } from "../Icons/MenueIcon"
+import { Menu } from "lucide-react"
 import { Balance } from "../General/Balance"
 import { api } from "~/utils/api"
 
@@ -151,9 +151,8 @@ export default function Header() {
       {loggedIn && (
         <>
           <div className="navbar-start">
-            <div className="dropdown menu-sm">
-              <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden hover:bg-base-300">
-                <MenueIcon />
+            <div className="dropdown menu-sm">              <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden hover:bg-base-300">
+                <Menu className="h-6 w-6" />
               </div>
               <ul
                 tabIndex={0}
