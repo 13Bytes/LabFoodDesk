@@ -5,6 +5,7 @@ import CenteredPage from "~/components/Layout/CenteredPage"
 import SendMoney from "~/components/PageComponents/SendMoney"
 import { Balance } from "~/components/General/Balance"
 import { api } from "~/utils/api"
+import { getUsernameLetters } from "~/helper/generalFunctions"
 
 const TopUp: NextPage = () => {
   const userWithAllowOverdrawRequest = api.user.getAllUsersWithAllowOverdraw.useQuery()
@@ -105,12 +106,11 @@ const TopUp: NextPage = () => {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
                               <span className="text-primary font-semibold text-lg">
-                                {user.name?.charAt(0).toUpperCase()}
+                                {getUsernameLetters(user.name)}
                               </span>
                             </div>
                             <div>
                               <div className="font-semibold text-base-content">{user.name}</div>
-                              <div className="text-sm text-base-content/60">Autorisierter Nutzer</div>
                             </div>
                           </div>
                         </div>

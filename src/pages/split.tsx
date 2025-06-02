@@ -7,6 +7,7 @@ import GetMoney from "~/components/PageComponents/GetMoney"
 import SendMoney from "~/components/PageComponents/SendMoney"
 import { Balance } from "~/components/General/Balance"
 import { api } from "~/utils/api"
+import { getUsernameLetters } from "~/helper/generalFunctions"
 
 const SplitPage: NextPage = () => {
   const session = useSession()
@@ -22,7 +23,7 @@ const SplitPage: NextPage = () => {
               <div className="avatar placeholder">
                 <div className="bg-primary text-primary-content rounded-full w-16 h-16">
                   <span className="text-2xl font-bold">
-                    {session.data?.user.name?.charAt(0).toUpperCase()}
+                    {getUsernameLetters(session.data?.user.name)}
                   </span>
                 </div>
               </div>

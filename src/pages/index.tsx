@@ -242,13 +242,6 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
               <span className="ml-2">GitHub</span>
             </a>
           </div>
-
-          {/* Footer */}
-          <div className="text-center">
-            <p className="text-sm text-white opacity-60">
-              © 2025 LabEats
-            </p>
-          </div>
         </div>
       </div>
     </CenteredPage>

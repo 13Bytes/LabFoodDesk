@@ -4,6 +4,7 @@ import CenteredPage from "~/components/Layout/CenteredPage"
 import { Balance } from "~/components/General/Balance"
 import { Info } from "lucide-react"
 import { api } from "~/utils/api"
+import { getUsernameLetters } from "~/helper/generalFunctions"
 
 const Me: NextPage = () => {
   const { data: sessionData } = useSession()
@@ -18,7 +19,7 @@ const Me: NextPage = () => {
             <div className="avatar placeholder">
               <div className="bg-primary text-primary-content rounded-full w-20 h-20">
                 <span className="text-3xl font-bold">
-                  {userData?.name?.charAt(0).toUpperCase() || "?"}
+                  {getUsernameLetters(userData?.name)}
                 </span>
               </div>
             </div>

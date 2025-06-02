@@ -12,6 +12,7 @@ import { Tid } from "~/helper/zodTypes"
 import { RouterOutputs, api } from "~/utils/api"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { getUsernameLetters } from "~/helper/generalFunctions"
 
 const AccountPage: NextPage = () => {
   const [page, setPage] = React.useState(0)
@@ -141,7 +142,7 @@ const AccountPage: NextPage = () => {
               <div className="avatar placeholder">
                 <div className="h-16 w-16 rounded-full bg-primary text-primary-content">
                   <span className="text-2xl font-bold">
-                    {userData?.name?.charAt(0).toUpperCase()}
+                    {getUsernameLetters(userData?.name)}
                   </span>
                 </div>
               </div>
