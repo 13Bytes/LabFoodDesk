@@ -1,6 +1,6 @@
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
-import { Info, Send, Plus } from "lucide-react"
+import { Info, Send, Plus, Users, AlertTriangle } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import SendMoney from "~/components/PageComponents/SendMoney"
 import { Balance } from "~/components/General/Balance"
@@ -87,11 +87,8 @@ const TopUp: NextPage = () => {
 
               {/* Authorized Users List */}
               <div className="card bg-gradient-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
-                <div className="card-body p-6">
-                  <h3 className="text-xl font-semibold text-base-content mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+                <div className="card-body p-6">                  <h3 className="text-xl font-semibold text-base-content mb-4 flex items-center gap-2">
+                    <Users className="h-5 w-5 text-primary" />
                     Nutzer für Einzahlungen
                   </h3>
                   
@@ -125,11 +122,8 @@ const TopUp: NextPage = () => {
                     </div>
                   )}
 
-                  <div className="mt-6 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                      </svg>
+                  <div className="mt-6 p-4 bg-warning/10 border border-warning/20 rounded-lg">                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <strong className="text-warning">Wichtiger Hinweis:</strong>
                         <p className="text-base-content/70 mt-1">

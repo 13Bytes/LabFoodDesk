@@ -1,6 +1,7 @@
 import { Transaction } from "@prisma/client"
 import { type NextPage } from "next"
 import React, { ComponentProps, useEffect, useRef } from "react"
+import { Info, ClipboardList, ArrowRight, TrendingUp, Users, DollarSign, AlertCircle, Plus, Check, ChevronLeft, ChevronRight, Undo } from "lucide-react"
 import ActionResponsePopup, {
   AnimationHandle,
   animate,
@@ -156,64 +157,23 @@ const AccountPage: NextPage = () => {
           </div>
 
           {/* Quick Stats */}
-          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="stat rounded-box bg-base-200 shadow-sm">
+          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">            <div className="stat rounded-box bg-base-200 shadow-sm">
               <div className="stat-figure text-primary">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  className="inline-block h-8 w-8 stroke-current"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  ></path>
-                </svg>
+                <Users className="inline-block h-8 w-8 stroke-current" />
               </div>
               <div className="stat-title">Aktive Nutzer</div>
               <div className="stat-value text-primary">{userCount}</div>
               <div className="stat-desc">im System registriert</div>
-            </div>
-
-            <div className="stat rounded-box bg-base-200 shadow-sm">
+            </div>            <div className="stat rounded-box bg-base-200 shadow-sm">
               <div className="stat-figure text-success">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  className="inline-block h-8 w-8 stroke-current"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  ></path>
-                </svg>
+                <Plus className="inline-block h-8 w-8 stroke-current" />
               </div>
               <div className="stat-title">Positives Guthaben</div>
               <div className="stat-value text-success">{totalPositiveBalance.toFixed(2)}€</div>
               <div className="stat-desc">verfügbares Geld</div>
-            </div>
-
-            <div className="stat rounded-box bg-base-200 shadow-sm">
+            </div>            <div className="stat rounded-box bg-base-200 shadow-sm">
               <div className="stat-figure text-warning">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  className="inline-block h-8 w-8 stroke-current"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 13l4 4L19 7"
-                  ></path>
-                </svg>
+                <Check className="inline-block h-8 w-8 stroke-current" />
               </div>
               <div className="stat-title">Offene Schulden</div>
               <div className="stat-value text-warning">
@@ -225,22 +185,8 @@ const AccountPage: NextPage = () => {
 
           {/* Transaction History */}
           <div className="card border border-base-300 bg-base-100 shadow-xl">
-            <div className="card-body p-6">
-              <div className="mb-6 flex items-center gap-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
+            <div className="card-body p-6">              <div className="mb-6 flex items-center gap-3">
+                <ClipboardList className="h-6 w-6 text-primary" />
                 <h2 className="text-2xl font-bold text-base-content">Transaktionshistorie</h2>
               </div>
 
@@ -331,26 +277,12 @@ const AccountPage: NextPage = () => {
                             </div>
                           </td>
                           <td>
-                            {isRevertable && (
-                              <button
+                            {isRevertable && (                              <button
                                 className="btn btn-ghost btn-xs transition-colors hover:btn-error"
                                 onClick={() => rescind(transaction.id)}
                                 title="Transaktion stornieren (nur innerhalb von 15 Minuten möglich)"
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                                  />
-                                </svg>
+                                <Undo className="h-4 w-4" />
                                 Stornieren
                               </button>
                             )}
@@ -364,26 +296,12 @@ const AccountPage: NextPage = () => {
 
               {/* Pagination */}
               <div className="mt-6 flex justify-center">
-                <div className="join">
-                  <button
+                <div className="join">                  <button
                     className={`btn join-item ${page < 1 ? "btn-disabled" : "btn-outline"}`}
                     onClick={() => setPage((prev) => prev - 1)}
                     disabled={page < 1}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
+                    <ChevronLeft className="h-4 w-4" />
                     Zurück
                   </button>
                   <button className="btn join-item btn-active pointer-events-none">
@@ -396,23 +314,9 @@ const AccountPage: NextPage = () => {
                       setPage((prev) => prev + 1)
                       return
                     }}
-                    disabled={page >= maxPage}
-                  >
+                    disabled={page >= maxPage}                  >
                     Weiter
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                    <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -421,11 +325,8 @@ const AccountPage: NextPage = () => {
 
           {/* Recent Activity Preview */}
           {allBalancesRequest.data && allBalancesRequest.data.length > 0 && (
-            <div className="bg-base-200 rounded-2xl p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
+            <div className="bg-base-200 rounded-2xl p-6">              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 text-info" />
                 Kontostand-Übersicht
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">

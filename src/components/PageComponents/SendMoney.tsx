@@ -1,5 +1,6 @@
 import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
+import { X, Send } from "lucide-react"
 import ActionResponsePopup, {
   animate,
   type AnimationHandle,
@@ -114,14 +115,10 @@ const SendMoney = (props: Props) => {
               placeholder="Grund für die Überweisung..."
               onChange={(e) => setNoteSend(e.target.value)}
             />
-          </div>
-
-          {/* Error Message */}
+          </div>          {/* Error Message */}
           {errorMessage && (
             <div className="alert alert-error mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <X className="stroke-current shrink-0 h-6 w-6" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -136,9 +133,7 @@ const SendMoney = (props: Props) => {
             onClick={() => sendMoneyAction()}
             disabled={!selectedDestinationUser || amountSend <= 0}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            <Send className="h-5 w-5" />
             {props.sendDescription ?? "Geld senden"}
           </button>
 

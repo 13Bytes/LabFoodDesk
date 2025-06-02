@@ -1,5 +1,6 @@
 import { type NextPage } from "next"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { Search, Package } from "lucide-react"
 import ActionResponsePopup, {
   AnimationHandle,
   animate,
@@ -93,8 +94,7 @@ const BuyPage: NextPage = () => {
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text font-medium">Produktsuche</span>
-                  </label>
-                  <div className="relative">
+                  </label>                  <div className="relative">
                     <input
                       type="text"
                       placeholder="Nach Produkten suchen..."
@@ -102,20 +102,7 @@ const BuyPage: NextPage = () => {
                       value={searchString}
                       onChange={(e) => setSearchString(e.target.value)}
                     />
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
+                    <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50" />
                     {searchString && (
                       <button
                         onClick={clearSearch}
@@ -197,24 +184,10 @@ const BuyPage: NextPage = () => {
 
         {/* Items Grid */}
         <div className="space-y-4">
-          {/* No Results Message */}
-          {displayedItems?.length === 0 && (
+          {/* No Results Message */}          {displayedItems?.length === 0 && (
             <div className="text-center py-12">
               <div className="text-base-content/50 space-y-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-16 w-16 mx-auto opacity-30"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1}
-                    d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-.82-5.5-2.09"
-                  />
-                </svg>
+                <Package className="h-16 w-16 mx-auto opacity-30" />
                 <p className="text-lg">Keine Produkte gefunden</p>
                 <p className="text-sm">
                   {searchString 
