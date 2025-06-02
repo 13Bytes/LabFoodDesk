@@ -31,6 +31,7 @@ const server = z.object({
   EMAIL_SERVER_HOST: z.string().min(1),
   EMAIL_SERVER_PORT: z.string().min(1),
   EMAIL_FROM: z.string().min(1),
+  EMAIL_DEV_PRINT_TOKEN: z.string().optional(),
 })
 
 /**
@@ -64,6 +65,7 @@ const processEnv = {
   EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
   EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
   EMAIL_FROM: process.env.EMAIL_FROM,
+  EMAIL_DEV_PRINT_TOKEN: process.env.EMAIL_DEV_PRINT_TOKEN,
 }
 
 // Don't touch the part below

@@ -49,6 +49,8 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
+  },  pages: {
+    signIn: "/",
   },
   callbacks: {
     session: ({ session, token }) => ({
@@ -70,7 +72,7 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "ASL-Account",
       credentials: {
-        username: { label: "ASL-Username", type: "text", placeholder: "sally.ride"},
+        username: { label: "ASL-Username", type: "text", placeholder: "sally.ride" },
         password: { label: "Password", type: "password", placeholder: "sUper $ecr3t" },
       },
       async authorize(credentials, req) {
@@ -91,6 +93,13 @@ export const authOptions: NextAuthOptions = {
                 pass: env.EMAIL_SERVER_PASSWORD,
               },
             },
+            ...(env.EMAIL_DEV_PRINT_TOKEN === "true" && env.NODE_ENV === "development" && {
+              sendVerificationRequest(params) {
+                console.log("\n", "=".repeat(40))
+                console.log(`🔗 Verification URL: ${params.url}`)
+                console.log("=".repeat(40), "\n")
+              },
+            }),
             from: env.EMAIL_FROM,
           }),
         ]

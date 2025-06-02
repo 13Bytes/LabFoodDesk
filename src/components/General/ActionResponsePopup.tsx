@@ -1,4 +1,5 @@
-import { type RefObject, forwardRef, useImperativeHandle, useState } from "react"
+import { type RefObject, forwardRef, useImperativeHandle, useState, useCallback } from "react"
+import { CheckCircle, AlertCircle } from "lucide-react"
 
 export type AnimationHandle = {
   success: () => void
@@ -8,6 +9,7 @@ export type AnimationHandle = {
 type Status = "failure" | "success"
 
 export const DISPLAY_TIME = 1800
+
 export const animate = (
   handle: RefObject<AnimationHandle>,
   status: Status,
@@ -24,77 +26,53 @@ export const animate = (
 }
 
 const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionResponsePopup(
-  props,
+  _props,
   ref
 ) {
   const [isOpen, setIsOpen] = useState(false)
   const [status, setStatus] = useState<Status>("success")
   const [message, setMessage] = useState<string>("")
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setIsOpen(false)
     setMessage("")
-  }
+  }, [])
 
-  useImperativeHandle(ref, () => ({
-    success() {
-      setStatus("success")
-      setIsOpen(true)
-      setTimeout(() => reset(), DISPLAY_TIME)
-    },
-    failure(errorMessage?: string) {
-      setStatus("failure")
+  const showPopup = useCallback(
+    (newStatus: Status, errorMessage?: string) => {
+      setStatus(newStatus)
       setMessage(errorMessage ?? "")
       setIsOpen(true)
-      setTimeout(() => reset(), DISPLAY_TIME)
+      setTimeout(reset, DISPLAY_TIME)
     },
-  }))
+    [reset]
+  )
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      success: () => showPopup("success"),
+      failure: (errorMessage?: string) => showPopup("failure", errorMessage),
+    }),
+    [showPopup]
+  )
+
+  const IconComponent = status === "success" ? CheckCircle : AlertCircle
+  const iconColorClass = status === "success" ? "text-green-500" : "text-red-500"
 
   return (
     <dialog
-      id="modal_1"
       className={`modal ${
         isOpen ? "modal-open opacity-100" : "opacity-0"
-      } transition-opacity  duration-500`}
+      } transition-opacity duration-500`}
+      aria-hidden={!isOpen}
     >
-      <div className="center modal-box flex max-w-sm flex-shrink flex-col items-center justify-center">
-        {status === "success" && (
-          <svg
-            className="h-40 w-40 text-green-500"
-            width="100%"
-            preserveAspectRatio="xMidYMid meet"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        )}
-        {status === "failure" && (
-          <svg
-            className="h-40 w-40 text-red-500"
-            width="100%"
-            preserveAspectRatio="xMidYMid meet"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
-            />
-          </svg>
-        )}
-        <p className="font-semibold">{message}</p>
+      <div className="modal-box flex max-w-sm flex-shrink flex-col items-center justify-center">
+        <IconComponent
+          className={`h-40 w-40 ${iconColorClass}`}
+          aria-hidden="true"
+        />
+        {message && <p className="font-semibold text-center mt-4">{message}</p>}
       </div>
     </dialog>
   )

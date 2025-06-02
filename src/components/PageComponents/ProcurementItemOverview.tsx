@@ -5,8 +5,7 @@ import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import ProcurementItemForm from "../Forms/ProcurementItemForm"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
-import { PlusIcon } from "../Icons/PlusIcon"
-import { TrashIcon } from "../Icons/TrashIcon"
+import { Plus, Trash2 } from "lucide-react"
 
 const ProcurementItemOverview = () => {
   const allItemsRequest = api.item.getAllProcurementItems.useQuery()
@@ -43,13 +42,12 @@ const ProcurementItemOverview = () => {
   return (
     <>
       <div className="flex max-w-5xl flex-col">
-        <div className="flex justify-between gap-3 align-bottom">
-          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
-            <PlusIcon /> Vorbesteller-Item
+        <div className="flex justify-between gap-3 align-bottom">          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
+            <Plus className="h-6 w-6" /> Vorbesteller-Item
           </button>
           {checked.length > 0 && (
             <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
-              <TrashIcon />
+              <Trash2 className="h-6 w-6" />
             </button>
           )}
         </div>

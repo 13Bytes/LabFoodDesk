@@ -1,90 +1,153 @@
 import { NextPage } from "next"
 import { useSession } from "next-auth/react"
-import type { SubmitHandler } from "react-hook-form"
-import { useForm } from "react-hook-form"
 import CenteredPage from "~/components/Layout/CenteredPage"
+import { Balance } from "~/components/General/Balance"
+import { Info } from "lucide-react"
 import { api } from "~/utils/api"
+import { getUsernameLetters } from "~/helper/generalFunctions"
 
 const Me: NextPage = () => {
-  const { data: sessionData, update: updateSession } = useSession()
-
-  const trpcUtils = api.useUtils()
+  const { data: sessionData } = useSession()
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
   const statsRequest = api.user.getStats.useQuery()
-
-  type UserFormInput = { name: string }
-  const { register: userFormRegister, handleSubmit: handleUserSubmit } = useForm<UserFormInput>()
-
-  // const updateUser = api.user.updateMe.useMutation()
-  // const onUserSubmit: SubmitHandler<UserFormInput> = async (data) => {
-  //   const user = await updateUser.mutateAsync(data)
-
-  //   trpcUtils.user.getMe.setData(undefined, user)
-  //   await updateSession()
-  //   return
-  // }
-
   return (
     <CenteredPage>
-      {/* <form onSubmit={handleUserSubmit(onUserSubmit)} className="gap-1">
-        <p className="font-semibold">Mein Username:</p>
-        <div className="mt-1">
-          <input
-            type="text"
-            disabled 
-            defaultValue={userData?.name || ""}
-            {...userFormRegister("name", { required: true })}
-            className="input-bordered input w-full max-w-xs disabled"
-          />
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Profile Header */}
+        <div className="text-center mb-8">
+          <div className="flex flex-col items-center gap-4 mb-6">
+            <div className="avatar placeholder">
+              <div className="bg-primary text-primary-content rounded-full w-20 h-20">
+                <span className="text-3xl font-bold">
+                  {getUsernameLetters(userData?.name)}
+                </span>
+              </div>
+            </div>
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-base-content mb-2">
+                {userData?.name || "Lade..."}
+              </h1>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-base-content/70">Dein Guthaben:</span>
+                <Balance balance={userData?.balance} />
+              </div>
+            </div>
+          </div>
         </div>
-        <button className="btn mt-1" type="submit">
-          Speichern
-        </button>
-      </form> */}
 
-      <div className="flex flex-col items-center">
-        <p className="font-semibold">Username</p>
-        <div className="mt-1">
-          <input
-            type="text"
-            disabled
-            defaultValue={userData?.name || ""}
-            {...userFormRegister("name", { required: true })}
-            className="disabled input input-bordered w-full max-w-xs"
-          />
+        {/* Stats Cards */}
+        {!statsRequest.isLoading && statsRequest.data && (
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            {/* Ranking Card */}
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body text-center">
+                <div className="text-4xl mb-2">🏆</div>
+                <h3 className="card-title justify-center text-lg">Ranking</h3>
+                <div className="text-3xl font-bold text-primary">
+                  #{statsRequest.data.prepaidVolumePlacement}
+                </div>
+                <p className="text-sm text-base-content/70">
+                  Platz bei Guthaben
+                </p>
+              </div>
+            </div>
+
+            {/* Purchases Card */}
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body text-center">
+                <div className="text-4xl mb-2">🛒</div>
+                <h3 className="card-title justify-center text-lg">Einkäufe</h3>
+                <div className="text-3xl font-bold text-success">
+                  {statsRequest.data.totalAmountBought.toFixed(2)}€
+                </div>
+                <p className="text-sm text-base-content/70">
+                  Dinge gekauft
+                </p>
+              </div>
+            </div>
+
+            {/* Procurement Card */}
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body text-center">
+                <div className="text-4xl mb-2">📦</div>
+                <h3 className="card-title justify-center text-lg">Beschaffung</h3>
+                <div className="text-3xl font-bold text-info">
+                  {statsRequest.data.totalAmountProcured.toFixed(2)}€
+                </div>
+                <p className="text-sm text-base-content/70">
+                  Für LabEats eingekauft
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State for Stats */}
+        {statsRequest.isLoading && (
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="card bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <div className="skeleton h-16 w-16 rounded-full mx-auto mb-4"></div>
+                  <div className="skeleton h-4 w-24 mx-auto mb-2"></div>
+                  <div className="skeleton h-8 w-16 mx-auto mb-2"></div>
+                  <div className="skeleton h-3 w-20 mx-auto"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Profile Information Card */}
+        <div className="card bg-base-100 shadow-xl mb-6">
+          <div className="card-body">            <h2 className="card-title text-xl mb-4">
+              <Info className="h-6 w-6" />
+              Profil Information
+            </h2>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">Benutzername</span>
+              </label>
+              <input
+                type="text"
+                disabled
+                value={userData?.name || ""}
+                className="input input-bordered w-full bg-base-200"
+                placeholder="Lade..."
+              />
+              <label className="label">
+                <span className="label-text-alt text-base-content/60">
+                  Dein Benutzername wird aus dem AD synchronisiert
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Debug Information - Collapsed by default */}
+        <div className="collapse collapse-arrow bg-base-200">
+          <input type="checkbox" />
+          <div className="collapse-title text-sm font-medium">
+            Debug Informationen
+          </div>
+          <div className="collapse-content">
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold mb-2">Session Data:</h4>
+                <pre className="bg-base-100 p-3 rounded text-xs overflow-auto">
+                  {sessionData ? JSON.stringify(sessionData, null, 2) : "Nicht verfügbar"}
+                </pre>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">User Data:</h4>
+                <pre className="bg-base-100 p-3 rounded text-xs overflow-auto">
+                  {userData ? JSON.stringify(userData, null, 2) : "Nicht verfügbar"}
+                </pre>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div className="mt-8 flex flex-col items-center" hidden={statsRequest.isLoading}>
-        <p className="mb-2 text-2xl font-semibold">Stats</p>
-        <div className="text-center">
-          <p className="">
-            <span className="font-bold">{statsRequest.data?.prepaidVolumePlacement}. Platz</span>{" "}
-            durch dein aktuelles Guthaben
-          </p>
-          <p className="">
-            Du hast dir für{" "}
-            <span className="font-bold">{statsRequest.data?.totalAmountBought.toFixed(2)}€</span>{" "}
-            Dinge gekauft
-          </p>
-          <p className="">
-            Du hast für LabEats{" "}
-            <span className="font-bold">{statsRequest.data?.totalAmountProcured.toFixed(2)}€</span>{" "}
-            eingekauft
-          </p>
-        </div>
-      </div>
-
-      <details className="collapse mt-10 text-center">
-        <summary className="collapse-title text-sm font-thin">Debugging Infos</summary>
-        <div className="collapse-content">
-          <p className="font-bold">Debugging sessionData</p>
-          {sessionData && JSON.stringify(sessionData)}
-
-          <p className="font-bold">Debugging userData</p>
-          {userData && JSON.stringify(userData)}
-        </div>
-      </details>
     </CenteredPage>
   )
 }

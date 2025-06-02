@@ -1,13 +1,12 @@
 import { useRef, useState } from "react"
-import { PlusButtonIcon } from "~/components/Icons/PlusButtonIcon"
+import { Plus } from "lucide-react"
 import Modal from "~/components/Layout/Modal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import ItemForm from "../Forms/ItemForm"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
-import { TrashIcon } from "../Icons/TrashIcon"
-import { PlusIcon } from "../Icons/PlusIcon"
+import { Trash2 } from "lucide-react"
 
 const InventoryOverview = () => {
   const allItemsRequest = api.item.getAll.useQuery()
@@ -45,13 +44,12 @@ const InventoryOverview = () => {
   return (
     <>
       <div className="flex max-w-5xl flex-col">
-        <div className="flex justify-between gap-3 align-bottom">
-          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
-            <PlusIcon /> Produkt
+        <div className="flex justify-between gap-3 align-bottom">          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
+            <Plus className="h-6 w-6" /> Produkt
           </button>
           {checked.length > 0 && (
             <button className="btn btn-error btn-sm" onClick={() => deleteSelected()}>
-              <TrashIcon />
+              <Trash2 className="h-6 w-6" />
             </button>
           )}
         </div>
