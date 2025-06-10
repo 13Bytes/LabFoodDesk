@@ -1,18 +1,17 @@
 import { Transaction } from "@prisma/client"
+import { ChevronLeft, ChevronRight, ClipboardList, TrendingUp, Undo } from "lucide-react"
 import { type NextPage } from "next"
+import { useSession } from "next-auth/react"
+import Link from "next/link"
 import React, { ComponentProps, useEffect, useRef } from "react"
-import { Info, ClipboardList, ArrowRight, TrendingUp, Users, DollarSign, AlertCircle, Plus, Check, ChevronLeft, ChevronRight, Undo } from "lucide-react"
 import ActionResponsePopup, {
   AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
-import { Balance } from "~/components/General/Balance"
 import CenteredPage from "~/components/Layout/CenteredPage"
+import { getUsernameLetters } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
 import { RouterOutputs, api } from "~/utils/api"
-import { useSession } from "next-auth/react"
-import Link from "next/link"
-import { getUsernameLetters } from "~/helper/generalFunctions"
 
 const AccountPage: NextPage = () => {
   const [page, setPage] = React.useState(0)
@@ -21,13 +20,6 @@ const AccountPage: NextPage = () => {
   const animationRef = useRef<AnimationHandle>(null)
   const { data: sessionData } = useSession()
   const allBalancesRequest = api.user.getAllBalances.useQuery()
-
-  // Quick stats for the overview
-  const totalPositiveBalance = allBalancesRequest.data?.reduce((sum, user) => 
-    sum + Math.max(0, user.balance), 0) || 0
-  const totalNegativeBalance = allBalancesRequest.data?.reduce((sum, user) => 
-    sum + Math.min(0, user.balance), 0) || 0
-  const userCount = allBalancesRequest.data?.length || 0
 
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
   type TransactionData = RouterOutputs["transaction"]["getMineInfinite"]["items"][0]
@@ -157,36 +149,10 @@ const AccountPage: NextPage = () => {
             </div>
           </div>
 
-          {/* Quick Stats */}
-          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">            <div className="stat rounded-box bg-base-200 shadow-sm">
-              <div className="stat-figure text-primary">
-                <Users className="inline-block h-8 w-8 stroke-current" />
-              </div>
-              <div className="stat-title">Aktive Nutzer</div>
-              <div className="stat-value text-primary">{userCount}</div>
-              <div className="stat-desc">im System registriert</div>
-            </div>            <div className="stat rounded-box bg-base-200 shadow-sm">
-              <div className="stat-figure text-success">
-                <Plus className="inline-block h-8 w-8 stroke-current" />
-              </div>
-              <div className="stat-title">Positives Guthaben</div>
-              <div className="stat-value text-success">{totalPositiveBalance.toFixed(2)}€</div>
-              <div className="stat-desc">verfügbares Geld</div>
-            </div>            <div className="stat rounded-box bg-base-200 shadow-sm">
-              <div className="stat-figure text-warning">
-                <Check className="inline-block h-8 w-8 stroke-current" />
-              </div>
-              <div className="stat-title">Offene Schulden</div>
-              <div className="stat-value text-warning">
-                {Math.abs(totalNegativeBalance).toFixed(2)}€
-              </div>
-              <div className="stat-desc">noch auszugleichen</div>
-            </div>
-          </div>
-
           {/* Transaction History */}
           <div className="card border border-base-300 bg-base-100 shadow-xl">
-            <div className="card-body p-6">              <div className="mb-6 flex items-center gap-3">
+            <div className="card-body p-6">
+              <div className="mb-6 flex items-center gap-3">
                 <ClipboardList className="h-6 w-6 text-primary" />
                 <h2 className="text-2xl font-bold text-base-content">Transaktionshistorie</h2>
               </div>
@@ -237,15 +203,14 @@ const AccountPage: NextPage = () => {
                           <td>
                             <div className="flex flex-col">
                               <span
-                                className={`badge ${
-                                  transaction.type === 0
-                                    ? "badge-error"
-                                    : transaction.type === 1
-                                      ? "badge-success"
-                                      : transaction.type === 2
-                                        ? "badge-info"
-                                        : "badge-warning"
-                                } mb-1 text-xs`}
+                                className={`badge ${transaction.type === 0
+                                  ? "badge-error"
+                                  : transaction.type === 1
+                                    ? "badge-success"
+                                    : transaction.type === 2
+                                      ? "badge-info"
+                                      : "badge-warning"
+                                  } mb-1 text-xs`}
                               >
                                 {transactionDisplay.text}
                               </span>
@@ -278,7 +243,8 @@ const AccountPage: NextPage = () => {
                             </div>
                           </td>
                           <td>
-                            {isRevertable && (                              <button
+                            {isRevertable && (
+                              <button
                                 className="btn btn-ghost btn-xs transition-colors hover:btn-error"
                                 onClick={() => rescind(transaction.id)}
                                 title="Transaktion stornieren (nur innerhalb von 15 Minuten möglich)"
@@ -297,25 +263,26 @@ const AccountPage: NextPage = () => {
 
               {/* Pagination */}
               <div className="mt-6 flex justify-center">
-                <div className="join">                  <button
-                    className={`btn join-item ${page < 1 ? "btn-disabled" : "btn-outline"}`}
+                <div className="join grid grid-cols-3">
+                  <button
+                    className={`btn join-item ${page < 1 ? "btn-disabled" : "btn-outline"} border-r-0`}
                     onClick={() => setPage((prev) => prev - 1)}
                     disabled={page < 1}
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Zurück
                   </button>
-                  <button className="btn join-item btn-active pointer-events-none">
+                  <button className="btn join-item btn-active pointer-events-none border-1 border-base-content">
                     Seite {page + 1}
                   </button>
                   <button
-                    className={`btn join-item ${page >= maxPage ? "btn-disabled" : "btn-outline"}`}
+                    className={`btn join-item ${page >= maxPage ? "btn-disabled" : "btn-outline"} border-l-0`}
                     onClick={() => {
                       void fetchNextPage()
                       setPage((prev) => prev + 1)
                       return
                     }}
-                    disabled={page >= maxPage}                  >
+                    disabled={page >= maxPage}>
                     Weiter
                     <ChevronRight className="h-4 w-4" />
                   </button>
@@ -326,7 +293,8 @@ const AccountPage: NextPage = () => {
 
           {/* Recent Activity Preview */}
           {allBalancesRequest.data && allBalancesRequest.data.length > 0 && (
-            <div className="bg-base-200 rounded-2xl p-6">              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <div className="bg-base-200 rounded-2xl p-6">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                 <TrendingUp className="h-6 w-6 text-info" />
                 Kontostand-Übersicht
               </h3>

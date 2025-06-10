@@ -46,40 +46,42 @@ const SplitPage: NextPage = () => {
           <div className="grid lg:grid-cols-2 gap-8 mb-8">
             {/* Send Money Section */}
             <div className="space-y-6">              <div className="flex items-center gap-4">
-                <div className="p-4 bg-gradient-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
-                  <ArrowUpRight className="h-6 w-6" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-base-content flex items-center gap-2">
-                    Geld senden
-                    <div className="badge badge-success badge-sm">Standard</div>
-                  </h2>
-                  <p className="text-base-content/70">Überweise Geld schnell und einfach</p>
-                </div>
+              <div className="p-4 bg-gradient-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
+                <ArrowUpRight className="h-6 w-6" />
               </div>
+              <div>
+                <h2 className="text-2xl font-bold text-base-content flex items-center gap-2">
+                  Geld senden
+                  <div className="badge badge-success badge-sm">Standard</div>
+                </h2>
+                <p className="text-base-content/70">Überweise Geld schnell und einfach</p>
+              </div>
+            </div>
               <SendMoney />
             </div>
 
             {/* Get Money Section */}
             <div className="space-y-6">              <div className="flex items-center gap-4">
-                <div className="p-4 bg-gradient-to-br from-warning/20 to-warning/5 rounded-2xl border border-warning/20">
-                  <ArrowDownLeft className="h-6 w-6" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-base-content">Geld einfordern</h2>
-                  <p className="text-base-content/70">Fordere ausstehende Beträge ein</p>
-                </div>
+              <div className="p-4 bg-gradient-to-br from-warning/20 to-warning/5 rounded-2xl border border-warning/20">
+                <ArrowDownLeft className="h-6 w-6" />
               </div>
+              <div>
+                <h2 className="text-2xl font-bold text-base-content">Geld einfordern</h2>
+                <p className="text-base-content/70">Fordere ausstehende Beträge ein</p>
+              </div>
+            </div>
               <GetMoney />
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-base-200 rounded-2xl p-6 mb-8">            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <div className="bg-base-200 rounded-2xl p-6 mb-8">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Zap className="h-6 w-6 text-primary" />
               Schnellaktionen
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">              <Link href="/all-users" className="btn btn-outline btn-lg gap-3 justify-start hover:btn-primary transition-all duration-300 group">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <Link href="/all-users" className="btn btn-outline btn-lg gap-3 justify-start hover:btn-primary transition-all duration-300 group">
                 <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
                   <BarChart3 className="h-5 w-5" />
                 </div>
@@ -88,7 +90,7 @@ const SplitPage: NextPage = () => {
                   <div className="text-sm opacity-70">Übersicht aller Nutzer</div>
                 </div>
               </Link>
-                <Link href="/account" className="btn btn-outline btn-lg gap-3 justify-start hover:btn-secondary transition-all duration-300 group">
+              <Link href="/account" className="btn btn-outline btn-lg gap-3 justify-start hover:btn-secondary transition-all duration-300 group">
                 <div className="p-2 bg-secondary/10 rounded-lg group-hover:bg-secondary/20 transition-colors">
                   <User className="h-5 w-5" />
                 </div>
@@ -97,7 +99,7 @@ const SplitPage: NextPage = () => {
                   <div className="text-sm opacity-70">Transaktionshistorie</div>
                 </div>
               </Link>
-                <Link href="/top-up" className="btn btn-outline btn-lg gap-3 justify-start hover:btn-accent transition-all duration-300 group">
+              <Link href="/top-up" className="btn btn-outline btn-lg gap-3 justify-start hover:btn-accent transition-all duration-300 group">
                 <div className="p-2 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
                   <Plus className="h-5 w-5" />
                 </div>
