@@ -9,7 +9,6 @@ import ActionResponsePopup, {
 } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
 import { ConfirmationModal } from "~/components/General/ConfirmationModal"
-import ItemCard from "~/components/General/ItemCard"
 
 import CenteredPage from "~/components/Layout/CenteredPage"
 import Modal from "~/components/Layout/Modal"
@@ -196,15 +195,11 @@ const GroupOrders: NextPage = () => {
       <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-11/12 !max-w-5xl pt-11">
         <div className="flex flex-row flex-wrap justify-center gap-4">
           {groupOrderProcurementItems.data?.map((item) => (
-            <ItemCard
-              id={item.id}
+             <BuyItemCard
               key={item.id}
-              name={item.name}
-              categories={item.categories}
+              item={item}
               buttonName="Wünschen"
-              buyAction={() =>
-                void buyItemInGroupOrder(selectedGroupOrder!, item.id, "procurement")
-              }
+              buyAction={() => void buyItemInGroupOrder(selectedGroupOrder!, item.id, "procurement")}
             />
           ))}
           {groupOrderItems.data?.map((item) => (

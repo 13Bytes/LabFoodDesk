@@ -2,15 +2,18 @@ import type { Category, Item } from "@prisma/client"
 import { calculateAdditionalItemPricing } from "~/helper/dataProcessing"
 
 interface Props {
-  item: Item & {
+  item: (Item & {
     categories: Category[]
-  }
-  buyAction: (itemID: string) => void
+  }) | { categories: Category[], id: string, name: string },
+  buyAction: (itemID: string) => void,
+  buttonName?: string
 }
 
-const BuyItemCard = ({ item, buyAction }: Props) => {
-  const additionalPricing = calculateAdditionalItemPricing(item, item.categories)
-  const totalPrice = item.price + additionalPricing
+const BuyItemCard = ({ item, buyAction, buttonName }: Props) => {
+
+  const itemWithPrice = 'price' in item
+  const additionalPricing = itemWithPrice ? calculateAdditionalItemPricing(item, item.categories) : 0
+  const totalPrice = itemWithPrice ? item.price + additionalPricing : NaN
 
   return (
     <div className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 hover:border-primary/30" key={item.id}>
@@ -21,7 +24,7 @@ const BuyItemCard = ({ item, buyAction }: Props) => {
             <h2 className="card-title text-lg font-semibold leading-tight">
               {item.name}
             </h2>
-            
+
             {/* Categories */}
             {item.categories.length > 0 && (
               <div className="flex flex-wrap gap-1">
@@ -33,25 +36,31 @@ const BuyItemCard = ({ item, buyAction }: Props) => {
               </div>
             )}
           </div>
-          
-          {/* Price section */}
+
           <div className="flex items-baseline space-x-1">
-            <span className="text-xl font-bold text-primary">{totalPrice.toFixed(2)}€</span>
-            {additionalPricing > 0 && (
-              <span className="text-sm text-base-content/60">
-                ({item.price}€ + {additionalPricing.toFixed(2)}€)
-              </span>
-            )}
+            {itemWithPrice &&
+              <>
+                <span className="text-xl font-bold text-primary">{totalPrice.toFixed(2)}€</span>
+                {additionalPricing > 0 && (
+                  <span className="text-sm text-base-content/60">
+                    ({item.price}€ + {additionalPricing.toFixed(2)}€)
+                  </span>
+                )}
+              </>
+            }
+            {!itemWithPrice && 
+              <span className="text-sm text-base-content/60">Preis nach Bestellung</span>
+            }
           </div>
         </div>
 
         {/* Action button */}
         <div className="card-actions mt-4">
-          <button 
-            className="btn btn-primary btn-sm w-full font-medium" 
+          <button
+            className="btn btn-primary btn-sm w-full font-medium"
             onClick={() => buyAction(item.id)}
           >
-            Kaufen
+            {buttonName ?? "Kaufen"}
           </button>
         </div>
       </div>
