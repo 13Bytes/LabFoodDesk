@@ -6,7 +6,8 @@ import { useForm, type SubmitHandler } from "react-hook-form"
 import { Github, Info, XCircle, CheckCircle } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 
-// NextAuth error messages (moved from auth/error.tsx)
+// NextAuth error messages (https://next-auth.js.org/configuration/pages)
+// get thrown as query parameters in the URL
 const nextAuthErrorMessages: Record<string, string> = {
   Signin: "Versuche dich mit einem anderen Account anzumelden.",
   OAuthSignin: "Versuche dich mit einem anderen Account anzumelden.",

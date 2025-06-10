@@ -86,7 +86,7 @@ const GetMoney = (props: Props) => {
             </label>
             <select
               className="select select-bordered select-lg w-full font-medium"
-              value={selectedUser || ""}
+              value={selectedUser ?? ""}
               onChange={(e) => setSelectedUser(e.target.value)}
             >
               <option value="" disabled>

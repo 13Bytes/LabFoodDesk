@@ -1,25 +1,25 @@
+import {
+  Archive,
+  CreditCard,
+  DollarSign,
+  FileText,
+  LogOut,
+  Menu,
+  Package,
+  Plus,
+  Settings,
+  Shield,
+  ShoppingCart,
+  User,
+  UserCog,
+  Users,
+} from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { getUsernameLetters } from "~/helper/generalFunctions"
-import {
-  Menu,
-  ShoppingCart,
-  Users,
-  DollarSign,
-  Plus,
-  Settings,
-  Shield,
-  Package,
-  Archive,
-  CreditCard,
-  UserCog,
-  FileText,
-  User,
-  LogOut,
-} from "lucide-react"
-import { Balance } from "../General/Balance"
 import { api } from "~/utils/api"
+import { Balance } from "../General/Balance"
 
 export default function Header() {
   const { data: sessionData } = useSession()
@@ -29,19 +29,17 @@ export default function Header() {
     enabled: loggedIn,
   })
 
-  // Helper function to determine if a navigation item should be highlighted
   const isActive = (path: string) => {
     // Handle exact matches for root paths
     if (path === "/" && router.pathname === "/") return true
     if (path !== "/" && router.pathname.startsWith(path)) return true
     return false
-  } // Helper function to get navigation item classes with active state
+  }
   const getNavItemClasses = (
     path: string,
     baseClasses = "hover:bg-primary hover:text-primary-content transition-colors duration-200 font-medium",
   ) => {
     if (path === "/top-up") {
-      // Special styling for top-up button - use success colors
       const activeClasses = "bg-success text-success-content"
       return isActive(path) ? `${baseClasses} ${activeClasses}` : baseClasses
     }

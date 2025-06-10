@@ -1,12 +1,11 @@
+import { Plus, Trash2 } from "lucide-react"
 import { useRef, useState } from "react"
-import { Plus } from "lucide-react"
 import Modal from "~/components/Layout/Modal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import ClearingAccountForm from "../Forms/ClearingAccountForm"
 import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
-import { Trash2 } from "lucide-react"
 
 const ClearingAccountOverview = () => {
   const allItemsRequest = api.clearingAccount.getAll.useQuery()
@@ -43,7 +42,8 @@ const ClearingAccountOverview = () => {
   return (
     <>
       <div className="card flex max-w-6xl flex-col bg-base-200 pt-4 md:p-3">
-        <div className="flex flex-row justify-between">          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
+        <div className="flex flex-row justify-between">
+          <button className="btn btn-primary" onClick={() => setOpenAddItemModal(true)}>
             <Plus className="h-6 w-6" /> Verrechnungskonto
           </button>
           {checked.length > 0 && (

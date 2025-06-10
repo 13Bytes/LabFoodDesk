@@ -1,11 +1,11 @@
+import { AlertTriangle, Info, Plus, Send, Users } from "lucide-react"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
-import { Info, Send, Plus, Users, AlertTriangle } from "lucide-react"
+import { Balance } from "~/components/General/Balance"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import SendMoney from "~/components/PageComponents/SendMoney"
-import { Balance } from "~/components/General/Balance"
-import { api } from "~/utils/api"
 import { getUsernameLetters } from "~/helper/generalFunctions"
+import { api } from "~/utils/api"
 
 const TopUp: NextPage = () => {
   const userWithAllowOverdrawRequest = api.user.getAllUsersWithAllowOverdraw.useQuery()
@@ -45,7 +45,8 @@ const TopUp: NextPage = () => {
             <div className="space-y-6">
               <div className="card bg-gradient-to-br from-success/10 to-success/5 border border-success/20 shadow-lg">
                 <div className="card-body p-6">
-                  <div className="flex items-center gap-4 mb-4">                    <div className="p-3 bg-gradient-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
+                  <div className="flex items-center gap-4 mb-4">                    
+                    <div className="p-3 bg-gradient-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
                       <Send className="h-6 w-6" />
                     </div>
                     <div>
@@ -88,7 +89,8 @@ const TopUp: NextPage = () => {
 
               {/* Authorized Users List */}
               <div className="card bg-gradient-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
-                <div className="card-body p-6">                  <h3 className="text-xl font-semibold text-base-content mb-4 flex items-center gap-2">
+                <div className="card-body p-6">
+                  <h3 className="text-xl font-semibold text-base-content mb-4 flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
                     Nutzer für Einzahlungen
                   </h3>
