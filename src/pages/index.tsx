@@ -8,7 +8,7 @@ import CenteredPage from "~/components/Layout/CenteredPage"
 
 // NextAuth error messages (https://next-auth.js.org/configuration/pages)
 // get thrown as query parameters in the URL
-const nextAuthErrorMessages: Record<string, string> = {
+const nextAuthErrorMessages = {
   Signin: "Versuche dich mit einem anderen Account anzumelden.",
   OAuthSignin: "Versuche dich mit einem anderen Account anzumelden.",
   OAuthCallback: "Versuche dich mit einem anderen Account anzumelden.",
@@ -19,7 +19,7 @@ const nextAuthErrorMessages: Record<string, string> = {
   EmailSignin: "Die E-Mail konnte nicht gesendet werden.",
   CredentialsSignin: "Anmeldung fehlgeschlagen. Überprüfe die angegebenen Daten.",
   SessionRequired: "Bitte melde dich an, um auf diese Seite zuzugreifen.",
-  default: "Ein unbekannter Fehler ist aufgetreten.",
+  default: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.",
 }
 
 type FormData = {
@@ -41,11 +41,14 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
   useEffect(() => {
     const { error: authError } = router.query
     if (authError && typeof authError === 'string') {
-      const errorMessage = nextAuthErrorMessages[authError] || nextAuthErrorMessages.default
-      if (errorMessage) {
+      if (Object.keys(nextAuthErrorMessages).includes(authError)) {
+        const errorMessage = nextAuthErrorMessages[authError as keyof typeof nextAuthErrorMessages]
         setError(errorMessage)
       }
-      
+      else {
+        setError(nextAuthErrorMessages.default)
+      }
+
       // Clear the error from URL to prevent it from persisting
       const { error: _, ...restQuery } = router.query
       void router.replace({ pathname: router.pathname, query: restQuery }, undefined, { shallow: true })
@@ -56,7 +59,6 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
   const onCredentialsSubmit: SubmitHandler<FormData> = async (data) => {
     setError(null)
     setSuccess(null)
-    
     try {
       const result = await signIn("credentials", {
         username: data.username,
@@ -64,22 +66,20 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
         redirect: false,
       })
 
-      if (result?.error) {
+      if(result?.ok) {
+        void router.push("/buy")
+      }
+      else if (result?.error) {
         console.error("Login error:", result.error)
         if (result.error === "CredentialsSignin") {
-          setError("Ungültige Anmeldedaten. Bitte überprüfe deinen Benutzernamen und dein Passwort.")
+          setError(nextAuthErrorMessages.CredentialsSignin)
         } else {
-          setError("Anmeldung fehlgeschlagen. Bitte versuche es erneut.")
+          setError(nextAuthErrorMessages.default)
         }
-      } else if (result?.ok) {
-        const callbackUrl = (router.query.callbackUrl as string) || "/buy"
-        await router.push(callbackUrl)
-      } else {
-        setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.")
       }
     } catch (err) {
       console.error("Login exception:", err)
-      setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.")
+      setError(nextAuthErrorMessages.default)
     }
   }
 
@@ -93,12 +93,12 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
       })
 
       if (result?.error) {
-        setError("Fehler beim Senden der E-Mail. Bitte versuche es erneut.")
+        setError(nextAuthErrorMessages.EmailSignin)
       } else if (result?.ok) {
         setSuccess("Ein Magic Link wurde in der Serverkonsole generiert.")
       }
     } catch (err) {
-      setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.")
+      setError(nextAuthErrorMessages.default)
     }
   }
 
@@ -137,12 +137,14 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
                 </div>
               )}
 
-              {/* Error/Success Messages */}              {error && (
+              {/* Error/Success Messages */}
+              {error && (
                 <div className="alert alert-error mb-4">
                   <XCircle className="stroke-current shrink-0 h-6 w-6" />
                   <span>{error}</span>
                 </div>
-              )}              {success && (
+              )}
+              {success && (
                 <div className="alert alert-success mb-4">
                   <CheckCircle className="stroke-current shrink-0 h-6 w-6" />
                   <span>{success}</span>
@@ -160,7 +162,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
                       type="text"
                       placeholder="max.mustermann"
                       className={`input input-bordered w-full ${errors.username ? "input-error" : ""}`}
-                      {...register("username", { 
+                      {...register("username", {
                         required: "Benutzername ist erforderlich",
                         minLength: { value: 2, message: "Benutzername muss mindestens 2 Zeichen lang sein" }
                       })}
@@ -180,7 +182,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
                       type="password"
                       placeholder="••••••••"
                       className={`input input-bordered w-full ${errors.password ? "input-error" : ""}`}
-                      {...register("password", { 
+                      {...register("password", {
                         required: "Passwort ist erforderlich",
                         minLength: { value: 1, message: "Passwort darf nicht leer sein" }
                       })}
@@ -204,7 +206,8 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
 
               {/* Magic Link Login Form (Development only) */}
               {isDevelopment && activeTab === "email" && (
-                <form onSubmit={handleSubmit(onEmailSubmit)} className="space-y-4">                  <div className="alert alert-info">
+                <form onSubmit={handleSubmit(onEmailSubmit)} className="space-y-4">
+                  <div className="alert alert-info">
                     <Info className="h-6 w-6" />
                     <div>
                       <p className="text-sm">
@@ -221,7 +224,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
                       type="email"
                       placeholder="max.mustermann@example.com"
                       className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`}
-                      {...register("email", { 
+                      {...register("email", {
                         required: "E-Mail-Adresse ist erforderlich",
                         pattern: {
                           value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -250,7 +253,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
               <div className="divider"></div>
               <div className="text-center">
                 <p className="text-sm text-base-content opacity-70">
-                  {isProduction 
+                  {isProduction
                     ? "Melde dich mit deinem ASL-Account an, um auf LabEats zuzugreifen."
                     : "Im Entwicklungsmodus stehen sowohl ASL-Account als auch Magic Link zur Verfügung."
                   }
@@ -279,20 +282,17 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getSession(context)
-
-  // If user is already logged in, redirect to the app
+  // If user is already logged in, redirect
   if (session) {
-    const callbackUrl = (context.query.callbackUrl as string) || "/buy"
     return {
       redirect: {
-        destination: callbackUrl,
+        destination: "/buy",
         permanent: false,
       },
     }
   }
 
   const providers = await getProviders()
-
   return {
     props: {
       providers: providers ?? {},
