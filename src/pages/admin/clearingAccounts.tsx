@@ -5,7 +5,7 @@ import ActionResponsePopup, {
   AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
-import { LongRightArrowIcon } from "~/components/Icons/LongRightArrowIcon"
+import { ArrowRight } from "lucide-react"
 import RegularPage from "~/components/Layout/RegularPage"
 import ClearingAccountOverview from "~/components/PageComponents/ClearingAccountOverview"
 import { Tid, id } from "~/helper/zodTypes"
@@ -114,10 +114,8 @@ const ClearingAccountPage = () => {
                   )
                 })}
             </select>
-          </div>
-
-          <div className="mx-3">
-            <LongRightArrowIcon />
+          </div>          <div className="mx-3">
+            <ArrowRight className="h-6 w-6" />
           </div>
 
           <div>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { boolean } from "zod"
 import GrouporderForm from "~/components/Forms/GrouporderForm"
 import GrouporderTemplateForm from "~/components/Forms/GrouporderTemplateForm"
-import { PlusButtonIcon } from "~/components/Icons/PlusButtonIcon"
+import { Plus } from "lucide-react"
 import Modal from "~/components/Layout/Modal"
 import RegularPage from "~/components/Layout/RegularPage"
 import { localStringOptions, weekdays } from "~/helper/globalTypes"
@@ -68,12 +68,11 @@ const InventoryPage = () => {
         <div className="flex flex-col">
           <div className="flex flex-row justify-between">
             <h2 className="text-xl">Wiederholungen</h2>
-            <div className="flex">
-              <button
+            <div className="flex">              <button
                 className="btn btn-square btn-primary btn-sm"
                 onClick={() => setGrouporderTemplateModalOpen(true)}
               >
-                <PlusButtonIcon />
+                <Plus className="h-6 w-6" />
               </button>
             </div>
           </div>
@@ -116,7 +115,7 @@ const InventoryPage = () => {
                 className="btn btn-square btn-primary btn-sm"
                 onClick={() => setAddGrouporderModalOpen(true)}
               >
-                <PlusButtonIcon />
+                <Plus className="h-6 w-6" />
               </button>
             </div>
           </div>

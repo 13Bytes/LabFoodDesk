@@ -26,11 +26,12 @@ const server = z.object({
   LDAP_ADMIN_GROUP: z.string(),
 
   // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
-  EMAIL_SERVER_USER: z.string().min(1),
-  EMAIL_SERVER_PASSWORD: z.string().min(1),
-  EMAIL_SERVER_HOST: z.string().min(1),
-  EMAIL_SERVER_PORT: z.string().min(1),
-  EMAIL_FROM: z.string().min(1),
+  EMAIL_SERVER_USER: z.string().optional(),
+  EMAIL_SERVER_PASSWORD: z.string().optional(),
+  EMAIL_SERVER_HOST: z.string().optional(),
+  EMAIL_SERVER_PORT: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
+  EMAIL_DEV_PRINT_TOKEN: z.string(),
 })
 
 /**
@@ -64,6 +65,7 @@ const processEnv = {
   EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
   EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
   EMAIL_FROM: process.env.EMAIL_FROM,
+  EMAIL_DEV_PRINT_TOKEN: process.env.EMAIL_DEV_PRINT_TOKEN,
 }
 
 // Don't touch the part below
