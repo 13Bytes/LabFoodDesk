@@ -7,7 +7,7 @@ interface Props {
   item: (Item & {
     categories: Category[]
   }) | { categories: Category[], id: string, name: string },
-  buyAction: (itemID: string) => Promise<void>,
+  buyAction: (itemID: string, quantity?: number) => Promise<void>,
   buttonName?: string
   userBalance?: number
 }
@@ -15,12 +15,14 @@ interface Props {
 const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [quantity, setQuantity] = useState(1)
 
   const itemWithPrice = 'price' in item
   const additionalPricing = itemWithPrice ? calculateAdditionalItemPricing(item, item.categories) : 0
   const totalPrice = itemWithPrice ? item.price + additionalPricing : NaN
 
   const handleBuyClick = () => {
+    setQuantity(1) // Reset quantity when opening modal
     setShowConfirmModal(true)
   }
 
@@ -28,12 +30,25 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
     setIsProcessing(true)
     setShowConfirmModal(false)
     try {
-      await buyAction(item.id)
+      await buyAction(item.id, quantity)
     } catch (error) {
       // Error is already handled by parent component
       console.error("Purchase failed:", error)
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  const handleQuantityChange = (delta: number) => {
+    setQuantity(prev => Math.max(1, prev + delta))
+  }
+
+  const handleQuantityInput = (value: string) => {
+    const num = parseInt(value)
+    if (!isNaN(num) && num >= 1) {
+      setQuantity(num)
+    } else if (value === '') {
+      setQuantity(1)
     }
   }
 
@@ -107,16 +122,54 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
           <p className="text-base">
             Möchtest du <span className="font-semibold">{item.name}</span> wirklich kaufen?
           </p>
+          
+          {/* Quantity Selector */}
+          <div className="bg-base-200 rounded-lg p-3">
+            <div className="flex justify-between items-center">
+              <span className="text-base-content/70">Menge:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-circle btn-outline"
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= 1}
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => handleQuantityInput(e.target.value)}
+                  className="input input-bordered input-sm w-20 text-center"
+                />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-circle btn-outline"
+                  onClick={() => handleQuantityChange(1)}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+
           {itemWithPrice && (
             <>
               <div className="bg-base-200 rounded-lg p-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-base-content/70">Preis:</span>
+                  <span className="text-base-content/70">Preis pro Stück:</span>
                   <span className="text-lg font-bold text-primary">{totalPrice.toFixed(2)}€</span>
                 </div>
                 {additionalPricing > 0 && (
                   <div className="text-xs text-base-content/60 mt-1 text-right">
                     (Grundpreis: {item.price}€ + Gebühren: {additionalPricing.toFixed(2)}€)
+                  </div>
+                )}
+                {quantity > 1 && (
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-base-300">
+                    <span className="text-base-content/70">Gesamtpreis:</span>
+                    <span className="text-xl font-bold text-primary">{(totalPrice * quantity).toFixed(2)}€</span>
                   </div>
                 )}
               </div>
@@ -128,8 +181,8 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
                   </div>
                   <div className="flex justify-between items-center mt-2 pt-2 border-t border-base-300">
                     <span className="text-base-content/70">Nach Kauf:</span>
-                    <span className={`text-lg font-bold ${userBalance - totalPrice < 0 ? 'text-error' : 'text-success'}`}>
-                      {(userBalance - totalPrice).toFixed(2)}€
+                    <span className={`text-lg font-bold ${userBalance - (totalPrice * quantity) < 0 ? 'text-error' : 'text-success'}`}>
+                      {(userBalance - (totalPrice * quantity)).toFixed(2)}€
                     </span>
                   </div>
                 </div>

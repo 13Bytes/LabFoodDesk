@@ -30,10 +30,17 @@ const BuyPage: NextPage = () => {
 
   const apiBuyOneItem = api.item.buyOneItem.useMutation()
 
-  const buyAction = async (itemID: string): Promise<void> => {
+  const buyAction = async (itemID: string, quantity: number = 1): Promise<void> => {
     try {
-      await apiBuyOneItem.mutateAsync({ productID: itemID })
-      animate(animationRef, "success", "Erfolgreich gekauft!")
+      // Buy the item multiple times based on quantity
+      for (let i = 0; i < quantity; i++) {
+        await apiBuyOneItem.mutateAsync({ productID: itemID })
+      }
+      
+      const message = quantity === 1 
+        ? "Erfolgreich gekauft!" 
+        : `${quantity}x erfolgreich gekauft!`
+      animate(animationRef, "success", message)
       await trpcUtils.user.invalidate()
     } catch (error: any) {
       console.error(error)
