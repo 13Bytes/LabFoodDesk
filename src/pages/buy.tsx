@@ -12,6 +12,7 @@ import { api } from "~/utils/api"
 const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
   const allCategoriesRequest = api.category.getAllWithItems.useQuery()
+  const userDataRequest = api.user.getMe.useQuery()
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
   const [searchString, setSearchString] = useState("")
@@ -28,20 +29,17 @@ const BuyPage: NextPage = () => {
     .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
 
   const apiBuyOneItem = api.item.buyOneItem.useMutation()
-  const buyAction = async (itemID: string) => {
-    await apiBuyOneItem.mutateAsync(
-      { productID: itemID },
-      {
-        onError: (error) => {
-          console.error(error)
-          animate(animationRef, "failure", error.message)
-        },
-        onSuccess: async () => {
-          animate(animationRef, "success")
-          await trpcUtils.user.invalidate()
-        },
-      },
-    )
+
+  const buyAction = async (itemID: string): Promise<void> => {
+    try {
+      await apiBuyOneItem.mutateAsync({ productID: itemID })
+      animate(animationRef, "success", "Erfolgreich gekauft!")
+      await trpcUtils.user.invalidate()
+    } catch (error: any) {
+      console.error(error)
+      animate(animationRef, "failure", error.message)
+      throw error
+    }
   }
 
   const allRelevantCategories = useMemo(() => {
@@ -202,7 +200,12 @@ const BuyPage: NextPage = () => {
           {displayedItems && displayedItems.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
               {displayedItems.map((item) => (
-                <BuyItemCard key={item.id} item={item} buyAction={buyAction} />
+                <BuyItemCard 
+                  key={item.id} 
+                  item={item} 
+                  buyAction={buyAction}
+                  userBalance={userDataRequest.data?.balance}
+                />
               ))}
             </div>
           )}
