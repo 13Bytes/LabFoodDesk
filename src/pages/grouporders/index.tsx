@@ -199,14 +199,18 @@ const GroupOrders: NextPage = () => {
               key={item.id}
               item={item}
               buttonName="Wünschen"
-              buyAction={() => void buyItemInGroupOrder(selectedGroupOrder!, item.id, "procurement")}
+              buyAction={async () => {
+                await buyItemInGroupOrder(selectedGroupOrder!, item.id, "procurement")
+              }}
             />
           ))}
           {groupOrderItems.data?.map((item) => (
             <BuyItemCard
               key={item.id}
               item={item}
-              buyAction={() => void buyItemInGroupOrder(selectedGroupOrder!, item.id, "order")}
+              buyAction={async () => {
+                await buyItemInGroupOrder(selectedGroupOrder!, item.id, "order")
+              }}
             />
           ))}
         </div>

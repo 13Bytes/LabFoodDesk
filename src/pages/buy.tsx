@@ -12,6 +12,7 @@ import { api } from "~/utils/api"
 const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
   const allCategoriesRequest = api.category.getAllWithItems.useQuery()
+  const userDataRequest = api.user.getMe.useQuery()
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
   const [searchString, setSearchString] = useState("")
@@ -27,21 +28,22 @@ const BuyPage: NextPage = () => {
     })
     .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
 
-  const apiBuyOneItem = api.item.buyOneItem.useMutation()
-  const buyAction = async (itemID: string) => {
-    await apiBuyOneItem.mutateAsync(
-      { productID: itemID },
-      {
-        onError: (error) => {
-          console.error(error)
-          animate(animationRef, "failure", error.message)
-        },
-        onSuccess: async () => {
-          animate(animationRef, "success")
-          await trpcUtils.user.invalidate()
-        },
-      },
-    )
+  const apiBuyOneItemMultiple = api.item.buyItem.useMutation()
+
+  const buyAction = async (itemID: string, quantity: number = 1): Promise<void> => {
+    try {
+      await apiBuyOneItemMultiple.mutateAsync({ productID: itemID, quantity })
+      
+      const message = quantity === 1 
+        ? "Erfolgreich gekauft!" 
+        : `${quantity}x erfolgreich gekauft!`
+      animate(animationRef, "success", message)
+      await trpcUtils.user.invalidate()
+    } catch (error: any) {
+      console.error(error)
+      animate(animationRef, "failure", error.message)
+      throw error
+    }
   }
 
   const allRelevantCategories = useMemo(() => {
@@ -202,7 +204,12 @@ const BuyPage: NextPage = () => {
           {displayedItems && displayedItems.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
               {displayedItems.map((item) => (
-                <BuyItemCard key={item.id} item={item} buyAction={buyAction} />
+                <BuyItemCard 
+                  key={item.id} 
+                  item={item} 
+                  buyAction={buyAction}
+                  userBalance={userDataRequest.data?.balance}
+                />
               ))}
             </div>
           )}

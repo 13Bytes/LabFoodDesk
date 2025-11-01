@@ -4,6 +4,10 @@ type Props = {
   open: boolean
   close: (() => void) | (() => Promise<void>)
   proceed: (() => void) | (() => Promise<void>)
+  title?: string
+  cancelText?: string
+  proceedText?: string
+  proceedButtonClass?: string
 }
 export const ConfirmationModal = (props: PropsWithChildren<Props>) => {
   const onProceedClick = () => {
@@ -23,15 +27,20 @@ export const ConfirmationModal = (props: PropsWithChildren<Props>) => {
               ✕
             </button>
           </form>
-          <h3 className="text-lg font-bold">Weiter?</h3>
-          {props.children}
+          <h3 className="text-lg font-bold mb-4">{props.title ?? "Weiter?"}</h3>
+          <div className="py-2">
+            {props.children}
+          </div>
 
-          <div className="flex flex-row justify-between">
+          <div className="flex flex-row justify-between mt-6">
             <button className="btn btn-outline" onClick={props.close}>
-              Abbrechen
+              {props.cancelText ?? "Abbrechen"}
             </button>
-            <button className="btn btn-primary" onClick={onProceedClick}>
-              Weiter
+            <button 
+              className={props.proceedButtonClass ?? "btn btn-primary"} 
+              onClick={onProceedClick}
+            >
+              {props.proceedText ?? "Weiter"}
             </button>
           </div>
         </div>
