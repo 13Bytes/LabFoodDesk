@@ -28,14 +28,11 @@ const BuyPage: NextPage = () => {
     })
     .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
 
-  const apiBuyOneItem = api.item.buyOneItem.useMutation()
+  const apiBuyOneItemMultiple = api.item.buyItem.useMutation()
 
   const buyAction = async (itemID: string, quantity: number = 1): Promise<void> => {
     try {
-      // Buy the item multiple times based on quantity
-      for (let i = 0; i < quantity; i++) {
-        await apiBuyOneItem.mutateAsync({ productID: itemID })
-      }
+      await apiBuyOneItemMultiple.mutateAsync({ productID: itemID, quantity })
       
       const message = quantity === 1 
         ? "Erfolgreich gekauft!" 

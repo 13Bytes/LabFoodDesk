@@ -11,7 +11,7 @@ import { Tid, id } from "~/helper/zodTypes"
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
-import { buyOneItem } from "./items"
+import { buyItem } from "./items"
 
 const pageSize = 20
 export const grouporderRouter = createTRPCRouter({
@@ -203,7 +203,7 @@ export const grouporderRouter = createTRPCRouter({
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
       })
-      await buyOneItem(ctx.prisma, input.item, ctx.session.user.id, group.id)
+      await buyItem(ctx.prisma, input.item, ctx.session.user.id, group.id)
     }),
 
   procureGroupOrderItem: protectedProcedure

@@ -31,9 +31,6 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
     setShowConfirmModal(false)
     try {
       await buyAction(item.id, quantity)
-    } catch (error) {
-      // Error is already handled by parent component
-      console.error("Purchase failed:", error)
     } finally {
       setIsProcessing(false)
     }
