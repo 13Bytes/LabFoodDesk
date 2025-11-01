@@ -173,15 +173,22 @@ export const itemRouter = createTRPCRouter({
   buyOneItem: protectedProcedure
     .input(z.object({ productID: id }))
     .mutation(async ({ ctx, input }) => {
-      await buyOneItem(ctx.prisma, input.productID, ctx.session.user.id)
+      await buyItem(ctx.prisma, input.productID, ctx.session.user.id)
     }),
+
+  buyItem: protectedProcedure
+    .input(z.object({ productID: id, quantity: z.number().min(1).default(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await buyItem(ctx.prisma, input.productID, ctx.session.user.id, undefined, input.quantity)
+    })
 })
 
-export const buyOneItem = async (
+export const buyItem = async (
   prisma: PrismaClient,
   productID: Tid,
   userId: Tid,
   groupId?: Tid,
+  quantity: number = 1,
 ) => {
   const product = await prisma.item.findUniqueOrThrow({
     where: {
@@ -218,23 +225,25 @@ export const buyOneItem = async (
       transaction["groupOrder"] = { connect: { id: groupId } }
     }
 
-    await tx.transaction.create({
-      data: transaction
-    })
-    await tx.user.update({
-      where: { id: userId },
-      data: { balance: { decrement: totalPrice } },
-    })
-    await tx.clearingAccount.update({
-      where: { id: product.accountId },
-      data: { balance: { increment: product.price } },
-    })
-    for (const cat of fees.categories) {
-      if (cat.clearingAccountId) {
-        await tx.clearingAccount.update({
-          where: { id: cat.clearingAccountId },
-          data: { balance: { increment: cat.charges } },
-        })
+    for (let i = 1; i <= quantity; i++) {
+      await tx.transaction.create({
+        data: transaction
+      })
+      await tx.user.update({
+        where: { id: userId },
+        data: { balance: { decrement: totalPrice } },
+      })
+      await tx.clearingAccount.update({
+        where: { id: product.accountId },
+        data: { balance: { increment: product.price } },
+      })
+      for (const cat of fees.categories) {
+        if (cat.clearingAccountId) {
+          await tx.clearingAccount.update({
+            where: { id: cat.clearingAccountId },
+            data: { balance: { increment: cat.charges } },
+          })
+        }
       }
     }
   })
