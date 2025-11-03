@@ -1,6 +1,7 @@
-import { Plus, Trash2, Wallet, TrendingUp, TrendingDown } from "lucide-react"
+import { Plus, Wallet, TrendingUp, TrendingDown } from "lucide-react"
 import { useRef, useState } from "react"
 import Modal from "~/components/Layout/Modal"
+import AdminSectionCard from "~/components/Layout/AdminSectionCard"
 import { ConfirmationModal } from "~/components/General/ConfirmationModal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
@@ -45,6 +46,30 @@ const ClearingAccountOverview = () => {
     0
   ) ?? 0
 
+  const statistics = [
+    {
+      icon: Wallet,
+      title: "Konten gesamt",
+      value: accountCount,
+      description: "Verrechnungskonten",
+      colorClass: "primary"
+    },
+    {
+      icon: TrendingUp,
+      title: "Guthaben",
+      value: `${positiveBalance.toFixed(2)}€`,
+      description: "Positive Kontostände",
+      colorClass: "success"
+    },
+    {
+      icon: TrendingDown,
+      title: "Schulden",
+      value: `${Math.abs(negativeBalance).toFixed(2)}€`,
+      description: "Negative Kontostände",
+      colorClass: "error"
+    }
+  ]
+
   const Legend = () => (
     <tr>
       <th className="w-12">
@@ -71,95 +96,29 @@ const ClearingAccountOverview = () => {
 
   return (
     <>
-      <div className="card border border-base-300 bg-base-100 shadow-xl">
-        <div className="card-body p-6">
-          {/* Header Section */}
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <Wallet className="h-6 w-6 text-primary" />
-              <h2 className="text-xl sm:text-2xl font-bold text-base-content">Verrechnungskonten</h2>
-            </div>
-            <button
-              className="btn btn-primary gap-2 w-full sm:w-auto"
-              onClick={() => setOpenAddItemModal(true)}
-            >
-              <Plus className="h-5 w-5" />
-              <span className="hidden sm:inline">Verrechnungskonto</span>
-              <span className="sm:hidden">Neues Konto</span>
-            </button>
-          </div>
-
-          {/* Statistics Cards */}
-          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="stat rounded-box bg-base-200 shadow-sm">
-              <div className="stat-figure text-primary">
-                <Wallet className="inline-block h-8 w-8 stroke-current" />
-              </div>
-              <div className="stat-title">Konten gesamt</div>
-              <div className="stat-value text-primary">{accountCount}</div>
-              <div className="stat-desc">Verrechnungskonten</div>
-            </div>
-
-            <div className="stat rounded-box bg-base-200 shadow-sm">
-              <div className="stat-figure text-success">
-                <TrendingUp className="inline-block h-8 w-8 stroke-current" />
-              </div>
-              <div className="stat-title">Guthaben</div>
-              <div className="stat-value text-success">{positiveBalance.toFixed(2)}€</div>
-              <div className="stat-desc">Positive Kontostände</div>
-            </div>
-
-            <div className="stat rounded-box bg-base-200 shadow-sm">
-              <div className="stat-figure text-error">
-                <TrendingDown className="inline-block h-8 w-8 stroke-current" />
-              </div>
-              <div className="stat-title">Schulden</div>
-              <div className="stat-value text-error">{Math.abs(negativeBalance).toFixed(2)}€</div>
-              <div className="stat-desc">Negative Kontostände</div>
-            </div>
-          </div>
-
-          {/* Bulk Actions */}
-          {checked.length > 0 && (
-            <div className="alert alert-info mb-4 shadow-lg">
-              <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{checked.length}</span>
-                  <span>
-                    {checked.length === 1 ? "Konto ausgewählt" : "Konten ausgewählt"}
-                  </span>
-                </div>
-                <button
-                  className="btn btn-error btn-sm gap-2 w-full sm:w-auto"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Löschen
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Loading State */}
-          {allItemsRequest.isLoading && (
-            <div className="flex justify-center py-12">
-              <span className="loading loading-spinner loading-lg text-primary"></span>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!allItemsRequest.isLoading && accountCount === 0 && (
-            <div className="py-12 text-center">
-              <div className="space-y-2 text-base-content/50">
-                <Wallet className="mx-auto h-16 w-16 opacity-30" />
-                <p className="text-lg">Keine Verrechnungskonten vorhanden</p>
-                <p className="text-sm">Erstelle dein erstes Verrechnungskonto mit dem Button oben</p>
-              </div>
-            </div>
-          )}
-
-          {/* Table */}
-          {!allItemsRequest.isLoading && accountCount > 0 && (
+      <AdminSectionCard
+        icon={Wallet}
+        title="Verrechnungskonten"
+        actionButton={{
+          label: "Verrechnungskonto",
+          shortLabel: "Neues Konto",
+          icon: Plus,
+          onClick: () => setOpenAddItemModal(true)
+        }}
+        statistics={statistics}
+        bulkActions={checked.length > 0 ? {
+          selectedCount: checked.length,
+          itemLabel: "Konto",
+          itemLabelPlural: "Konten",
+          onDelete: () => setShowDeleteConfirm(true)
+        } : undefined}
+        isLoading={allItemsRequest.isLoading}
+        isEmpty={accountCount === 0}
+        emptyStateText="Keine Verrechnungskonten vorhanden"
+        emptyStateSubtext="Erstelle dein erstes Verrechnungskonto mit dem Button oben"
+      >
+        {accountCount > 0 && (
+          <>
             <div className="overflow-x-auto rounded-lg border border-base-300">
               <table className="table table-zebra">
                 <thead className="bg-base-200">
@@ -216,10 +175,8 @@ const ClearingAccountOverview = () => {
                 </tbody>
               </table>
             </div>
-          )}
 
-          {/* Total Balance Summary */}
-          {!allItemsRequest.isLoading && accountCount > 0 && (
+            {/* Total Balance Summary */}
             <div className="mt-4 flex justify-end">
               <div className="stats shadow">
                 <div className="stat">
@@ -238,41 +195,41 @@ const ClearingAccountOverview = () => {
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
+      </AdminSectionCard>
 
-        {/* Modals */}
-        <Modal
-          open={openAddItemModal}
-          setOpen={setOpenAddItemModal}
-          closeFunctionCall={() => setDetailView(undefined)}
-        >
-          <ClearingAccountForm
-            finishAction={() => {
-              setOpenAddItemModal(false)
-              setDetailView(undefined)
-            }}
-            id={detailView}
-          />
-        </Modal>
-
-        <ConfirmationModal
-          open={showDeleteConfirm}
-          close={() => setShowDeleteConfirm(false)}
-          proceed={() => {
-            deleteSelected()
-            setShowDeleteConfirm(false)
+      <Modal
+        open={openAddItemModal}
+        setOpen={setOpenAddItemModal}
+        closeFunctionCall={() => setDetailView(undefined)}
+      >
+        <ClearingAccountForm
+          finishAction={() => {
+            setOpenAddItemModal(false)
+            setDetailView(undefined)
           }}
-        >
-          <p className="py-4">
-            Möchtest du wirklich {checked.length}{" "}
-            {checked.length === 1 ? "Verrechnungskonto" : "Verrechnungskonten"} löschen?
-          </p>
-          <p className="text-sm text-warning">
-            Diese Aktion kann nicht rückgängig gemacht werden.
-          </p>
-        </ConfirmationModal>
-      </div>
+          id={detailView}
+        />
+      </Modal>
+
+      <ConfirmationModal
+        open={showDeleteConfirm}
+        close={() => setShowDeleteConfirm(false)}
+        proceed={() => {
+          deleteSelected()
+          setShowDeleteConfirm(false)
+        }}
+      >
+        <p className="py-4">
+          Möchtest du wirklich {checked.length}{" "}
+          {checked.length === 1 ? "Verrechnungskonto" : "Verrechnungskonten"} löschen?
+        </p>
+        <p className="text-sm text-warning">
+          Diese Aktion kann nicht rückgängig gemacht werden.
+        </p>
+      </ConfirmationModal>
+
       <ActionResponsePopup ref={animationRef} />
     </>
   )
