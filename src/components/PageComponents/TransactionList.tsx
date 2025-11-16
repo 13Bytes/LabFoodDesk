@@ -6,6 +6,26 @@ type TransactionData = RouterOutputs["transaction"]["getAllInfinite"]["items"]
 type Props = {
   transactions: TransactionData | undefined
 }
+
+const getTransactionTypeLabel = (type: number): string => {
+  switch (type) {
+    case 0:
+      return "Kauf"
+    case 1:
+      return "Verkauf"
+    case 2:
+      return "Überweisung"
+    case 3:
+      return "Beschaffung"
+    case 90:
+      return "Stornierter Kauf"
+    case 91:
+      return "Stornierter Verkauf"
+    default:
+      return `Unbekannt (${type})`
+  }
+}
+
 const TransactionList = (props: Props) => {
   const Legend = () => (
     <tr>
@@ -47,13 +67,12 @@ const TransactionList = (props: Props) => {
   }
 
   return (
-    <div className="card border border-base-300 bg-base-100 shadow-xl">
-      <div className="card-body p-6">
+    <div className="card border border-base-300 bg-base-100 shadow-xl w-full max-w-xl lg:max-w-full">
+      <div className="card-body p-6 w-full">
         {/* Header Section */}
         <div className="mb-6 flex items-center gap-3">
           <Receipt className="h-6 w-6 text-primary" />
           <h2 className="text-2xl font-bold text-base-content">Transaktionen</h2>
-          <div className="badge badge-primary badge-lg">{props.transactions.length}</div>
         </div>
 
         {/* Desktop Table View */}
@@ -92,7 +111,7 @@ const TransactionList = (props: Props) => {
                       row.canceled ? "badge-error" : "badge-info"
                     }`}>
                       {row.canceled && <Ban className="h-3 w-3 mr-1" />}
-                      {row.type}
+                      {getTransactionTypeLabel(row.type)}
                     </span>
                   </td>
                   <td className="text-right">
@@ -143,11 +162,11 @@ const TransactionList = (props: Props) => {
         </div>
 
         {/* Mobile Card View */}
-        <div className="lg:hidden space-y-4">
+        <div className="lg:hidden space-y-4 flex flex-col w-full">
           {props.transactions.map((row) => (
             <div
               key={row.id}
-              className={`card border border-base-300 bg-base-200 shadow-sm ${
+              className={`card flex flex-grow border border-base-300 bg-base-200 shadow-sm ${
                 row.canceled ? "opacity-60" : ""
               }`}
             >
@@ -167,7 +186,7 @@ const TransactionList = (props: Props) => {
                     row.canceled ? "badge-error" : "badge-info"
                   }`}>
                     {row.canceled && <Ban className="h-3 w-3 mr-1" />}
-                    {row.type}
+                    {getTransactionTypeLabel(row.type)}
                   </span>
                 </div>
 

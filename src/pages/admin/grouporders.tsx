@@ -16,6 +16,7 @@ import RegularPage from "~/components/Layout/RegularPage"
 import { localStringOptions, weekdays } from "~/helper/globalTypes"
 import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
+import StatCard from "~/components/PageComponents/StatsCard"
 
 const GroupOrdersPage = () => {
   const allOrderTemplateRequest = api.groupOrders.getAllTemplates.useQuery()
@@ -140,23 +141,21 @@ const GroupOrdersPage = () => {
 
             {/* Statistics Cards */}
             <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="stat rounded-box bg-base-200 shadow-sm">
-                <div className="stat-figure text-primary">
-                  <Repeat className="inline-block h-8 w-8 stroke-current" />
-                </div>
-                <div className="stat-title">Wiederholungen gesamt</div>
-                <div className="stat-value text-primary">{templateCount}</div>
-                <div className="stat-desc">Konfigurierte Templates</div>
-              </div>
+              <StatCard
+                icon={Repeat}
+                title="Wiederholungen gesamt"
+                value={templateCount}
+                description="Konfigurierte Templates"
+                colorClass="primary"
+              />
 
-              <div className="stat rounded-box bg-base-200 shadow-sm">
-                <div className="stat-figure text-success">
-                  <CheckCircle className="inline-block h-8 w-8 stroke-current" />
-                </div>
-                <div className="stat-title">Aktiv</div>
-                <div className="stat-value text-success">{activeTemplates}</div>
-                <div className="stat-desc">Aktive Templates</div>
-              </div>
+              <StatCard
+                icon={CheckCircle}
+                title="Aktiv"
+                value={activeTemplates}
+                description="Aktive Templates"
+                colorClass="success"
+              />
             </div>
 
             {/* Loading State */}
@@ -247,42 +246,30 @@ const GroupOrdersPage = () => {
             </div>
 
             {/* Statistics Cards */}
-            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
-              <div className="stat rounded-box bg-base-200 shadow-sm">
-                <div className="stat-figure text-primary">
-                  <Users className="inline-block h-8 w-8 stroke-current" />
-                </div>
-                <div className="stat-title">Bestellungen</div>
-                <div className="stat-value text-primary">{totalOrders}</div>
-                <div className="stat-desc">Auf dieser Seite</div>
-              </div>
+            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+              <StatCard
+                icon={Calendar}
+                title="Offen"
+                value={openOrders}
+                description="In Bestellung"
+                colorClass="info"
+              />
 
-              <div className="stat rounded-box bg-base-200 shadow-sm">
-                <div className="stat-figure text-info">
-                  <Calendar className="inline-block h-8 w-8 stroke-current" />
-                </div>
-                <div className="stat-title">Offen</div>
-                <div className="stat-value text-info">{openOrders}</div>
-                <div className="stat-desc">In Bestellung</div>
-              </div>
+              <StatCard
+                icon={DollarSign}
+                title="Abrechnung ausstehen"
+                value={paidOrders}
+                description="Noch nicht abgeschlossen"
+                colorClass="warning"
+              />
 
-              <div className="stat rounded-box bg-base-200 shadow-sm">
-                <div className="stat-figure text-warning">
-                  <DollarSign className="inline-block h-8 w-8 stroke-current" />
-                </div>
-                <div className="stat-title">Bezahlt</div>
-                <div className="stat-value text-warning">{paidOrders}</div>
-                <div className="stat-desc">Bezahlt</div>
-              </div>
-
-              <div className="stat rounded-box bg-base-200 shadow-sm">
-                <div className="stat-figure text-success">
-                  <CheckCircle className="inline-block h-8 w-8 stroke-current" />
-                </div>
-                <div className="stat-title">Abgeschlossen</div>
-                <div className="stat-value text-success">{completedOrders}</div>
-                <div className="stat-desc">Fertig</div>
-              </div>
+              <StatCard
+                icon={CheckCircle}
+                title="Abgeschlossen"
+                value={completedOrders}
+                description="Fertig"
+                colorClass="success"
+              />
             </div>
 
             {/* Loading State */}

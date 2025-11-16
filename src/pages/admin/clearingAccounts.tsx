@@ -5,7 +5,7 @@ import ActionResponsePopup, {
   AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
-import { ArrowRight, Send, Wallet } from "lucide-react"
+import { ArrowRight, Info, Send, Wallet } from "lucide-react"
 import RegularPage from "~/components/Layout/RegularPage"
 import ClearingAccountOverview from "~/components/PageComponents/ClearingAccountOverview"
 import { Tid, id } from "~/helper/zodTypes"
@@ -182,19 +182,7 @@ const ClearingAccountPage = () => {
 
           {/* Info Alert */}
           <div className="alert alert-info shadow-sm mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              className="h-6 w-6 shrink-0 stroke-current"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <Info />
             <span className="text-sm">Du kannst dir selbst keine Auszahlung genehmigen</span>
           </div>
 

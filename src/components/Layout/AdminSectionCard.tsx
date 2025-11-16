@@ -1,13 +1,7 @@
 import { ReactNode } from "react"
 import { LucideIcon } from "lucide-react"
-
-interface StatCardProps {
-  icon: LucideIcon
-  title: string
-  value: string | number
-  description: string
-  colorClass?: string
-}
+import { StatCardProps } from "../PageComponents/StatsCard"
+import StatCard from "../PageComponents/StatsCard"
 
 interface AdminSectionCardProps {
   // Header Props
@@ -20,10 +14,8 @@ interface AdminSectionCardProps {
     shortLabel?: string
   }
 
-  // Statistics Props (optional)
   statistics?: StatCardProps[]
 
-  // Bulk Actions Props (optional)
   bulkActions?: {
     selectedCount: number
     itemLabel: string
@@ -31,29 +23,15 @@ interface AdminSectionCardProps {
     onDelete: () => void
   }
 
-  // Loading and Empty States
   isLoading?: boolean
   isEmpty?: boolean
   emptyStateText?: string
   emptyStateSubtext?: string
 
-  // Info Footer (optional)
   infoFooter?: string
-
-  // Table Content
   children: ReactNode
 }
 
-const StatCard = ({ icon: Icon, title, value, description, colorClass = "primary" }: StatCardProps) => (
-  <div className="stat rounded-box bg-base-200 shadow-sm">
-    <div className={`stat-figure text-${colorClass}`}>
-      <Icon className="inline-block h-8 w-8 stroke-current" />
-    </div>
-    <div className="stat-title">{title}</div>
-    <div className={`stat-value text-${colorClass}`}>{value}</div>
-    <div className="stat-desc">{description}</div>
-  </div>
-)
 
 const AdminSectionCard = ({
   icon: Icon,
@@ -98,16 +76,15 @@ const AdminSectionCard = ({
 
           {/* Statistics Cards */}
           {statistics && statistics.length > 0 && (
-            <div 
-              className={`mb-6 grid grid-cols-1 gap-4 ${
-                statistics.length === 2 
-                  ? "md:grid-cols-2" 
-                  : statistics.length === 3 
+            <div
+              className={`mb-6 grid grid-cols-1 gap-4 ${statistics.length === 2
+                ? "md:grid-cols-2"
+                : statistics.length === 3
                   ? "sm:grid-cols-2 lg:grid-cols-3"
                   : statistics.length === 4
-                  ? "sm:grid-cols-2 xl:grid-cols-4"
-                  : "sm:grid-cols-2 lg:grid-cols-3"
-              }`}
+                    ? "sm:grid-cols-2 xl:grid-cols-4"
+                    : "sm:grid-cols-2 lg:grid-cols-3"
+                }`}
             >
               {statistics.map((stat, index) => (
                 <StatCard key={index} {...stat} />
