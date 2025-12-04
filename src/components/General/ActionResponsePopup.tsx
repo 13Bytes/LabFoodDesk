@@ -11,7 +11,7 @@ type Status = "failure" | "success"
 export const DISPLAY_TIME = 1800
 
 export const animate = (
-  handle: RefObject<AnimationHandle>,
+  handle: RefObject<AnimationHandle | null>,
   status: Status,
   errorMessage?: string
 ) => {
