@@ -47,7 +47,7 @@ const TransactionList = (props: Props) => {
 
   const [queryDuration, setQueryDuration] = useState<Timespans>()
   const [exportStatus, setExportStatus] = useState<'idle' | 'loading'>('idle')
-  const { refetch, status } = api.transaction.getAllFixedTimespan.useQuery({ timespan: queryDuration! }, {
+  api.transaction.getAllFixedTimespan.useQuery({ timespan: queryDuration! }, {
     onSuccess: (data) => {
       console.log("converting to csv")
       const flatData = data.map((item) => toFlatPropertyMap(item))
