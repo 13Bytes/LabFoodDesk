@@ -104,6 +104,64 @@ export const transactionRouter = createTRPCRouter({
       }
     }),
 
+  getAllFixedTimespan: adminProcedure
+    .input(
+      z.object({
+        timespan: z.enum(["day", "week", "month", "quarter", "year"]),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      let startDate: Date
+      const now = new Date()
+      switch (input.timespan) {
+        case "day": {
+          startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24)
+          break
+        }
+        case "week": {
+          startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 7)
+          break
+        }
+        case "month": {
+          startDate = new Date(now);
+          startDate.setMonth(startDate.getMonth() - 1)
+          break
+        }
+        case "quarter": {
+          startDate = new Date(now)
+          startDate.setMonth(startDate.getMonth() - 3)
+          break;
+        }
+        case "year": {
+          startDate = new Date(now)
+          startDate.setFullYear(startDate.getFullYear() - 1)
+          break
+        }
+        default: {
+          startDate = now
+        }
+      }
+
+      return ctx.prisma.transaction.findMany({
+        where: {
+          createdAt: {
+            gte: startDate
+          },
+        },
+        include: {
+          items: { include: { item: { include: { categories: true } } } },
+          procurementItems: { include: { item: { include: { categories: true } } } },
+          moneyDestination: { select: { name: true } },
+          user: { select: { name: true } },
+          canceledBy: { select: { name: true } },
+          clearingAccount: { select: { name: true } },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      })
+    }),
+
   sendMoney: protectedProcedure
     .input(z.object({ destinationUserId: id, amount: z.number(), note: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {

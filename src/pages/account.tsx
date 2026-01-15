@@ -1,5 +1,5 @@
 import { Transaction } from "@prisma/client"
-import { ChevronLeft, ChevronRight, ClipboardList, TrendingUp, Undo } from "lucide-react"
+import { ClipboardList, TrendingUp, Undo } from "lucide-react"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
@@ -8,6 +8,7 @@ import ActionResponsePopup, {
   AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
+import { Pagination } from "~/components/General/Pagination"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { getUsernameLetters } from "~/helper/generalFunctions"
 import { Tid } from "~/helper/zodTypes"
@@ -262,31 +263,8 @@ const AccountPage: NextPage = () => {
               </div>
 
               {/* Pagination */}
-              <div className="mt-6 flex justify-center">
-                <div className="join grid grid-cols-3">
-                  <button
-                    className={`btn join-item ${page < 1 ? "btn-disabled" : "btn-outline"} border-r-0`}
-                    onClick={() => setPage((prev) => prev - 1)}
-                    disabled={page < 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Zurück
-                  </button>
-                  <button className="btn join-item btn-active pointer-events-none border-1 border-base-content">
-                    Seite {page + 1}
-                  </button>
-                  <button
-                    className={`btn join-item ${page >= maxPage ? "btn-disabled" : "btn-outline"} border-l-0`}
-                    onClick={() => {
-                      void fetchNextPage()
-                      setPage((prev) => prev + 1)
-                      return
-                    }}
-                    disabled={page >= maxPage}>
-                    Weiter
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
+              <div className="flex justify-center">
+                <Pagination page={page} maxPage={maxPage} setPage={setPage} fetchNextPage={fetchNextPage} />
               </div>
             </div>
           </div>

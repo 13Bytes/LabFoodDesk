@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from "react"
 import {
-  Plus,
-  Users,
-  Repeat,
   Calendar,
-  TrendingUp,
   CheckCircle,
-  XCircle,
   DollarSign,
+  Plus,
+  Repeat,
+  Users,
+  XCircle
 } from "lucide-react"
+import React, { useEffect, useState } from "react"
 import GrouporderForm from "~/components/Forms/GrouporderForm"
 import GrouporderTemplateForm from "~/components/Forms/GrouporderTemplateForm"
+import { Pagination } from "~/components/General/Pagination"
 import Modal from "~/components/Layout/Modal"
 import RegularPage from "~/components/Layout/RegularPage"
+import StatCard from "~/components/PageComponents/StatsCard"
 import { localStringOptions, weekdays } from "~/helper/globalTypes"
 import { Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
-import StatCard from "~/components/PageComponents/StatsCard"
 
 const GroupOrdersPage = () => {
   const allOrderTemplateRequest = api.groupOrders.getAllTemplates.useQuery()
@@ -351,25 +351,8 @@ const GroupOrdersPage = () => {
 
             {/* Pagination */}
             {totalOrders > 0 && (
-              <div className="mt-6 flex justify-center">
-                <div className="join">
-                  <button
-                    className={`btn join-item ${page < 1 ? "btn-disabled" : ""}`}
-                    onClick={() => setPage((prev) => prev - 1)}
-                  >
-                    «
-                  </button>
-                  <button className="btn join-item pointer-events-none">Seite {page + 1}</button>
-                  <button
-                    className={`btn join-item ${page >= maxPage ? "btn-disabled" : ""}`}
-                    onClick={() => {
-                      void fetchNextPage()
-                      setPage((prev) => prev + 1)
-                    }}
-                  >
-                    »
-                  </button>
-                </div>
+              <div className="flex justify-center">
+                <Pagination page={page} maxPage={maxPage} setPage={setPage} fetchNextPage={fetchNextPage} />
               </div>
             )}
           </div>

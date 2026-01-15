@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Pagination } from "~/components/General/Pagination"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import TransactionList from "~/components/PageComponents/TransactionList"
 import { api } from "~/utils/api"
@@ -44,26 +45,7 @@ const AdminTransactionPage = () => {
   return (
     <CenteredPage>
       <TransactionList transactions={transactionData?.pages[page]?.items} />
-
-      <div className="join mt-2">
-        <button
-          className={`btn join-item ${page < 1 ? "btn-disabled" : ""}`}
-          onClick={() => setPage((prev) => prev - 1)}
-        >
-          «
-        </button>
-        <button className="btn join-item pointer-events-none">Seite {page + 1}</button>
-        <button
-          className={`btn join-item ${page >= maxPage ? "btn-disabled" : ""}`}
-          onClick={() => {
-            void fetchNextPage()
-            setPage((prev) => prev + 1)
-            return
-          }}
-        >
-          »
-        </button>
-      </div>
+      <Pagination page={page} maxPage={maxPage} setPage={setPage} fetchNextPage={fetchNextPage} />
     </CenteredPage>
   )
 }
