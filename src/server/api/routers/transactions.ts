@@ -111,18 +111,41 @@ export const transactionRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const timespan = {
-        'day': 24,
-        'week': 24 * 7,
-        'month': 24 * 30,
-        'quarter': 24 * 91,
-        'year': 24 * 365
-      }[input.timespan];
+      let startDate: Date
+      const now = new Date()
+      switch (input.timespan) {
+        case "day": {
+          startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24)
+          break
+        }
+        case "week": {
+          startDate = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 7)
+          break
+        }
+        case "month": {
+          startDate = new Date(now);
+          startDate.setMonth(startDate.getMonth() - 1)
+          break
+        }
+        case "quarter": {
+          startDate = new Date(now)
+          startDate.setMonth(startDate.getMonth() - 3)
+          break;
+        }
+        case "year": {
+          startDate = new Date(now)
+          startDate.setFullYear(startDate.getFullYear() - 1)
+          break
+        }
+        default: {
+          startDate = now
+        }
+      }
 
       return ctx.prisma.transaction.findMany({
         where: {
           createdAt: {
-            gte: new Date(Date.now() - 1000 * 60 * 60 * timespan)
+            gte: startDate
           },
         },
         include: {

@@ -4,7 +4,7 @@ export function Pagination(props: {
     page: number
     maxPage: number | undefined
     setPage: React.Dispatch<React.SetStateAction<number>>
-    fetchNextPage?: () => Promise<any>
+    fetchNextPage?: () => Promise<unknown>
     changePageAction?: (direction: "next" | "previous") => void,
 }) {
     const { page, maxPage, setPage, changePageAction, fetchNextPage } = props

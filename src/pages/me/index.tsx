@@ -8,7 +8,7 @@ import { getUsernameLetters } from "~/helper/generalFunctions"
 
 const Me: NextPage = () => {
     const { data: sessionData } = useSession()
-    const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
+    const { data: userData } = api.user.getMe.useQuery()
     const statsRequest = api.user.getStats.useQuery()
     return (
         <CenteredPage>

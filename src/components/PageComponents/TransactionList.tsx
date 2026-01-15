@@ -52,9 +52,12 @@ const TransactionList = (props: Props) => {
       console.log("converting to csv")
       const flatData = data.map((item) => toFlatPropertyMap(item))
       const csv = CSVParser.unparse(flatData, { delimiter: ';', skipEmptyLines: true })
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-16;' })
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
       const url = URL.createObjectURL(blob)
       window.open(url, "_blank");
+      setTimeout(() => {
+        URL.revokeObjectURL(url)
+      }, 1000) 
     },
     onSettled: () => {
       setExportStatus('idle')

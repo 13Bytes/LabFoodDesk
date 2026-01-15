@@ -27,7 +27,10 @@ export function toFlatPropertyMap(obj: object, keySeparator = '.') {
   const flattenRecursive = (obj: object, parentProperty?: string, propertyMap: Record<string, unknown> = {}) => {
     for (const [key, value] of Object.entries(obj)) {
       const property = parentProperty ? `${parentProperty}${keySeparator}${key}` : key;
-      if (value && typeof value === 'object') {
+      if (value && typeof value === 'object' && value instanceof Date) {
+        propertyMap[property] = value.toISOString();
+      }
+      else if (value && typeof value === 'object') {
         flattenRecursive(value, property, propertyMap);
       } else {
         propertyMap[property] = value;
