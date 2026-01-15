@@ -1,8 +1,12 @@
-import { RouterOutputs } from "~/utils/api"
+import { api, RouterInputs, RouterOutputs } from "~/utils/api"
 import { Receipt, User, Target, Wallet, Calendar, Ban, AlertCircle } from "lucide-react"
 import { localStringOptions } from "~/helper/globalTypes"
+import CSVParser from 'papaparse';
+import { useState } from "react";
+import { toFlatPropertyMap } from "~/helper/generalFunctions";
 
 type TransactionData = RouterOutputs["transaction"]["getAllInfinite"]["items"]
+type Timespans = RouterInputs["transaction"]["getAllFixedTimespan"]["timespan"]
 type Props = {
   transactions: TransactionData | undefined
 }
@@ -26,6 +30,7 @@ const getTransactionTypeLabel = (type: number): string => {
   }
 }
 
+
 const TransactionList = (props: Props) => {
   const Legend = () => (
     <tr>
@@ -37,6 +42,31 @@ const TransactionList = (props: Props) => {
       <th>Verrechnungskonto</th>
     </tr>
   )
+
+
+
+  const [queryDuration, setQueryDuration] = useState<Timespans>()
+  const [exportStatus, setExportStatus] = useState<'idle' | 'loading'>('idle')
+  const { refetch, status } = api.transaction.getAllFixedTimespan.useQuery({ timespan: queryDuration! }, {
+    onSuccess: (data) => {
+      console.log("converting to csv")
+      const flatData = data.map((item) => toFlatPropertyMap(item))
+      const csv = CSVParser.unparse(flatData, { delimiter: ';', skipEmptyLines: true })
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-16;' })
+      const url = URL.createObjectURL(blob)
+      window.open(url, "_blank");
+    },
+    onSettled: () => {
+      setExportStatus('idle')
+      setQueryDuration(undefined)
+    },
+    enabled: !!queryDuration,
+  })
+
+  const startExport = (duration: Timespans) => {
+    setQueryDuration(duration)
+    setExportStatus('loading')
+  }
 
   if (props.transactions === undefined) {
     return (
@@ -73,6 +103,21 @@ const TransactionList = (props: Props) => {
         <div className="mb-6 flex items-center gap-3">
           <Receipt className="h-6 w-6 text-primary" />
           <h2 className="text-2xl font-bold text-base-content">Transaktionen</h2>
+          <div className="grow" />
+          <div>
+            <div className="dropdown dropdown-end dropdown-hover">
+              {exportStatus !== 'loading' && <>
+                <div tabIndex={0} role="button" className="btn btn-sm">Export...</div>
+                <ul tabIndex={-1} className="dropdown-content menu bg-base-100 rounded-box z-10 w-32 shadow-sm">
+                  <li><a onClick={() => startExport('week')}>1 Woche</a></li>
+                  <li><a onClick={() => startExport('month')}>1 Monat</a></li>
+                  <li><a onClick={() => startExport('quarter')}>3 Monate</a></li>
+                  <li><a onClick={() => startExport('year')}>1 Jahr</a></li>
+                </ul>
+              </>}
+              {exportStatus === 'loading' && <div role="button" className="btn btn-sm btn-disabled">Export...</div>}
+            </div>
+          </div>
         </div>
 
         {/* Desktop Table View */}
