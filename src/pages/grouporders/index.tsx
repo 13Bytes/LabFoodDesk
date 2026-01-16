@@ -95,12 +95,6 @@ const GroupOrders: NextPage = () => {
     <>
       <CenteredPage>
         <div className="container">
-          {groupOrdersInProgress.data?.map((group) => (
-            <GroupOrderDetailView key={group.id} group={group} />
-          ))}
-        </div>
-
-        <div className="container">
           {groupOrderRequest.data?.map((groupOrder) => (
             <div key={groupOrder.id} className="card mb-5 max-w-5xl bg-base-200 p-3">
               <div className="flex flex-col justify-start gap-1 p-1">
@@ -182,6 +176,12 @@ const GroupOrders: NextPage = () => {
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+        
+        <div className="container">
+          {groupOrdersInProgress.data?.map((group) => (
+            <GroupOrderDetailView key={group.id} group={group} />
           ))}
         </div>
 
