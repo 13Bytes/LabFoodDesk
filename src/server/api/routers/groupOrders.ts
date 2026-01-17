@@ -267,7 +267,7 @@ export const grouporderRouter = createTRPCRouter({
       })
     }),
 
-  stopOrders: adminProcedure.input(z.object({ groupId: id })).mutation(async ({ ctx, input }) => {
+  stopOrders: protectedProcedure.input(z.object({ groupId: id })).mutation(async ({ ctx, input }) => {
     const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
       where: { id: input.groupId },
       include: { orders: true, procurementWishes: { include: { items: true } } },
@@ -400,8 +400,8 @@ export const grouporderRouter = createTRPCRouter({
         }
         // add money to clearing-account
         for (const cat of allCategorieFees) {
-          if(cat.charges !== 0){
-            if(!cat.balanceAccountId) {
+          if (cat.charges !== 0) {
+            if (!cat.balanceAccountId) {
               throw new TRPCError({
                 code: "METHOD_NOT_SUPPORTED",
                 message: "Category has no clearing-account set - please contact an admin and let them fix it",
@@ -503,10 +503,12 @@ export const grouporderRouter = createTRPCRouter({
             // undo user-transactions
             await tx.transaction.update({
               where: { id: transaction.id },
-              data: { canceled: true, 
+              data: {
+                canceled: true,
                 canceledBy: { connect: { id: ctx.session.user.id } },
                 canceledDate: new Date(),
-                 note: transaction.note + "(grouporder reverted)" },
+                note: transaction.note + "(grouporder reverted)"
+              },
             })
             // revert user-balance
             await tx.user.update({

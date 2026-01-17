@@ -153,24 +153,27 @@ const GroupOrders: NextPage = () => {
                   </tbody>
                 </table>
 
-                <div className="flex flex-row justify-between">
+                <div className="flex flex-row justify-between items-center">
                   <button
                     className="btn btn-primary btn-sm mt-7"
                     onClick={() => joinGroupOrder(groupOrder.id)}
                   >
                     {groupOrder.orders.some((order) => order.userId === sessionUser?.id) ||
-                    groupOrder.procurementWishes.some((wish) => wish.userId === sessionUser?.id)
+                      groupOrder.procurementWishes.some((wish) => wish.userId === sessionUser?.id)
                       ? "Bestellung erweitern"
                       : "Bestellung beitreten"}
                   </button>
-                  {new Date() > groupOrder.ordersCloseAt && sessionUser?.is_admin && (
+                  {new Date() > groupOrder.ordersCloseAt && (
                     <button
-                      className="btn btn-warning btn-sm mt-7"
+                      className="btn btn-warning btn-sm flex flex-col mt-7 max-md:h-12"
                       onClick={() => {
                         setCloseOrderId(groupOrder.id)
                       }}
                     >
-                      Beenden
+                      Bestellung schließen
+                      <span className="text-xs">
+                        (Artikel wurden gekauft)
+                      </span>
                     </button>
                   )}
                 </div>
@@ -178,7 +181,7 @@ const GroupOrders: NextPage = () => {
             </div>
           ))}
         </div>
-        
+
         <div className="container">
           {groupOrdersInProgress.data?.map((group) => (
             <GroupOrderDetailView key={group.id} group={group} />
@@ -195,7 +198,7 @@ const GroupOrders: NextPage = () => {
       <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-11/12 !max-w-5xl pt-11">
         <div className="flex flex-row flex-wrap justify-center gap-4">
           {groupOrderProcurementItems.data?.map((item) => (
-             <BuyItemCard
+            <BuyItemCard
               key={item.id}
               item={item}
               buttonName="Wünschen"
