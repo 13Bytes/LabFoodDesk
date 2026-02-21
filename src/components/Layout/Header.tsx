@@ -13,6 +13,7 @@ import {
   User,
   UserCog,
   Users,
+  TriangleAlert
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
@@ -20,6 +21,7 @@ import { useRouter } from "next/router"
 import { getUsernameLetters } from "~/helper/generalFunctions"
 import { api } from "~/utils/api"
 import { Balance } from "../General/Balance"
+import { LowCreditWarningSymbol } from "../PageComponents/LowCreditWarning"
 
 export default function Header() {
   const { data: sessionData } = useSession()
@@ -212,7 +214,8 @@ export default function Header() {
 
       {/* UserAccount-Icon (top right) */}
       {loggedIn && (
-        <div className="navbar-end pr-6">
+        <div className="navbar-end pr-6 lg:gap-0">
+          <LowCreditWarningSymbol />
           <div className="mr-4">
             <Link href="/account" className="transition-transform duration-200 hover:scale-105">
               <Balance balance={userData?.balance} />

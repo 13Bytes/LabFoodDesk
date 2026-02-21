@@ -165,15 +165,12 @@ const GroupOrders: NextPage = () => {
                   </button>
                   {new Date() > groupOrder.ordersCloseAt && (
                     <button
-                      className="btn btn-warning btn-sm flex flex-col mt-7 max-md:h-12"
+                      className="btn btn-warning btn-sm !flex !flex-col items-center justify-center mt-7 max-md:h-12 py-0 leading-tight"
                       onClick={() => {
                         setCloseOrderId(groupOrder.id)
                       }}
                     >
                       Bestellung schließen
-                      <span className="text-xs">
-                        (Artikel wurden gekauft)
-                      </span>
                     </button>
                   )}
                 </div>

@@ -1,8 +1,11 @@
+import { HTMLProps, useEffect, useState } from "react"
+import { createPortal } from "react-dom"
+
 interface Props {
   children: React.ReactNode
   setOpen: (arg: boolean) => void
   open: boolean
-  className?: string
+  className?: HTMLProps<HTMLElement>["className"]
   closeFunctionCall?: () => void
 }
 
@@ -15,7 +18,17 @@ export default function Modal({
     // do nothing
   },
 }: Props) {
-  return (
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted) {
+    return null
+  }
+
+  return createPortal(
     <dialog className={`modal ${open ? "modal-open" : ""}`}>
       <div className={`modal-box ${className}`}>
         <button
@@ -29,6 +42,7 @@ export default function Modal({
         </button>
         {children}
       </div>
-    </dialog>
+    </dialog>,
+    document.body,
   )
 }

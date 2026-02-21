@@ -1,5 +1,13 @@
-import { type RefObject, forwardRef, useImperativeHandle, useState, useCallback } from "react"
+import {
+  type RefObject,
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useCallback,
+  useEffect,
+} from "react"
 import { CheckCircle, AlertCircle } from "lucide-react"
+import { createPortal } from "react-dom"
 
 export type AnimationHandle = {
   success: () => void
@@ -32,6 +40,11 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
   const [isOpen, setIsOpen] = useState(false)
   const [status, setStatus] = useState<Status>("success")
   const [message, setMessage] = useState<string>("")
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const reset = useCallback(() => {
     setIsOpen(false)
@@ -60,7 +73,11 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
   const IconComponent = status === "success" ? CheckCircle : AlertCircle
   const iconColorClass = status === "success" ? "text-green-500" : "text-red-500"
 
-  return (
+  if (!isMounted) {
+    return null
+  }
+
+  return createPortal(
     <dialog
       className={`modal ${
         isOpen ? "modal-open opacity-100" : "opacity-0"
@@ -74,7 +91,8 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
         />
         {message && <p className="font-semibold text-center mt-4">{message}</p>}
       </div>
-    </dialog>
+    </dialog>,
+    document.body,
   )
 })
 

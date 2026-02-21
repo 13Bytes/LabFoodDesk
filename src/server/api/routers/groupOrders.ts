@@ -12,6 +12,7 @@ import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/a
 import { prisma } from "~/server/db"
 import { checkAccountBacking } from "~/server/helper/dbCallHelper"
 import { buyItem } from "./items"
+import { ITEM_SECURITY_DEPOSIT } from "~/helper/globalTypes"
 
 const pageSize = 20
 export const grouporderRouter = createTRPCRouter({
@@ -223,7 +224,7 @@ export const grouporderRouter = createTRPCRouter({
         ),
       )
 
-      const requiredBacking = items.length * 5 // secure 5€ per item
+      const requiredBacking = items.length * ITEM_SECURITY_DEPOSIT // secure x€ per item
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
 
       if (env.DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK !== "true") {

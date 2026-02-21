@@ -1,4 +1,5 @@
-import { PropsWithChildren } from "react"
+import { PropsWithChildren, useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 
 type Props = {
   open: boolean
@@ -10,12 +11,22 @@ type Props = {
   proceedButtonClass?: string
 }
 export const ConfirmationModal = (props: PropsWithChildren<Props>) => {
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const onProceedClick = () => {
     props.close()
     props.proceed()
   }
 
-  return (
+  if (!isMounted) {
+    return null
+  }
+
+  return createPortal(
     <>
       <dialog className={`modal ${props.open ? "modal-open" : ""}`}>
         <div className="modal-box">
@@ -45,6 +56,7 @@ export const ConfirmationModal = (props: PropsWithChildren<Props>) => {
           </div>
         </div>
       </dialog>
-    </>
+    </>,
+    document.body,
   )
 }
