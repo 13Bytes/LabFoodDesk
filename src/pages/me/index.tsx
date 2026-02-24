@@ -5,6 +5,7 @@ import { Balance } from "~/components/General/Balance"
 import { Info } from "lucide-react"
 import { api } from "~/utils/api"
 import { getUsernameLetters } from "~/helper/generalFunctions"
+import LowCreditWarning from "~/components/PageComponents/LowCreditWarning"
 
 const Me: NextPage = () => {
     const { data: sessionData } = useSession()
@@ -31,6 +32,7 @@ const Me: NextPage = () => {
                                 <span className="text-base-content/70">Dein Guthaben:</span>
                                 <Balance balance={userData?.balance} />
                             </div>
+                            <LowCreditWarning className="mt-2 text-center" />
                         </div>
                     </div>
                 </div>

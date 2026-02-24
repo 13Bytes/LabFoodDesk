@@ -1,5 +1,5 @@
 import { Transaction } from "@prisma/client"
-import { ClipboardList, TrendingUp, Undo } from "lucide-react"
+import { ClipboardList, TrendingUp, Undo, MessageCircleWarning } from "lucide-react"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
@@ -10,7 +10,9 @@ import ActionResponsePopup, {
 } from "~/components/General/ActionResponsePopup"
 import { Pagination } from "~/components/General/Pagination"
 import CenteredPage from "~/components/Layout/CenteredPage"
+import LowCreditWarning from "~/components/PageComponents/LowCreditWarning"
 import { getUsernameLetters } from "~/helper/generalFunctions"
+import { ITEM_SECURITY_DEPOSIT } from "~/helper/globalTypes"
 import { Tid } from "~/helper/zodTypes"
 import { RouterOutputs, api } from "~/utils/api"
 
@@ -149,6 +151,7 @@ const AccountPage: NextPage = () => {
               </div>
             </div>
           </div>
+          <LowCreditWarning className="text-center" />
 
           {/* Transaction History */}
           <div className="card border border-base-300 bg-base-100 shadow-xl">

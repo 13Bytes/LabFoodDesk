@@ -14,3 +14,5 @@ export const localStringOptions: Intl.DateTimeFormatOptions = {
   month: "short",
   hour: "numeric",
 }
+
+export const ITEM_SECURITY_DEPOSIT = 2 // secure x€ per item for procurement orders
