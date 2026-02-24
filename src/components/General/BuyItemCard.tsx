@@ -114,6 +114,7 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
         cancelText="Abbrechen"
         proceedText="Jetzt kaufen"
         proceedButtonClass="btn btn-primary"
+        className="z-[70]"
       >
         <div className="space-y-3">
           <p className="text-base">

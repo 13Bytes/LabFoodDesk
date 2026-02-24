@@ -18,11 +18,21 @@ import { type RouterOutputs, api } from "~/utils/api"
 
 const AccountPage: NextPage = () => {
   const [page, setPage] = React.useState(0)
-  const [undoCutoff] = React.useState(() => new Date(Date.now() - 1000 * 60 * 15))
+  const [currentTime, setCurrentTime] = React.useState(() => Date.now())
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
   const { data: sessionData } = useSession()
   const allBalancesRequest = api.user.getAllBalances.useQuery()
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now())
+    }, 60_000)
+
+    return () => {
+      clearInterval(timer)
+    }
+  }, [])
 
   const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
   type TransactionData = RouterOutputs["transaction"]["getMineInfinite"]["items"][0]
@@ -119,7 +129,7 @@ const AccountPage: NextPage = () => {
     if (transaction.type !== 0) {
       return false
     }
-    return transaction.createdAt >= undoCutoff
+    return transaction.createdAt.getTime() >= currentTime - 1000 * 60 * 15
   }
   return (
     <>

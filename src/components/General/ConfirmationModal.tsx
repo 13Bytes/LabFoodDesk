@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useSyncExternalStore } from "react"
+import { HTMLProps, type PropsWithChildren, useSyncExternalStore } from "react"
 import { createPortal } from "react-dom"
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
   cancelText?: string
   proceedText?: string
   proceedButtonClass?: string
+  className?: HTMLProps<HTMLElement>["className"]
 }
 export const ConfirmationModal = (props: PropsWithChildren<Props>) => {
   const isClient = useSyncExternalStore(
@@ -28,8 +29,10 @@ export const ConfirmationModal = (props: PropsWithChildren<Props>) => {
 
   return createPortal(
     <>
-      <dialog className={`modal ${props.open ? "modal-open" : ""}`}>
-        <div className="modal-box">
+      <dialog
+        className={`modal ${props.open ? "modal-open" : ""}`}
+      >
+        <div className={`modal-box {${props.className}}`}>
           <form method="dialog">
             <button
               className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
