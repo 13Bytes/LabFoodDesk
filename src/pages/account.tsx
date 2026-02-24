@@ -1,11 +1,11 @@
-import { Transaction } from "@prisma/client"
+import { type Transaction } from "@prisma/client"
 import { ClipboardList, TrendingUp, Undo, MessageCircleWarning } from "lucide-react"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import React, { ComponentProps, useEffect, useRef } from "react"
+import React, { type ComponentProps, useRef } from "react"
 import ActionResponsePopup, {
-  AnimationHandle,
+  type AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
 import { Pagination } from "~/components/General/Pagination"
@@ -13,12 +13,12 @@ import CenteredPage from "~/components/Layout/CenteredPage"
 import LowCreditWarning from "~/components/PageComponents/LowCreditWarning"
 import { getUsernameLetters } from "~/helper/generalFunctions"
 import { ITEM_SECURITY_DEPOSIT } from "~/helper/globalTypes"
-import { Tid } from "~/helper/zodTypes"
-import { RouterOutputs, api } from "~/utils/api"
+import { type Tid } from "~/helper/zodTypes"
+import { type RouterOutputs, api } from "~/utils/api"
 
 const AccountPage: NextPage = () => {
   const [page, setPage] = React.useState(0)
-  const [maxPage, setMaxPage] = React.useState(Infinity)
+  const [undoCutoff] = React.useState(() => new Date(Date.now() - 1000 * 60 * 15))
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
   const { data: sessionData } = useSession()
@@ -44,13 +44,7 @@ const AccountPage: NextPage = () => {
     },
   )
   const undoTransactionRequest = api.transaction.undoTransaction.useMutation()
-  useEffect(() => {
-    if (!hasNextPage) {
-      setMaxPage(page)
-    } else {
-      setMaxPage(Infinity)
-    }
-  }, [setMaxPage, hasNextPage])
+  const maxPage = hasNextPage ? Infinity : page
 
   function userIsTransactionDestination(transaction: Transaction): boolean {
     return transaction.moneyDestinationUserId === userData?.id
@@ -125,7 +119,7 @@ const AccountPage: NextPage = () => {
     if (transaction.type !== 0) {
       return false
     }
-    return transaction.createdAt >= new Date(Date.now() - 1000 * 60 * 15)
+    return transaction.createdAt >= undoCutoff
   }
   return (
     <>

@@ -4,9 +4,9 @@ import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { id, Tid } from "~/helper/zodTypes"
+import { id, type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
-import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
+import ActionResponsePopup, { type AnimationHandle, animate } from "../General/ActionResponsePopup"
 
 export const validationSchema = z.object({
   name: z.string().optional(),

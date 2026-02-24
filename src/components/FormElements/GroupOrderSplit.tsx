@@ -1,11 +1,11 @@
 import type { ProcurementItem } from "@prisma/client"
 import { useSession } from "next-auth/react"
-import { ChangeEvent, useEffect, useRef, useState } from "react"
+import { type ChangeEvent, useEffect, useRef, useState } from "react"
 import { z } from "zod"
 import { calculateAdditionalPricing } from "~/helper/dataProcessing"
-import { Tid, id } from "~/helper/zodTypes"
-import { RouterOutputs, api } from "~/utils/api"
-import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
+import { type Tid, id } from "~/helper/zodTypes"
+import { type RouterOutputs, api } from "~/utils/api"
+import ActionResponsePopup, { type AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { ConfirmationModal } from "../General/ConfirmationModal"
 
 
@@ -121,9 +121,15 @@ const GroupOrderSplit = (props: Props) => {
         })
       }
     }
-    setSplit([...groupOrderSplit])
-    setUserItemList({ ...userItemList })
-    setItemList([...itemList])
+    const timeout = setTimeout(() => {
+      setSplit([...groupOrderSplit])
+      setUserItemList({ ...userItemList })
+      setItemList([...itemList])
+    }, 0)
+
+    return () => {
+      clearTimeout(timeout)
+    }
   }, [JSON.stringify(group)])
 
   const totalItems = itemList.length

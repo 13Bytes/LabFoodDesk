@@ -4,10 +4,10 @@ import Modal from "~/components/Layout/Modal"
 import AdminSectionCard from "~/components/Layout/AdminSectionCard"
 import { ConfirmationModal } from "~/components/General/ConfirmationModal"
 import { toggleElementInArray } from "~/helper/generalFunctions"
-import { Tid } from "~/helper/zodTypes"
+import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import CategoryForm from "../Forms/CategoryForm"
-import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
+import ActionResponsePopup, { type AnimationHandle, animate } from "../General/ActionResponsePopup"
 
 const CategoryOverview = () => {
   const allItemsRequest = api.category.getAll.useQuery()
@@ -40,7 +40,7 @@ const CategoryOverview = () => {
     (cat) => (cat.markupPercentage ?? 0) > 0 || (cat.markupFixed ?? 0) > 0
   ).length ?? 0
 
-  const Legend = () => (
+  const legendRow = (
     <tr>
       <th className="w-12">
         <label>
@@ -120,7 +120,7 @@ const CategoryOverview = () => {
         <div className="overflow-x-auto rounded-lg border border-base-300">
           <table className="table table-zebra">
             <thead className="bg-base-200">
-              <Legend />
+              {legendRow}
             </thead>
             <tbody>
               {allItemsRequest.data?.map((item) => (

@@ -14,7 +14,7 @@ import CenteredPage from "~/components/Layout/CenteredPage"
 import Modal from "~/components/Layout/Modal"
 import { getUsernameLetters } from "~/helper/generalFunctions"
 import { localStringOptions } from "~/helper/globalTypes"
-import { Tid } from "~/helper/zodTypes"
+import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 const GroupOrders: NextPage = () => {

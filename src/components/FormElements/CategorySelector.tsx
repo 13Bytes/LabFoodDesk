@@ -5,7 +5,7 @@ import Select from "react-select"
 
 
 type Props = {
-   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    
     control: Control<any>
     categories: Category[] | undefined
 }
@@ -28,7 +28,6 @@ const CategorySelector = (props: Props) => {
             onChange={onChange}
             isMulti={true}
             onBlur={onBlur}
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             value={value}
             name={name}
             ref={ref}

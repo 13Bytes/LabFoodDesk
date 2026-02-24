@@ -1,8 +1,8 @@
 import { type NextPage } from "next"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { Search, Package } from "lucide-react"
 import ActionResponsePopup, {
-  AnimationHandle,
+  type AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
@@ -16,17 +16,7 @@ const BuyPage: NextPage = () => {
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
   const [searchString, setSearchString] = useState("")
-  const [displayCategories, setDisplayCategories] = useState<{ [index: string]: boolean }>({})
-
-  const displayedItems = allItemsRequest.data
-    ?.filter((item) => {
-      const categoryShown = item.categories.some(
-        (category) => displayCategories[category.id] == true,
-      )
-      const searchShown = item.name.toLowerCase().includes(searchString.toLowerCase())
-      return categoryShown && searchShown
-    })
-    .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+  const [categoryOverrides, setCategoryOverrides] = useState<{ [index: string]: boolean }>({})
 
   const apiBuyOneItemMultiple = api.item.buyItem.useMutation()
 
@@ -46,20 +36,31 @@ const BuyPage: NextPage = () => {
     }
   }
 
-  const allRelevantCategories = useMemo(() => {
-    return allCategoriesRequest.data?.filter((category) => {
-      // filter out categories that are not relevant for the buy page (e.g. group orders)
-      return category.items.filter((item) => !item.for_grouporders).length > 0
-    })
-  }, [allCategoriesRequest.data])
+  const allRelevantCategories = allCategoriesRequest.data?.filter((category) => {
+    // filter out categories that are not relevant for the buy page (e.g. group orders)
+    return category.items.filter((item) => !item.for_grouporders).length > 0
+  })
 
-  useEffect(() => {
-    const displayCategories: { [index: string]: boolean } = {}
-    allRelevantCategories?.forEach((category) => {
-      displayCategories[category.id] = category.defaultUnfoldedDisplay
+  const defaultDisplayCategories: { [index: string]: boolean } = {}
+  allRelevantCategories?.forEach((category) => {
+    defaultDisplayCategories[category.id] = category.defaultUnfoldedDisplay
+  })
+
+  const displayCategories = {
+    ...defaultDisplayCategories,
+    ...categoryOverrides,
+  }
+
+  const displayedItems = allItemsRequest.data
+    ?.filter((item) => {
+      const categoryShown = item.categories.some(
+        (category) => displayCategories[category.id] == true,
+      )
+      const searchShown = item.name.toLowerCase().includes(searchString.toLowerCase())
+      return categoryShown && searchShown
     })
-    setDisplayCategories(displayCategories)
-  }, [setDisplayCategories, allRelevantCategories])
+    .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+
   const selectedCategoriesCount = Object.values(displayCategories).filter(Boolean).length
   const allCategoriesSelected = selectedCategoriesCount === allRelevantCategories?.length
   const noCategoriesSelected = selectedCategoriesCount === 0
@@ -69,7 +70,7 @@ const BuyPage: NextPage = () => {
     allRelevantCategories?.forEach((category) => {
       newState[category.id] = true
     })
-    setDisplayCategories(newState)
+    setCategoryOverrides(newState)
   }
 
   const handleClearAllCategories = () => {
@@ -77,7 +78,7 @@ const BuyPage: NextPage = () => {
     allRelevantCategories?.forEach((category) => {
       newState[category.id] = false
     })
-    setDisplayCategories(newState)
+    setCategoryOverrides(newState)
   }
 
   const clearSearch = () => {
@@ -169,7 +170,7 @@ const BuyPage: NextPage = () => {
                       }`}
                       onClick={() => {
                         const id = category.id
-                        setDisplayCategories((dc) => ({ ...dc, [id]: !dc[id] }))
+                        setCategoryOverrides((dc) => ({ ...dc, [id]: !displayCategories[id] }))
                       }}
                     >
                       <span>{category.name}</span>

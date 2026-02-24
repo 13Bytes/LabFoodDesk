@@ -3,13 +3,13 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useRef, useState } from "react"
 import ActionResponsePopup, {
-  AnimationHandle,
+  type AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
 import { ConfirmationModal } from "~/components/General/ConfirmationModal"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { localStringOptions } from "~/helper/globalTypes"
-import { Tid } from "~/helper/zodTypes"
+import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 const GroupOrdersHistory: NextPage = () => {

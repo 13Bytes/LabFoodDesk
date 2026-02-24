@@ -7,7 +7,7 @@ import {
   Users,
   XCircle
 } from "lucide-react"
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import GrouporderForm from "~/components/Forms/GrouporderForm"
 import GrouporderTemplateForm from "~/components/Forms/GrouporderTemplateForm"
 import { Pagination } from "~/components/General/Pagination"
@@ -15,7 +15,7 @@ import Modal from "~/components/Layout/Modal"
 import RegularPage from "~/components/Layout/RegularPage"
 import StatCard from "~/components/PageComponents/StatsCard"
 import { localStringOptions, weekdays } from "~/helper/globalTypes"
-import { Tid } from "~/helper/zodTypes"
+import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 const GroupOrdersPage = () => {
@@ -39,14 +39,7 @@ const GroupOrdersPage = () => {
     },
   )
   const [page, setPage] = React.useState(0)
-  const [maxPage, setMaxPage] = React.useState(Infinity)
-  useEffect(() => {
-    if (!hasNextPage) {
-      setMaxPage(page)
-    } else {
-      setMaxPage(Infinity)
-    }
-  }, [setMaxPage, hasNextPage, page])
+  const maxPage = hasNextPage ? Infinity : page
 
   const [addGrouporderModalOpen, setAddGrouporderModalOpen] = useState<Tid | boolean>(false)
   const [grouporderTemplateModalOpen, setGrouporderTemplateModalOpen] = useState<Tid | boolean>(
@@ -63,7 +56,7 @@ const GroupOrdersPage = () => {
   const paidOrders = currentPageOrders.filter((o) => o.status === 5).length
   const completedOrders = currentPageOrders.filter((o) => o.status === 6).length
 
-  const LegendTemplates = () => (
+  const legendTemplatesRow = (
     <tr>
       <th className="w-12"></th>
       <th>Name</th>
@@ -73,7 +66,7 @@ const GroupOrdersPage = () => {
     </tr>
   )
 
-  const Legend = () => (
+  const legendRow = (
     <tr>
       <th>Datum</th>
       <th>Name</th>
@@ -181,7 +174,7 @@ const GroupOrdersPage = () => {
               <div className="overflow-x-auto rounded-lg border border-base-300">
                 <table className="table table-zebra">
                   <thead className="bg-base-200">
-                    <LegendTemplates />
+                    {legendTemplatesRow}
                   </thead>
                   <tbody>
                     {allOrderTemplateRequest.data?.map((item) => (
@@ -297,7 +290,7 @@ const GroupOrdersPage = () => {
               <div className="overflow-x-auto rounded-lg border border-base-300">
                 <table className="table table-zebra">
                   <thead className="bg-base-200">
-                    <Legend />
+                    {legendRow}
                   </thead>
                   <tbody>
                     {currentPageOrders.map((order) => (

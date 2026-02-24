@@ -1,6 +1,6 @@
-import { ReactNode } from "react"
-import { LucideIcon } from "lucide-react"
-import { StatCardProps } from "../PageComponents/StatsCard"
+import { type ReactNode } from "react"
+import { type LucideIcon } from "lucide-react"
+import { type StatCardProps } from "../PageComponents/StatsCard"
 import StatCard from "../PageComponents/StatsCard"
 
 interface AdminSectionCardProps {

@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useState } from "react"
+import { type PropsWithChildren, useSyncExternalStore } from "react"
 import { createPortal } from "react-dom"
 
 type Props = {
@@ -11,18 +11,18 @@ type Props = {
   proceedButtonClass?: string
 }
 export const ConfirmationModal = (props: PropsWithChildren<Props>) => {
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isClient = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  )
 
   const onProceedClick = () => {
     props.close()
     props.proceed()
   }
 
-  if (!isMounted) {
+  if (!isClient) {
     return null
   }
 

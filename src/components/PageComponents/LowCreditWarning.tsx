@@ -1,6 +1,6 @@
 import { MessageCircleWarning, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { HTMLProps } from "react";
+import { type HTMLProps } from "react";
 import { ITEM_SECURITY_DEPOSIT } from "~/helper/globalTypes";
 import { api } from "~/utils/api";
 

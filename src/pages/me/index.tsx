@@ -1,4 +1,4 @@
-import { NextPage } from "next"
+import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { Balance } from "~/components/General/Balance"

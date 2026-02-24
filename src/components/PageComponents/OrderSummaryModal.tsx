@@ -1,5 +1,5 @@
 import Modal from "~/components/Layout/Modal"
-import { RouterOutputs } from "~/utils/api"
+import { type RouterOutputs } from "~/utils/api"
 
 type Props = {
   order: RouterOutputs["groupOrders"]["getInProgress"][number]

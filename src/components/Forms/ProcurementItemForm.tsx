@@ -3,7 +3,7 @@ import { useEffect } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Tid, formCategories, id } from "~/helper/zodTypes"
+import { type Tid, formCategories, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import CategorySelector from "../FormElements/CategorySelector"
 

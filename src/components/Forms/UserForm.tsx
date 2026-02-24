@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { use, useEffect, useState } from "react"
+import { use, useState } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Tid } from "~/helper/zodTypes"
+import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 type Props = {
@@ -14,14 +14,8 @@ const UserForm = (props: Props) => {
   const trpcUtils = api.useUtils()
   const updateRequest = api.user.updateUser.useMutation()
   const userDate = api.user.getUser.useQuery({ id: props.id! }, { enabled: !!props.id })
-
-  useEffect(() => {
-    if (userDate.data) {
-      setAllowOverdraw(userDate.data.allowOverdraw)
-    }
-  }, [userDate.data, props.id ?? ""])
-
-  const [allowOverdraw, setAllowOverdraw] = useState(false)
+  const [allowOverdrawOverride, setAllowOverdrawOverride] = useState<boolean | null>(null)
+  const allowOverdraw = allowOverdrawOverride ?? userDate.data?.allowOverdraw ?? false
 
   const save = async () => {
     if (!!props.id) {
@@ -44,7 +38,7 @@ const UserForm = (props: Props) => {
               type="checkbox"
               className="checkbox"
               checked={allowOverdraw}
-              onClick={() => setAllowOverdraw((s) => !s)}
+              onClick={() => setAllowOverdrawOverride(!allowOverdraw)}
             />
           </label>
         </div>

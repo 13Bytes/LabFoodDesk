@@ -1,7 +1,7 @@
 import { type NextPage } from "next"
 import { useEffect, useRef } from "react"
 import ActionResponsePopup, {
-  AnimationHandle,
+  type AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
 import BuyItemCardBig from "~/components/General/BuyItemCardBig"

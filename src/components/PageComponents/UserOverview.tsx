@@ -3,10 +3,10 @@ import { useRef, useState } from "react"
 import { Users, UserPlus, Shield, Coins } from "lucide-react"
 import Modal from "~/components/Layout/Modal"
 import AdminSectionCard from "~/components/Layout/AdminSectionCard"
-import { Tid } from "~/helper/zodTypes"
+import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import UserForm from "../Forms/UserForm"
-import ActionResponsePopup, { AnimationHandle } from "../General/ActionResponsePopup"
+import ActionResponsePopup, { type AnimationHandle } from "../General/ActionResponsePopup"
 import { Balance } from "../General/Balance"
 
 const UserOverview = () => {
@@ -69,7 +69,7 @@ const UserOverview = () => {
     }
   ]
 
-  const Legend = () => (
+  const legendRow = (
     <tr>
       <th>Name</th>
       <th className="text-right">Guthaben</th>
@@ -96,7 +96,7 @@ const UserOverview = () => {
             <div className="overflow-x-auto rounded-lg border border-base-300">
               <table className="table table-zebra">
                 <thead className="bg-base-200">
-                  <Legend />
+                  {legendRow}
                 </thead>
                 <tbody>
                   {allUsersRequest.data?.map((user) => (
