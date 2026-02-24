@@ -3,7 +3,7 @@ import { useEffect } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Tid } from "~/helper/zodTypes"
+import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 export const addCategoryValidationSchem = z.object({

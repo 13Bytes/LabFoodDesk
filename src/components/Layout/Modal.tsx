@@ -1,4 +1,4 @@
-import { HTMLProps, useEffect, useState } from "react"
+import { type HTMLProps, useSyncExternalStore } from "react"
 import { createPortal } from "react-dom"
 
 interface Props {
@@ -18,13 +18,13 @@ export default function Modal({
     // do nothing
   },
 }: Props) {
-  const [isMounted, setIsMounted] = useState(false)
+  const isClient = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  )
 
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  if (!isMounted) {
+  if (!isClient) {
     return null
   }
 

@@ -2,13 +2,13 @@ import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
 import { z } from "zod"
 import ActionResponsePopup, {
-  AnimationHandle,
+  type AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
 import { ArrowRight, Info, Send, Wallet } from "lucide-react"
 import RegularPage from "~/components/Layout/RegularPage"
 import ClearingAccountOverview from "~/components/PageComponents/ClearingAccountOverview"
-import { Tid, id } from "~/helper/zodTypes"
+import { type Tid, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 export const sendMoneyFromClearingAccountSchema = z.object({

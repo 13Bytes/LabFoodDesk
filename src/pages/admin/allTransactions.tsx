@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Pagination } from "~/components/General/Pagination"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import TransactionList from "~/components/PageComponents/TransactionList"
@@ -6,7 +6,6 @@ import { api } from "~/utils/api"
 
 const AdminTransactionPage = () => {
   const [page, setPage] = useState(0)
-  const [maxPage, setMaxPage] = useState(Infinity)
 
   const {
     data: transactionData,
@@ -26,21 +25,7 @@ const AdminTransactionPage = () => {
     },
   )
 
-  useEffect(() => {
-    if (!hasNextPage) {
-      setMaxPage(page)
-    } else {
-      setMaxPage(Infinity)
-    }
-  }, [setMaxPage, hasNextPage])
-
-  useEffect(() => {
-    if (!hasNextPage) {
-      setMaxPage(page)
-    } else {
-      setMaxPage(Infinity)
-    }
-  }, [setMaxPage, hasNextPage])
+  const maxPage = hasNextPage ? Infinity : page
 
   return (
     <CenteredPage>

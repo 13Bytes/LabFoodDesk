@@ -38,22 +38,21 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
   const [success, setSuccess] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"credentials" | "email">("credentials")
   const router = useRouter()  // Handle NextAuth errors from query parameters
-  useEffect(() => {
-    const { error: authError } = router.query
-    if (authError && typeof authError === 'string') {
-      if (Object.keys(nextAuthErrorMessages).includes(authError)) {
-        const errorMessage = nextAuthErrorMessages[authError as keyof typeof nextAuthErrorMessages]
-        setError(errorMessage)
-      }
-      else {
-        setError(nextAuthErrorMessages.default)
-      }
+  const authError = router.query.error
+  const queryErrorMessage =
+    authError && typeof authError === "string"
+      ? nextAuthErrorMessages[authError as keyof typeof nextAuthErrorMessages] ??
+      nextAuthErrorMessages.default
+      : null
+  const visibleError = error ?? queryErrorMessage
 
+  useEffect(() => {
+    if (authError && typeof authError === "string") {
       // Clear the error from URL to prevent it from persisting
       const { error: _, ...restQuery } = router.query
       void router.replace({ pathname: router.pathname, query: restQuery }, undefined, { shallow: true })
     }
-  }, [router])
+  }, [authError, router])
 
   const isDevelopment = !isProduction
   const onCredentialsSubmit: SubmitHandler<FormData> = async (data) => {
@@ -138,10 +137,10 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
               )}
 
               {/* Error/Success Messages */}
-              {error && (
+              {visibleError && (
                 <div className="alert alert-error mb-4">
                   <XCircle className="stroke-current shrink-0 h-6 w-6" />
-                  <span>{error}</span>
+                  <span>{visibleError}</span>
                 </div>
               )}
               {success && (

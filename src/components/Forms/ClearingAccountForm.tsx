@@ -3,7 +3,7 @@ import { useEffect } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Tid } from "~/helper/zodTypes"
+import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
 export const validationSchema = z.object({
@@ -25,10 +25,6 @@ const ClearingAccountForm = (props: Props) => {
 
   type FormType = z.infer<typeof validationSchema>
 
-  useEffect(() => {
-    reset()
-  }, [props.id])
-
   const {
     register: addItemRegister,
     handleSubmit: addItemSubmit,
@@ -36,6 +32,10 @@ const ClearingAccountForm = (props: Props) => {
   } = useForm<FormType>({
     resolver: zodResolver(validationSchema),
   })
+
+  useEffect(() => {
+    reset()
+  }, [props.id])
 
   const onSubmit: SubmitHandler<FormType> = async (data) => {
     if (!!props.id) {

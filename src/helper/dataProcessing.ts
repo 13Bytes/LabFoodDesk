@@ -1,6 +1,6 @@
 import type { Category, Item, ProcurementItem } from "@prisma/client"
-import { Tid } from "./zodTypes"
-import { RouterOutputs } from "~/utils/api"
+import { type Tid } from "./zodTypes"
+import { type RouterOutputs } from "~/utils/api"
 
 /**
  * Returns all fees for a given price and categories

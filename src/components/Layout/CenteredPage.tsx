@@ -1,4 +1,4 @@
-import { HTMLProps, PropsWithChildren } from "react"
+import { type HTMLProps, type PropsWithChildren } from "react"
 import RegularPage from "./RegularPage"
 
 export default function CenteredPage(

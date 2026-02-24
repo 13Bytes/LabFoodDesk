@@ -4,7 +4,7 @@ import {
   useImperativeHandle,
   useState,
   useCallback,
-  useEffect,
+  useSyncExternalStore,
 } from "react"
 import { CheckCircle, AlertCircle } from "lucide-react"
 import { createPortal } from "react-dom"
@@ -37,14 +37,14 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
   _props,
   ref
 ) {
+  const isClient = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  )
   const [isOpen, setIsOpen] = useState(false)
   const [status, setStatus] = useState<Status>("success")
   const [message, setMessage] = useState<string>("")
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   const reset = useCallback(() => {
     setIsOpen(false)
@@ -73,7 +73,7 @@ const ActionResponsePopup = forwardRef<AnimationHandle, object>(function ActionR
   const IconComponent = status === "success" ? CheckCircle : AlertCircle
   const iconColorClass = status === "success" ? "text-green-500" : "text-red-500"
 
-  if (!isMounted) {
+  if (!isClient) {
     return null
   }
 

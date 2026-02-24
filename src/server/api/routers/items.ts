@@ -1,9 +1,9 @@
-import { Prisma, PrismaClient } from "@prisma/client"
+import { type Prisma, type PrismaClient } from "@prisma/client"
 import { z } from "zod"
 import { createItemSchema } from "~/components/Forms/ItemForm"
 import { createProcItemSchema } from "~/components/Forms/ProcurementItemForm"
 import { calculateFeesPerCategory } from "~/helper/dataProcessing"
-import { Tid, id, idObj } from "~/helper/zodTypes"
+import { type Tid, id, idObj } from "~/helper/zodTypes"
 import {
   adminProcedure,
   createTRPCRouter,

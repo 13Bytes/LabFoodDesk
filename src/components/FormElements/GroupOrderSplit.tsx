@@ -1,13 +1,12 @@
 import type { ProcurementItem } from "@prisma/client"
 import { useSession } from "next-auth/react"
-import { ChangeEvent, useEffect, useRef, useState } from "react"
+import { type ChangeEvent, useMemo, useRef, useState } from "react"
 import { z } from "zod"
 import { calculateAdditionalPricing } from "~/helper/dataProcessing"
-import { Tid, id } from "~/helper/zodTypes"
-import { RouterOutputs, api } from "~/utils/api"
-import ActionResponsePopup, { AnimationHandle, animate } from "../General/ActionResponsePopup"
+import { type Tid, id } from "~/helper/zodTypes"
+import { type RouterOutputs, api } from "~/utils/api"
+import ActionResponsePopup, { type AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { ConfirmationModal } from "../General/ConfirmationModal"
-
 
 type UserItemList = {
   [user: Tid]: {
@@ -56,6 +55,58 @@ type Props = {
   group: RouterOutputs["groupOrders"]["getInProgress"][number]
 }
 
+const buildDerivedGroupData = (group: RouterOutputs["groupOrders"]["getInProgress"][number]) => {
+  const itemList: ProcurementItem[] = []
+  const userItemList: UserItemList = {}
+  const baseSplit: Split[] = []
+
+  group.procurementWishes.forEach((element) => {
+    element.items.forEach((item) => {
+      itemList.push(item)
+      if (Object.keys(userItemList).includes(element.userId)) {
+        userItemList[element.userId]!.items.push(item)
+      } else {
+        userItemList[element.userId] = {
+          items: [item],
+          username: element.user.name ?? "",
+        }
+      }
+    })
+  })
+
+  for (const proc of group.procurementWishes) {
+    const splitIndex = baseSplit.findIndex((split) => split.user === proc.userId)
+    if (splitIndex !== -1) {
+      baseSplit[splitIndex]!.procurementWishs.push({
+        id: proc.id,
+        items: proc.items.map((item) => ({
+          item,
+          defaultCost: 0,
+          overwritenCost: undefined,
+          finalCost: 0,
+        })),
+      })
+    } else {
+      baseSplit.push({
+        user: proc.userId,
+        procurementWishs: [
+          {
+            id: proc.id,
+            items: proc.items.map((item) => ({
+              item,
+              defaultCost: 0,
+              overwritenCost: undefined,
+              finalCost: 0,
+            })),
+          },
+        ],
+      })
+    }
+  }
+
+  return { itemList, userItemList, baseSplit }
+}
+
 const GroupOrderSplit = (props: Props) => {
   const { group } = props
 
@@ -65,157 +116,97 @@ const GroupOrderSplit = (props: Props) => {
 
   const allUserRequest = api.user.getAllUsers.useQuery()
 
-  const [itemList, setItemList] = useState<ProcurementItem[]>([])
-  const [userItemList, setUserItemList] = useState<UserItemList>({})
-  const [split, setSplit] = useState<Split[]>([])
-  const [allUsersOverwritten, setAllUsersOverwritten] = useState<number | undefined>()
+  const { itemList, userItemList, baseSplit } = useMemo(() => buildDerivedGroupData(group), [group])
+
+  const [overwrittenCosts, setOverwrittenCosts] = useState<Record<Tid, number | undefined>>({})
   const [closeGroupOrderModalOpen, setCloseGroupOrderModalOpen] = useState(false)
 
   const [selectedDestination, setSelectedDestination] = useState(sessionData?.user.id.toString() ?? "")
   const [destinationError, setDestinationError] = useState(false)
-
-  // restructure data from group into (user)ItemList
-  useEffect(() => {
-    const itemList: ProcurementItem[] = []
-    const userItemList: UserItemList = {}
-    group.procurementWishes.forEach((element) => {
-      element.items.forEach((item) => {
-        itemList.push(item)
-        if (Object.keys(userItemList).includes(element.userId)) {
-          userItemList[element.userId]!.items.push(item)
-        } else {
-          userItemList[element.userId] = {
-            items: [item],
-            username: element.user.name ?? "",
-          }
-        }
-      })
-    })
-    const groupOrderSplit: Split[] = []
-    for (const proc of group.procurementWishes) {
-      const splitIndex = groupOrderSplit.findIndex((split) => split.user === proc.userId)
-      if (splitIndex !== -1) {
-        groupOrderSplit[splitIndex]!.procurementWishs.push({
-          id: proc.id,
-          items: proc.items.map((item) => ({
-            item: item,
-            defaultCost: 0,
-            overwritenCost: undefined,
-            finalCost: 0,
-          })),
-        })
-      } else {
-        groupOrderSplit.push({
-          user: proc.userId,
-          procurementWishs: [
-            {
-              id: proc.id,
-              items: proc.items.map((item) => ({
-                item,
-                defaultCost: 0,
-                overwritenCost: undefined,
-                finalCost: 0,
-              })),
-            },
-          ],
-        })
-      }
-    }
-    setSplit([...groupOrderSplit])
-    setUserItemList({ ...userItemList })
-    setItemList([...itemList])
-  }, [JSON.stringify(group)])
 
   const totalItems = itemList.length
   const [totalAmount, setTotalAmount] = useState<number>(0)
   const typeTotalAmount = (e: ChangeEvent<HTMLInputElement>) => {
     const userInput = e.currentTarget.value
     const value = parseFloat(userInput)
-    const pricePerItem = value / totalItems
     setTotalAmount(value)
-    setSplit((oldSplit) =>
-      oldSplit.map((split) => ({
-        ...split,
-        procurementWishs: split.procurementWishs.map((wish) => ({
-          ...wish,
-          items: wish.items.map((item) => ({
-            ...item,
-            defaultCost: pricePerItem,
-            overwritenCost: undefined,
-            finalCost: pricePerItem,
-          })),
-        })),
-      })),
-    )
   }
 
   const overwriteUserExpence = (
     e: ChangeEvent<HTMLInputElement>,
-    userId: Tid,
-    procID: Tid,
-    itemIndex: number,
+    itemId: Tid,
   ) => {
     const cost = parseFloat(e.currentTarget.value)
-    if (!Number.isNaN(cost)) {
-      setSplit((oldSplit) => {
-        const copy = [...oldSplit]
-        const splitIndex = copy.findIndex((split) => split.user === userId)
-        const procIndex = copy[splitIndex]!.procurementWishs.findIndex((wish) => wish.id === procID)
-        copy[splitIndex]!.procurementWishs[procIndex]!.items[itemIndex]!.overwritenCost = cost
-        return copy
-      })
-    } else {
-      setSplit((oldSplit) => {
-        const copy = [...oldSplit]
-        const splitIndex = copy.findIndex((split) => split.user === userId)
-        const procIndex = copy[splitIndex]!.procurementWishs.findIndex((wish) => wish.id === procID)
-        copy[splitIndex]!.procurementWishs[procIndex]!.items[itemIndex]!.overwritenCost = undefined
-        return copy
-      })
+    setOverwrittenCosts((previous) => ({
+      ...previous,
+      [itemId]: Number.isNaN(cost) ? undefined : cost,
+    }))
+  }
+
+  const split = useMemo(() => {
+    const defaultCost = totalItems > 0 ? totalAmount / totalItems : 0
+
+    const splitWithDefaults = baseSplit.map((userContent) => ({
+      ...userContent,
+      procurementWishs: userContent.procurementWishs.map((proc) => ({
+        ...proc,
+        items: proc.items.map((item) => ({
+          ...item,
+          defaultCost,
+          overwritenCost: overwrittenCosts[item.item.id],
+          finalCost: defaultCost,
+        })),
+      })),
+    }))
+
+    let overwrittenItems = 0
+    let overwrittenItemsSum = 0
+
+    for (const userContent of splitWithDefaults) {
+      for (const proc of userContent.procurementWishs) {
+        for (const item of proc.items) {
+          if (item.overwritenCost !== undefined) {
+            overwrittenItemsSum += item.overwritenCost
+            overwrittenItems += 1
+          }
+        }
+      }
     }
-    updateFinalCost()
-  }
 
-  const updateFinalCost = () => {
-    setSplit((oldSplit) => {
-      let overwrittenItems = 0
-      let overwrittenItemsSum = 0
+    const remainingItems = totalItems - overwrittenItems
+    const pricePerRemainingItem =
+      totalAmount - overwrittenItemsSum > 0 && remainingItems > 0
+        ? (totalAmount - overwrittenItemsSum) / remainingItems
+        : 0
 
-      for (const userContent of oldSplit) {
-        for (const proc of userContent.procurementWishs) {
-          for (const item of proc.items) {
-            if (item.overwritenCost !== undefined) {
-              overwrittenItemsSum += item.overwritenCost
-              overwrittenItems += 1
-            }
+    return splitWithDefaults.map((userContent) => ({
+      ...userContent,
+      procurementWishs: userContent.procurementWishs.map((proc) => ({
+        ...proc,
+        items: proc.items.map((item) => ({
+          ...item,
+          finalCost: item.overwritenCost ?? pricePerRemainingItem,
+        })),
+      })),
+    }))
+  }, [baseSplit, overwrittenCosts, totalAmount, totalItems])
+
+  const allUsersOverwritten = useMemo(() => {
+    let overwrittenItemsSum = 0
+    for (const userContent of split) {
+      for (const proc of userContent.procurementWishs) {
+        for (const item of proc.items) {
+          if (item.overwritenCost !== undefined) {
+            overwrittenItemsSum += item.overwritenCost
           }
         }
       }
-      setAllUsersOverwritten(overwrittenItemsSum > totalAmount ? overwrittenItemsSum : undefined)
-      const pricePerRemainingItem =
-        totalAmount - overwrittenItemsSum > 0
-          ? (totalAmount - overwrittenItemsSum) / (totalItems - overwrittenItems)
-          : 0
-      const copy = [...oldSplit]
-      for (const [userIndex, userContent] of copy.entries()) {
-        for (const [procIndex, proc] of userContent.procurementWishs.entries()) {
-          for (const [itemIndex, item] of proc.items.entries()) {
-            if (item.overwritenCost !== undefined) {
-              copy[userIndex]!.procurementWishs[procIndex]!.items[itemIndex]!.finalCost =
-                item.overwritenCost
-            } else {
-              copy[userIndex]!.procurementWishs[procIndex]!.items[itemIndex]!.finalCost =
-                pricePerRemainingItem
-            }
-          }
-        }
-      }
-      return copy
-    })
-  }
+    }
+    return overwrittenItemsSum > totalAmount ? overwrittenItemsSum : undefined
+  }, [split, totalAmount])
 
   const closeGroupOrderRequest = api.groupOrders.close.useMutation()
-  
+
   const closeGroupOrder = async () => {
     if (!selectedDestination) {
       setDestinationError(true)
@@ -293,7 +284,7 @@ const GroupOrderSplit = (props: Props) => {
             <tbody>
               {split.map((userContent) =>
                 userContent.procurementWishs.map((proc) =>
-                  proc.items.map((item, itemIndex) => (
+                  proc.items.map((item) => (
                     <tr key={userContent.user}>
                       <th>{userItemList[userContent.user]?.username}</th>
                       <td>{item.item.name}</td>
@@ -315,9 +306,7 @@ const GroupOrderSplit = (props: Props) => {
                           step={0.01}
                           min={0}
                           value={item.overwritenCost || ""}
-                          onChange={(e) =>
-                            overwriteUserExpence(e, userContent.user, proc.id, itemIndex)
-                          }
+                          onChange={(e) => overwriteUserExpence(e, item.item.id)}
                           className="input input-sm input-bordered max-w-[6rem]"
                         />
                       </td>

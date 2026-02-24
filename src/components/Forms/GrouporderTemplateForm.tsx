@@ -4,7 +4,7 @@ import { z } from "zod"
 import { weekdays } from "~/helper/globalTypes"
 import { api } from "~/utils/api"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Tid } from "~/helper/zodTypes"
+import { type Tid } from "~/helper/zodTypes"
 import { useEffect } from "react"
 import { getTimeFromDateString } from "~/helper/dataProcessing"
 

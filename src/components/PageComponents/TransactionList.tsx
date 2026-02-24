@@ -1,4 +1,4 @@
-import { api, RouterInputs, RouterOutputs } from "~/utils/api"
+import { api, type RouterInputs, type RouterOutputs } from "~/utils/api"
 import { Receipt, User, Target, Wallet, Calendar, Ban, AlertCircle } from "lucide-react"
 import { localStringOptions } from "~/helper/globalTypes"
 import CSVParser from 'papaparse';
@@ -32,7 +32,7 @@ const getTransactionTypeLabel = (type: number): string => {
 
 
 const TransactionList = (props: Props) => {
-  const Legend = () => (
+  const legendRow = (
     <tr>
       <th>Datum & Zeit</th>
       <th>Typ</th>
@@ -127,7 +127,7 @@ const TransactionList = (props: Props) => {
         <div className="hidden lg:block overflow-x-auto rounded-lg border border-base-300">
           <table className="table table-zebra">
             <thead className="bg-base-200">
-              <Legend />
+              {legendRow}
             </thead>
             <tbody>
               {props.transactions.map((row) => (
