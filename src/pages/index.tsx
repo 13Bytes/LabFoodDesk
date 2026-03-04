@@ -1,10 +1,11 @@
+import { CheckCircle, Github, Info, XCircle } from "lucide-react"
 import { type GetServerSidePropsContext, type InferGetServerSidePropsType, type NextPage } from "next"
-import { getProviders, getSession, signIn } from "next-auth/react"
+import { getProviders, signIn } from "next-auth/react"
 import { useRouter } from "next/router"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
-import { Github, Info, XCircle, CheckCircle } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
+import { getServerAuthSession } from "~/server/auth"
 
 // NextAuth error messages (https://next-auth.js.org/configuration/pages)
 // get thrown as query parameters in the URL
@@ -280,7 +281,10 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getSession(context)
+  const { req, res } = context;
+  // Get the session from the server using the getServerSession wrapper function
+  const session = await getServerAuthSession({ req, res });
+
   // If user is already logged in, redirect
   if (session) {
     return {
