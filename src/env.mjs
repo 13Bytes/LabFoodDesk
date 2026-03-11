@@ -14,7 +14,7 @@ const server = z.object({
     // Since NextAuth.js automatically uses the VERCEL_URL if present.
     (str) => process.env.VERCEL_URL ?? str,
     // VERCEL_URL doesn't include `https` so it cant be validated as a URL
-    process.env.VERCEL ? z.string().min(1) : z.string().url()
+    process.env.VERCEL ? z.string().min(1) : z.string().url(),
   ),
 
   DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK: z.string().default("false"),
@@ -24,6 +24,10 @@ const server = z.object({
   LDAP_BIND_PASSWORT: z.string(),
   LDAP_SEARCH_BASE: z.string(),
   LDAP_ADMIN_GROUP: z.string(),
+
+  KEYCLOAK_ISSUER: z.string().url().optional(),
+  KEYCLOAK_CLIENT_ID: z.string().optional(),
+  KEYCLOAK_CLIENT_SECRET: z.string().optional(),
 
   // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
   EMAIL_SERVER_USER: z.string().optional(),
@@ -48,7 +52,7 @@ const client = z.object({
  *
  * @type {Record<keyof z.infer<typeof server> | keyof z.infer<typeof client>, string | undefined>}
  */
-// const envProvider = process.env 
+// const envProvider = process.env
 const processEnv = {
   DATABASE_URL: process.env.DATABASE_URL,
   NODE_ENV: process.env.NODE_ENV,
@@ -56,9 +60,12 @@ const processEnv = {
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   LDAP_URL: process.env.LDAP_URL,
   LDAP_BIND_USER: process.env.LDAP_BIND_USER,
-  LDAP_BIND_PASSWORT:process.env.LDAP_BIND_PASSWORT,
-  LDAP_SEARCH_BASE:process.env.LDAP_SEARCH_BASE,
-  LDAP_ADMIN_GROUP:process.env.LDAP_ADMIN_GROUP,
+  LDAP_BIND_PASSWORT: process.env.LDAP_BIND_PASSWORT,
+  LDAP_SEARCH_BASE: process.env.LDAP_SEARCH_BASE,
+  LDAP_ADMIN_GROUP: process.env.LDAP_ADMIN_GROUP,
+  KEYCLOAK_ISSUER: process.env.KEYCLOAK_ISSUER,
+  KEYCLOAK_CLIENT_ID: process.env.KEYCLOAK_CLIENT_ID,
+  KEYCLOAK_CLIENT_SECRET: process.env.KEYCLOAK_CLIENT_SECRET,
   DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK: process.env.DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK,
   EMAIL_SERVER_USER: process.env.EMAIL_SERVER_USER,
   EMAIL_SERVER_PASSWORD: process.env.EMAIL_SERVER_PASSWORD,

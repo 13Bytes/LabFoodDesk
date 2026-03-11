@@ -64,6 +64,7 @@ Create DB Migrations (for production)
 `npx prisma migrate dev`
 
 ### Open ToDos
+- OAuth-Accounts not the same as LDAP ones
 - Automatisches abmelden aller Accounts nach update (via changes)
 - Android Zahlentastatur Komma ausgeblendet
 #### Nice Improvements:

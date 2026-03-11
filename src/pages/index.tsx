@@ -1,11 +1,10 @@
 import { CheckCircle, Github, Info, XCircle } from "lucide-react"
 import { type GetServerSidePropsContext, type InferGetServerSidePropsType, type NextPage } from "next"
-import { getProviders, signIn } from "next-auth/react"
+import { signIn } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import CenteredPage from "~/components/Layout/CenteredPage"
-import { getServerAuthSession } from "~/server/auth"
 
 // NextAuth error messages (https://next-auth.js.org/configuration/pages)
 // get thrown as query parameters in the URL
@@ -31,13 +30,15 @@ type FormData = {
 
 type HomeProps = InferGetServerSidePropsType<typeof getServerSideProps> & {
   isProduction: boolean
+  keycloakEnabled: boolean
+  ldapEnabled: boolean
 }
 
-const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
+const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled }) => {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"credentials" | "email">("credentials")
+  const [activeTab, setActiveTab] = useState<"credentials" | "email" | "keycloak">("credentials")
   const router = useRouter()  // Handle NextAuth errors from query parameters
   const authError = router.query.error
   const queryErrorMessage =
@@ -50,7 +51,8 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
   useEffect(() => {
     if (authError && typeof authError === "string") {
       // Clear the error from URL to prevent it from persisting
-      const { error: _, ...restQuery } = router.query
+      const restQuery = { ...router.query }
+      delete restQuery.error
       void router.replace({ pathname: router.pathname, query: restQuery }, undefined, { shallow: true })
     }
   }, [authError, router])
@@ -66,7 +68,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
         redirect: false,
       })
 
-      if(result?.ok) {
+      if (result?.ok) {
         void router.push("/buy")
       }
       else if (result?.error) {
@@ -97,7 +99,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
       } else if (result?.ok) {
         setSuccess("Ein Magic Link wurde in der Serverkonsole generiert.")
       }
-    } catch (err) {
+    } catch {
       setError(nextAuthErrorMessages.default)
     }
   }
@@ -120,22 +122,32 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
           <div className="card bg-base-200 shadow-xl">
             <div className="card-body">
               {/* Tab Navigation (only show if both methods are available) */}
-              {isDevelopment && (
-                <div className="tabs tabs-boxed mb-6">
+              <div className="tabs tabs-boxed mb-6">
+                {ldapEnabled && (
                   <button
                     className={`tab tab-lg flex-1 ${activeTab === "credentials" ? "tab-active" : ""}`}
                     onClick={() => setActiveTab("credentials")}
                   >
+                    Credentials
+                  </button>
+                )}
+                {keycloakEnabled && (
+                  <button
+                    className={`tab tab-lg flex-1 ${activeTab === "keycloak" ? "tab-active" : ""}`}
+                    onClick={() => setActiveTab("keycloak")}
+                  >
                     ASL Account
                   </button>
+                )}
+                {isDevelopment && (
                   <button
                     className={`tab tab-lg flex-1 ${activeTab === "email" ? "tab-active" : ""}`}
                     onClick={() => setActiveTab("email")}
                   >
                     Server Konsole
                   </button>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Error/Success Messages */}
               {visibleError && (
@@ -205,7 +217,7 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
               )}
 
               {/* Magic Link Login Form (Development only) */}
-              {isDevelopment && activeTab === "email" && (
+              {activeTab === "email" && (
                 <form onSubmit={handleSubmit(onEmailSubmit)} className="space-y-4">
                   <div className="alert alert-info">
                     <Info className="h-6 w-6" />
@@ -249,6 +261,22 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
                 </form>
               )}
 
+              {activeTab === "keycloak" && (
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    className="btn btn-outline w-full"
+                    onClick={() =>
+                      void signIn("keycloak", {
+                        callbackUrl: new URL("/buy", window.location.origin).toString(),
+                      })
+                    }
+                  >
+                    ASL Account
+                  </button>
+                </div>
+              )}
+
               {/* Info Section */}
               <div className="divider"></div>
               <div className="text-center">
@@ -283,8 +311,9 @@ const Home: NextPage<HomeProps> = ({ providers, isProduction }) => {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { req, res } = context;
   // Get the session from the server using the getServerSession wrapper function
-  const session = await getServerAuthSession({ req, res });
+  const { getServerAuthSession, keycloakEnabled, ldapEnabled } = await import("~/server/auth")
 
+  const session = await getServerAuthSession({ req, res });
   // If user is already logged in, redirect
   if (session) {
     return {
@@ -295,11 +324,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const providers = await getProviders()
   return {
     props: {
-      providers: providers ?? {},
       isProduction: process.env.NODE_ENV === "production",
+      keycloakEnabled,
+      ldapEnabled,
     },
   }
 }
