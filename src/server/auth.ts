@@ -59,7 +59,7 @@ const extendedPrismaAdapter: Adapter = {
   ...prismaAdapter,
   async linkAccount(account: AdapterAccount) {
     if (!prismaAdapter.linkAccount)
-      throw new Error("NextAuth: prismaAdapter.linkAccount not implemented");
+      throw new Error("NextAuth: prismaAdapter.linkAccount not implemented")
 
     // Keycloak returns incompatible data with the nextjs-auth schema
     // (refresh_expires_in and not-before-policy).
@@ -67,10 +67,10 @@ const extendedPrismaAdapter: Adapter = {
     // So, we need to remove this data from the payload before linking an account.
     // https://github.com/nextauthjs/next-auth/issues/7655
     if (account.provider === "keycloak") {
-      delete account["not-before-policy"];
+      delete account["not-before-policy"]
     }
 
-    await prismaAdapter.linkAccount(account);
+    await prismaAdapter.linkAccount(account)
   },
 }
 
