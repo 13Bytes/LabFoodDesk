@@ -38,7 +38,7 @@ const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"credentials" | "email" | "keycloak">("keycloak")
+  const [activeTab, setActiveTab] = useState<"credentials" | "email" | "keycloak">(keycloakEnabled ? "keycloak" : "credentials")
   const router = useRouter()  // Handle NextAuth errors from query parameters
   const authError = router.query.error
   const queryErrorMessage =
@@ -164,7 +164,7 @@ const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled 
               )}
 
               {/* LDAP/Credentials Login Form */}
-              {(activeTab === "credentials" || isProduction) && (
+              {activeTab === "credentials" && (
                 <form onSubmit={handleSubmit(onCredentialsSubmit)} className="space-y-4">
                   <div className="form-control">
                     <label className="label">
@@ -313,7 +313,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // Get the session from the server using the getServerSession wrapper function
   const { getServerAuthSession, keycloakEnabled, ldapEnabled } = await import("~/server/auth")
 
-  const session = await getServerAuthSession({ req, res });
+  const session = await getServerAuthSession({ req, res })
   // If user is already logged in, redirect
   if (session) {
     return {

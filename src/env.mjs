@@ -19,11 +19,11 @@ const server = z.object({
 
   DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK: z.string().default("false"),
 
-  LDAP_URL: z.string(),
-  LDAP_BIND_USER: z.string(),
-  LDAP_BIND_PASSWORT: z.string(),
-  LDAP_SEARCH_BASE: z.string(),
-  LDAP_ADMIN_GROUP: z.string(),
+  LDAP_URL: z.string().optional(),
+  LDAP_BIND_USER: z.string().optional(),
+  LDAP_BIND_PASSWORT: z.string().optional(),
+  LDAP_SEARCH_BASE: z.string().optional(),
+  LDAP_ADMIN_GROUP: z.string().optional(),
 
   KEYCLOAK_ISSUER: z.string().url().optional(),
   KEYCLOAK_CLIENT_ID: z.string().optional(),

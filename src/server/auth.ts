@@ -126,19 +126,18 @@ export const authOptions: NextAuthOptions = {
           clientSecret: env.KEYCLOAK_CLIENT_SECRET!,
           issuer: env.KEYCLOAK_ISSUER!,
           profile(profile) {
-            const uidNumber = String(profile.uidNumber)
+            const uidNumber = profile.uidNumber
             const isAdmin = Array.isArray(profile.groups) &&
               profile.groups.some(
                 (group) => typeof group === "string" && group.toUpperCase() === "LABEATS_ADMIN",
               )
             const user = {
-              id: uidNumber ?? String(profile.sub),
+              id: uidNumber ? String(uidNumber) : String(profile.sub),
               name: profile.name ?? profile.preferred_username ?? null,
               email: profile.email,
               image: null,
               is_admin: isAdmin,
             } as User
-            console.log("Keycloak profile:", JSON.stringify(profile))
             return user
           },
           // allowDangerousEmailAccountLinking: true,
