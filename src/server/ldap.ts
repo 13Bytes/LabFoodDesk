@@ -3,11 +3,12 @@ import { type User } from "next-auth"
 import fs from "node:fs"
 import path from "node:path"
 import { env } from "~/env.mjs"
+import { ldapEnabled } from "./auth"
 import { prisma } from "./db"
 
 const ldapCert = fs.readFileSync(path.resolve(process.cwd(), `./LDAP-ca.crt`))
 export const clientOptions = {
-  url: env.LDAP_URL,
+  url: env.LDAP_URL!,
   tlsOptions: {
     ca: [ldapCert],
   },
@@ -18,15 +19,20 @@ export const manageLdapLogin = (
   usernameRaw: string | undefined,
   password: string | undefined,
 ): Promise<User | null> => {
+  if (!ldapEnabled) {
+    console.error("LDAP: Error: Not all required LDAP environment variables set - check your .env file!")
+    return Promise.resolve(null)
+  }
+
   const username = usernameRaw?.toLowerCase()
-  
+
   if (!username || !password) {
-    console.log("LDAP: Error: Username or password blank")
+    console.error("LDAP: Error: Username or password blank")
     return Promise.resolve(null)
   }
   const safeLdapRegex = /^[\w\.-]*$/g
   if (!username.match(safeLdapRegex)) {
-    console.log("LDAP injection-attack detected - Nice try : )")
+    console.error("LDAP injection-attack detected - Nice try : )")
     return Promise.resolve(null)
   }
   return new Promise(async (resolve) => {
@@ -35,8 +41,8 @@ export const manageLdapLogin = (
 
     try {
       console.info("Starting bind of search-user....")
-      await searchUser.bind(env.LDAP_BIND_USER, env.LDAP_BIND_PASSWORT)
-      const { searchEntries } = await searchUser.search(env.LDAP_SEARCH_BASE, {
+      await searchUser.bind(env.LDAP_BIND_USER!, env.LDAP_BIND_PASSWORT!)
+      const { searchEntries } = await searchUser.search(env.LDAP_SEARCH_BASE!, {
         filter: `(&(objectClass=organizationalPerson)(sAMAccountName=${username}))`,
       })
       if (searchEntries.length === 0 || !searchEntries[0]) {
