@@ -5,14 +5,15 @@ import {
   type DefaultSession,
   type DefaultUser,
   type NextAuthOptions,
+  type User,
 } from "next-auth"
+import type { Adapter, AdapterAccount } from "next-auth/adapters"
 import CredentialsProvider from "next-auth/providers/credentials"
 import EmailProvider from "next-auth/providers/email"
 import KeycloakProvider from "next-auth/providers/keycloak"
 import { env } from "~/env.mjs"
 import { prisma } from "~/server/db"
 import { manageLdapLogin } from "./ldap"
-import { Adapter, AdapterAccount } from "next-auth/adapters"
 
 export const keycloakEnabled =
   !!env.KEYCLOAK_ISSUER &&
@@ -105,17 +106,17 @@ export const authOptions: NextAuthOptions = {
   providers: [
     ...(ldapEnabled ? [
       CredentialsProvider({
-      name: "ASL-Account",
-      credentials: {
-        username: { label: "ASL-Username", type: "text", placeholder: "sally.ride" },
-        password: { label: "Password", type: "password", placeholder: "sUper $ecr3t" },
-      },
+        name: "ASL-Account",
+        credentials: {
+          username: { label: "ASL-Username", type: "text", placeholder: "sally.ride" },
+          password: { label: "Password", type: "password", placeholder: "sUper $ecr3t" },
+        },
         async authorize(credentials, _req) {
-        if (!credentials || credentials.username.length <= 1 || credentials.password.length <= 1) {
-          return null
-        }
-        return manageLdapLogin(credentials?.username, credentials?.password)
-      },
+          if (!credentials || credentials.username.length <= 1 || credentials.password.length <= 1) {
+            return null
+          }
+          return manageLdapLogin(credentials?.username, credentials?.password)
+        },
       })
     ] : []),
     ...(keycloakEnabled
@@ -124,31 +125,47 @@ export const authOptions: NextAuthOptions = {
           clientId: env.KEYCLOAK_CLIENT_ID!,
           clientSecret: env.KEYCLOAK_CLIENT_SECRET!,
           issuer: env.KEYCLOAK_ISSUER!,
-          allowDangerousEmailAccountLinking: true,
+          profile(profile) {
+            const uidNumber = String(profile.uidNumber)
+            const isAdmin = Array.isArray(profile.groups) &&
+              profile.groups.some(
+                (group) => typeof group === "string" && group.toUpperCase() === "LABEATS_ADMIN",
+              )
+            const user = {
+              id: uidNumber ?? String(profile.sub),
+              name: profile.name ?? profile.preferred_username ?? null,
+              email: profile.email,
+              image: null,
+              is_admin: isAdmin,
+            } as User
+            console.log("Keycloak profile:", JSON.stringify(profile))
+            return user
+          },
+          // allowDangerousEmailAccountLinking: true,
         }),
       ]
       : []),
     ...(env.NODE_ENV === "development"
       ? [
-          EmailProvider({
-            server: {
-              host: env.EMAIL_SERVER_HOST,
-              port: env.EMAIL_SERVER_PORT,
-              auth: {
-                user: env.EMAIL_SERVER_USER,
-                pass: env.EMAIL_SERVER_PASSWORD,
-              },
+        EmailProvider({
+          server: {
+            host: env.EMAIL_SERVER_HOST,
+            port: env.EMAIL_SERVER_PORT,
+            auth: {
+              user: env.EMAIL_SERVER_USER,
+              pass: env.EMAIL_SERVER_PASSWORD,
             },
-            ...(env.EMAIL_DEV_PRINT_TOKEN === "true" && env.NODE_ENV === "development" && {
-              sendVerificationRequest(params) {
-                console.log("\n", "=".repeat(40))
-                console.log(`🔗 Verification URL: ${params.url}`)
-                console.log("=".repeat(40), "\n")
-              },
-            }),
-            from: env.EMAIL_FROM,
+          },
+          ...(env.EMAIL_DEV_PRINT_TOKEN === "true" && env.NODE_ENV === "development" && {
+            sendVerificationRequest(params) {
+              console.log("\n", "=".repeat(40))
+              console.log(`🔗 Verification URL: ${params.url}`)
+              console.log("=".repeat(40), "\n")
+            },
           }),
-        ]
+          from: env.EMAIL_FROM,
+        }),
+      ]
       : []),
   ],
 }

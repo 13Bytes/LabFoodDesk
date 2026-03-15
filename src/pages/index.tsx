@@ -38,7 +38,7 @@ const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"credentials" | "email" | "keycloak">("credentials")
+  const [activeTab, setActiveTab] = useState<"credentials" | "email" | "keycloak">("keycloak")
   const router = useRouter()  // Handle NextAuth errors from query parameters
   const authError = router.query.error
   const queryErrorMessage =
@@ -123,20 +123,20 @@ const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled 
             <div className="card-body">
               {/* Tab Navigation (only show if both methods are available) */}
               <div className="tabs tabs-boxed mb-6">
-                {ldapEnabled && (
-                  <button
-                    className={`tab tab-lg flex-1 ${activeTab === "credentials" ? "tab-active" : ""}`}
-                    onClick={() => setActiveTab("credentials")}
-                  >
-                    Credentials
-                  </button>
-                )}
                 {keycloakEnabled && (
                   <button
                     className={`tab tab-lg flex-1 ${activeTab === "keycloak" ? "tab-active" : ""}`}
                     onClick={() => setActiveTab("keycloak")}
                   >
                     ASL Account
+                  </button>
+                )}
+                {ldapEnabled && (
+                  <button
+                    className={`tab tab-lg flex-1 ${activeTab === "credentials" ? "tab-active" : ""}`}
+                    onClick={() => setActiveTab("credentials")}
+                  >
+                    Credentials
                   </button>
                 )}
                 {isDevelopment && (
@@ -272,7 +272,7 @@ const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled 
                       })
                     }
                   >
-                    ASL Account
+                    Login mit ASL Account
                   </button>
                 </div>
               )}
