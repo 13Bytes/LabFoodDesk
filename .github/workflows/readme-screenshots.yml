@@ -49,7 +49,7 @@ jobs:
         run: npm run build
 
       - name: Generate screenshots
-        run: npm run screenshots
+        run: npm run screenshots:ci
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

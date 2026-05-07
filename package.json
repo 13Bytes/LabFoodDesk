@@ -9,13 +9,13 @@
     "lint": "eslint .",
     "start": "next start",
     "test": "vitest",
-    "screenshots": "npm run screenshots:seed && npm run screenshots:capture",
-    "screenshots:seed": "jiti scripts/screenshots/seed.ts",
-    "screenshots:capture": "jiti scripts/screenshots/capture.ts",
+    "screenshots": "jiti scripts/screenshots/capture.ts",
+    "screenshots:ci": "npm run db:seed && npm run screenshots:capture",
     "db:generate": "prisma generate",
     "db:migrate": "npx prisma migrate dev",
     "db:push": "npx prisma db push",
-    "db:studio": "npx prisma studio"
+    "db:studio": "npx prisma studio",
+    "db:seed": "jiti scripts/screenshots/seed.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.0.3",
