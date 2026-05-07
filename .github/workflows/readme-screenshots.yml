@@ -1,0 +1,64 @@
+name: Publish README screenshots
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      DATABASE_URL: file:./screenshots.db
+      SCREENSHOT_DATABASE_URL: file:./screenshots.db
+      NEXTAUTH_SECRET: screenshot-secret-for-ci-only
+      NEXTAUTH_URL: http://localhost:3010
+      EMAIL_DEV_PRINT_TOKEN: "true"
+      DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK: "true"
+      SCREENSHOT_OUTPUT_DIR: public-readme/screenshots
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Generate screenshots
+        run: npm run screenshots
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: public-readme
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

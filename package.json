@@ -9,6 +9,9 @@
     "lint": "eslint .",
     "start": "next start",
     "test": "vitest",
+    "screenshots": "npm run screenshots:seed && npm run screenshots:capture",
+    "screenshots:seed": "jiti scripts/screenshots/seed.ts",
+    "screenshots:capture": "jiti scripts/screenshots/capture.ts",
     "db:generate": "prisma generate",
     "db:migrate": "npx prisma migrate dev",
     "db:push": "npx prisma db push",
@@ -44,6 +47,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.3",
     "@hookform/devtools": "^4.3.1",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/typography": "^0.5.13",
     "@types/eslint": "^8.56.10",
     "@types/ldapjs": "^3.0.6",

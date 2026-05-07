@@ -24,6 +24,9 @@ next-env.d.ts
 # misc
 .DS_Store
 *.pem
+public-readme/
+prisma/screenshots.db
+prisma/screenshots.db-journal
 
 # debug
 npm-debug.log*
