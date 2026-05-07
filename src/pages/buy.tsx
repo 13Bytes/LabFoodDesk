@@ -59,7 +59,12 @@ const BuyPage: NextPage = () => {
       const searchShown = item.name.toLowerCase().includes(searchString.toLowerCase())
       return categoryShown && searchShown
     })
-    .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+    .sort((a, b) => {
+      if (a.userOrderCount !== b.userOrderCount) {
+        return b.userOrderCount - a.userOrderCount
+      }
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+    })
 
   const selectedCategoriesCount = Object.values(displayCategories).filter(Boolean).length
   const allCategoriesSelected = selectedCategoriesCount === allRelevantCategories?.length

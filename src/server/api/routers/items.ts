@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto"
 import { type Prisma, type PrismaClient } from "@prisma/client"
 import { z } from "zod"
 import { createItemSchema } from "~/components/Forms/ItemForm"
@@ -31,11 +32,23 @@ export const itemRouter = createTRPCRouter({
     })
   }),
 
-  getBuyable: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.item.findMany({
+  getBuyable: protectedProcedure.query(async ({ ctx }) => {
+    const items = await ctx.prisma.item.findMany({
       where: { is_active: true, for_grouporders: false },
       include: { categories: true },
     })
+    const groupedOrders = await ctx.prisma.itemCategoryMapping.groupBy({
+      by: ["canonicalItemId"],
+      where: { Transaction: { userId: ctx.session.user.id, canceled: false, type: 0 } },
+      _count: { _all: true },
+    })
+    const orderCountByCanonicalItemId = new Map(
+      groupedOrders.map((groupedOrder) => [groupedOrder.canonicalItemId, groupedOrder._count._all]),
+    )
+    return items.map((item) => ({
+      ...item,
+      userOrderCount: orderCountByCanonicalItemId.get(item.canonicalItemId) ?? 0,
+    }))
   }),
 
 
@@ -49,8 +62,11 @@ export const itemRouter = createTRPCRouter({
         })
       }),
     )
-    const item = await prisma.item.create({
+    const canonicalItemId = randomUUID()
+    return await ctx.prisma.item.create({
       data: {
+        canonicalItemId,
+        id: canonicalItemId,
         name: input.name,
         price: input.price,
         account: { connect: { id: input.account } },
@@ -59,7 +75,6 @@ export const itemRouter = createTRPCRouter({
         for_grouporders: input.for_grouporders,
       },
     })
-    return item
   }),
 
   updateItem: adminProcedure
@@ -75,11 +90,16 @@ export const itemRouter = createTRPCRouter({
         }),
       )
       const { id, ...inputData } = input
+      const existingItem = await prisma.item.findUniqueOrThrow({
+        where: { id },
+        select: { canonicalItemId: true },
+      })
       await prisma.$transaction([
         prisma.item.update({ where: { id: input.id }, data: { is_active: false } }),
         prisma.item.create({
           data: {
             ...inputData,
+            canonicalItemId: existingItem.canonicalItemId,
             account: { connect: { id: input.account } },
             categories: { connect: categories.map((category) => ({ id: category.id })) },
           },
@@ -210,6 +230,7 @@ export const buyItem = async (
         create: [
           {
             item: { connect: { id: product.id } },
+            canonicalItemId: product.canonicalItemId,
             categories: {
               connect: product.categories.map((category) => ({ id: category.id })),
             },

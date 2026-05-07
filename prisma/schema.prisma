@@ -21,6 +21,7 @@ model Item {
     // items must be immutable and shouldn't be deleted (if transactions exists) 
     // - create copy instead and set is_active=false
     id              String                @id @default(cuid())
+    canonicalItemId String
     name            String
     categories      Category[]
     price           Float
@@ -29,6 +30,7 @@ model Item {
     is_active       Boolean               @default(true)
     for_grouporders Boolean               @default(false)
     accountId       String
+    @@index([canonicalItemId])
 }
 
 model ProcurementItem {
@@ -107,11 +109,13 @@ model ClearingAccount {
 model ItemCategoryMapping {
     id         String     @id @default(cuid())
     item       Item       @relation(fields: [itemId], references: [id])
+    canonicalItemId String
     categories Category[]
 
     Transaction   Transaction @relation(fields: [transactionId], references: [id])
     itemId        String
     transactionId String
+    @@index([canonicalItemId])
 }
 
 model ProcurementItemBilling {
