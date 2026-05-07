@@ -87,7 +87,7 @@ async function loginWithMagicLink(page: Page, server: ScreenshotServer) {
 
 async function capturePage(page: Page, route: string, fileName: string) {
   await page.goto(`${baseUrl}${route}`, { waitUntil: "networkidle" })
-  await page.screenshot({ path: path.join(outputDir, fileName), fullPage: true })
+  await page.screenshot({ path: path.join(outputDir, fileName) })
 }
 
 const server = startServer()
