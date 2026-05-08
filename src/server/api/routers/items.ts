@@ -42,12 +42,31 @@ export const itemRouter = createTRPCRouter({
       where: { Transaction: { userId: ctx.session.user.id, canceled: false, type: 0 } },
       _count: { _all: true },
     })
+    const recentOrders = await ctx.prisma.itemCategoryMapping.findMany({
+      where: { Transaction: { userId: ctx.session.user.id, canceled: false, type: 0 } },
+      select: {
+        canonicalItemId: true,
+        Transaction: {
+          select: {
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: { Transaction: { createdAt: "desc" } },
+    })
     const orderCountByCanonicalItemId = new Map(
       groupedOrders.map((groupedOrder) => [groupedOrder.canonicalItemId, groupedOrder._count._all]),
     )
+    const lastBoughtAtByCanonicalItemId = new Map<string, Date>()
+    recentOrders.forEach((order) => {
+      if (!lastBoughtAtByCanonicalItemId.has(order.canonicalItemId)) {
+        lastBoughtAtByCanonicalItemId.set(order.canonicalItemId, order.Transaction.createdAt)
+      }
+    })
     return items.map((item) => ({
       ...item,
       userOrderCount: orderCountByCanonicalItemId.get(item.canonicalItemId) ?? 0,
+      userLastBoughtAt: lastBoughtAtByCanonicalItemId.get(item.canonicalItemId) ?? null,
     }))
   }),
 

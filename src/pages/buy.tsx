@@ -9,6 +9,8 @@ import BuyItemCard from "~/components/General/BuyItemCard"
 import RegularPage from "~/components/Layout/RegularPage"
 import { api } from "~/utils/api"
 
+type SortMode = "recent" | "alphabetic" | "mostBought"
+
 const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
   const allCategoriesRequest = api.category.getAllWithItems.useQuery()
@@ -16,6 +18,7 @@ const BuyPage: NextPage = () => {
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
   const [searchString, setSearchString] = useState("")
+  const [sortMode, setSortMode] = useState<SortMode>("recent")
   const [categoryOverrides, setCategoryOverrides] = useState<{ [index: string]: boolean }>({})
 
   const apiBuyOneItemMultiple = api.item.buyItem.useMutation()
@@ -29,6 +32,7 @@ const BuyPage: NextPage = () => {
         : `${quantity}x erfolgreich gekauft!`
       animate(animationRef, "success", message)
       await trpcUtils.user.invalidate()
+      await trpcUtils.item.getBuyable.invalidate()
     } catch (error: any) {
       console.error(error)
       animate(animationRef, "failure", error.message)
@@ -60,10 +64,25 @@ const BuyPage: NextPage = () => {
       return categoryShown && searchShown
     })
     .sort((a, b) => {
-      if (a.userOrderCount !== b.userOrderCount) {
-        return b.userOrderCount - a.userOrderCount
+      const nameComparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+
+      if (sortMode === "alphabetic") {
+        return nameComparison
       }
-      return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+      else if (sortMode === "mostBought") {
+        if (a.userOrderCount !== b.userOrderCount) {
+          return b.userOrderCount - a.userOrderCount
+        }
+        return nameComparison
+      }
+      else {
+        const aLastBoughtAt = a.userLastBoughtAt?.getTime() ?? 0
+        const bLastBoughtAt = b.userLastBoughtAt?.getTime() ?? 0
+        if (aLastBoughtAt !== bLastBoughtAt) {
+          return bLastBoughtAt - aLastBoughtAt
+        }
+        return nameComparison
+      }
     })
 
   const selectedCategoriesCount = Object.values(displayCategories).filter(Boolean).length
@@ -120,6 +139,23 @@ const BuyPage: NextPage = () => {
                       </button>
                     )}
                   </div>
+                </div>
+              </div>
+
+              <div className="w-full sm:w-56">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-medium">Sortierung</span>
+                  </label>
+                  <select
+                    className="select select-bordered w-full"
+                    value={sortMode}
+                    onChange={(e) => setSortMode(e.target.value as SortMode)}
+                  >
+                    <option value="recent">Zuletzt gekauft</option>
+                    <option value="alphabetic">Alphabetisch</option>
+                    <option value="mostBought">Am häufigsten gekauft</option>
+                  </select>
                 </div>
               </div>
 

@@ -150,6 +150,7 @@ async function seed() {
     await prisma.item.create({
       data: {
         id: item.id,
+        canonicalItemId: item.id,
         name: item.name,
         price: item.price,
         for_grouporders: item.for_grouporders ?? false,
@@ -246,6 +247,7 @@ async function seed() {
       items: {
         create: {
           item: { connect: { id: ids.items[0] } },
+          canonicalItemId: ids.items[0],
           categories: { connect: [{ id: ids.categories[0] }] },
         },
       },
@@ -282,6 +284,7 @@ async function seed() {
       items: {
         create: {
           item: { connect: { id: ids.items[1] } },
+          canonicalItemId: ids.items[1],
           categories: { connect: [{ id: ids.categories[1] }] },
         },
       },
