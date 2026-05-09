@@ -66,6 +66,8 @@ Create DB Migrations (for production)
 ### Open ToDos
 - Automatisches abmelden aller Accounts nach update (via changes)
 - Android Zahlentastatur Komma ausgeblendet
+- Adapt color for admin-accounts with negative balance
+- Kostenanpassung bei Gruppenbestellung greift für alle der gleichen Kategorien
 #### Nice Improvements:
 - Item-Page: Item-Reihenfolge anpassbar machen (persistent)
 - Item-Page: Kategorie-filter für user persistieren

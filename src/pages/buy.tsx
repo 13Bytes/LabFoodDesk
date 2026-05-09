@@ -115,8 +115,8 @@ const BuyPage: NextPage = () => {
         {/* Search and Filter Section */}
         <div className="card bg-base-200 shadow-sm">
           <div className="card-body p-4">
-            {/* Search Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-between items-start">
               <div className="flex-1 max-w-md">
                 <div className="form-control">
                   <label className="label">
@@ -143,34 +143,35 @@ const BuyPage: NextPage = () => {
                 </div>
               </div>
 
-              <div className="lg:grow"></div>
 
-              <div className="max-w-md sm:w-auto sm:flex-shrink-0">
+              <div className="sm:w-40">
                 <div className="form-control">
-                  <label className="label py-1">
-                    <span className="label-text text-sm">Sortierung</span>
+                  <label className="label">
+                    <span className="label-text font-medium">Sortierung</span>
                   </label>
-                  <select
-                    className="select select-bordered select-sm w-full sm:w-40"
-                    value={sortMode}
-                    onChange={(e) => setSortMode(e.target.value as SortMode)}
-                  >
-                    <option value="recent">Zuletzt gekauft</option>
-                    <option value="alphabetic">Alphabetisch</option>
-                    <option value="mostBought">Am häufigsten gekauft</option>
-                  </select>
+                  <div>
+                    <select
+                      className="select select-bordered select-sm w-full"
+                      value={sortMode}
+                      onChange={(e) => setSortMode(e.target.value as SortMode)}
+                    >
+                      <option value="recent">Zuletzt gekauft</option>
+                      <option value="alphabetic">Alphabetisch</option>
+                      <option value="mostBought">AI (activity indicator)</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              {/* Results Summary */}
-              <div className="text-sm text-base-content/70">
-                {displayedItems ? (
-                  <span>
-                    {displayedItems.length} Produkt{displayedItems.length !== 1 ? "e" : ""} gefunden
-                  </span>
-                ) : (
-                  <span>Lade...</span>
-                )}
+
+                <div className="text-xs pt-1 text-base-content/70">
+                  {displayedItems ? (
+                    <span>
+                      {displayedItems.length} Produkt{displayedItems.length !== 1 ? "e" : ""} gefunden
+                    </span>
+                  ) : (
+                    <span>Lade...</span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -209,7 +210,7 @@ const BuyPage: NextPage = () => {
                       key={category.id}
                       className={`btn btn-sm transition-all duration-200 ${isSelected
                         ? "btn-primary"
-                          : "btn-outline hover:btn-primary hover:btn-outline-primary"
+                        : "btn-outline hover:btn-primary hover:btn-outline-primary"
                         }`}
                       onClick={() => {
                         const id = category.id
@@ -230,7 +231,8 @@ const BuyPage: NextPage = () => {
 
         {/* Items Grid */}
         <div className="space-y-4">
-          {/* No Results Message */}          {displayedItems?.length === 0 && (
+          {/* No Results Message */}
+          {displayedItems?.length === 0 && (
             <div className="text-center py-12">
               <div className="text-base-content/50 space-y-2">
                 <Package className="h-16 w-16 mx-auto opacity-30" />
