@@ -1,5 +1,5 @@
 import { type NextPage } from "next"
-import { useRef, useState } from "react"
+import { useRef, useState, useSyncExternalStore } from "react"
 import { Search, Package } from "lucide-react"
 import ActionResponsePopup, {
   type AnimationHandle,
@@ -11,6 +11,33 @@ import { api } from "~/utils/api"
 
 type SortMode = "recent" | "alphabetic" | "mostBought"
 
+const SORT_MODE_STORAGE_KEY = "buyPageSortMode"
+const SORT_MODE_STORAGE_EVENT = "buyPageSortModeChange"
+const sortModes: SortMode[] = ["recent", "alphabetic", "mostBought"]
+
+const isSortMode = (value: string | null): value is SortMode => {
+  return sortModes.includes(value as SortMode)
+}
+
+const getStoredSortMode = (): SortMode => {
+  if (typeof window === "undefined") {
+    return "recent"
+  }
+
+  const storedSortMode = window.localStorage.getItem(SORT_MODE_STORAGE_KEY)
+  return isSortMode(storedSortMode) ? storedSortMode : "recent"
+}
+
+const subscribeToSortMode = (onStoreChange: () => void) => {
+  window.addEventListener("storage", onStoreChange)
+  window.addEventListener(SORT_MODE_STORAGE_EVENT, onStoreChange)
+
+  return () => {
+    window.removeEventListener("storage", onStoreChange)
+    window.removeEventListener(SORT_MODE_STORAGE_EVENT, onStoreChange)
+  }
+}
+
 const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
   const allCategoriesRequest = api.category.getAllWithItems.useQuery()
@@ -18,10 +45,15 @@ const BuyPage: NextPage = () => {
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
   const [searchString, setSearchString] = useState("")
-  const [sortMode, setSortMode] = useState<SortMode>("recent")
+  const sortMode = useSyncExternalStore(subscribeToSortMode, getStoredSortMode, () => "recent")
   const [categoryOverrides, setCategoryOverrides] = useState<{ [index: string]: boolean }>({})
 
   const apiBuyOneItemMultiple = api.item.buyItem.useMutation()
+
+  const handleSortModeChange = (newSortMode: SortMode) => {
+    window.localStorage.setItem(SORT_MODE_STORAGE_KEY, newSortMode)
+    window.dispatchEvent(new Event(SORT_MODE_STORAGE_EVENT))
+  }
 
   const buyAction = async (itemID: string, quantity: number = 1): Promise<void> => {
     try {
@@ -153,7 +185,7 @@ const BuyPage: NextPage = () => {
                     <select
                       className="select select-bordered select-sm w-full"
                       value={sortMode}
-                      onChange={(e) => setSortMode(e.target.value as SortMode)}
+                      onChange={(e) => handleSortModeChange(e.target.value as SortMode)}
                     >
                       <option value="recent">Zuletzt gekauft</option>
                       <option value="alphabetic">Alphabetisch</option>
