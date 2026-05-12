@@ -28,9 +28,15 @@ const Me: NextPage = () => {
                             <h1 className="text-4xl font-bold text-base-content mb-2">
                                 {userData?.name || "Lade..."}
                             </h1>
+                            {userData?.allowOverdraw && (
+                                <span className="badge badge-success gap-2">
+                                    <Info className="h-3 w-3" />
+                                    Kreditwürdig
+                                </span>
+                            )}
                             <div className="flex items-center justify-center gap-2">
                                 <span className="text-base-content/70">Dein Guthaben:</span>
-                                <Balance balance={userData?.balance} />
+                                <Balance balance={userData?.balance} allowOverdraw={userData?.allowOverdraw} />
                             </div>
                             <LowCreditWarning className="mt-2 text-center" />
                         </div>

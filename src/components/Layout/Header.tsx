@@ -218,7 +218,7 @@ export default function Header() {
           <LowCreditWarningSymbol />
           <div className="mr-4">
             <Link href="/account" className="transition-transform duration-200 hover:scale-105">
-              <Balance balance={userData?.balance} />
+              <Balance balance={userData?.balance} allowOverdraw={userData?.allowOverdraw} />
             </Link>
           </div>
           <div className="avatar placeholder dropdown dropdown-end">

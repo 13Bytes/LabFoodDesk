@@ -33,7 +33,7 @@ const SplitPage: NextPage = () => {
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-base-content/70">Dein Guthaben:</span>
-                  <Balance balance={userData.data?.balance} />
+                  <Balance balance={userData.data?.balance} allowOverdraw={userData.data?.allowOverdraw} />
                 </div>
               </div>
             </div>

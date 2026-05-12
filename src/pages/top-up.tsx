@@ -20,7 +20,8 @@ const TopUp: NextPage = () => {
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
           {/* Page Header */}
           <div className="text-center space-y-4">
-            <div className="flex items-center justify-center gap-3">              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border border-primary/20">
+            <div className="flex items-center justify-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border border-primary/20">
                 <Plus className="h-6 w-6" />
               </div>
               <h1 className="text-4xl font-bold text-base-content">Geld einzahlen</h1>
@@ -35,7 +36,7 @@ const TopUp: NextPage = () => {
             <div className="card-body p-6 text-center">
               <h2 className="text-xl font-semibold text-base-content/80 mb-2">Dein aktuelles Guthaben</h2>
               <div className="text-4xl font-bold">
-                <Balance balance={userRequest.data?.balance} />
+                <Balance balance={userRequest.data?.balance} allowOverdraw={userRequest.data?.allowOverdraw} />
               </div>
             </div>
           </div>
@@ -70,7 +71,8 @@ const TopUp: NextPage = () => {
             <div className="space-y-6">
               <div className="card bg-gradient-to-br from-info/10 to-info/5 border border-info/20 shadow-lg">
                 <div className="card-body p-6">
-                  <div className="flex items-start gap-4">                    <div className="p-3 bg-gradient-to-br from-info/20 to-info/5 rounded-2xl border border-info/20 flex-shrink-0">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-gradient-to-br from-info/20 to-info/5 rounded-2xl border border-info/20 flex-shrink-0">
                       <Info className="h-6 w-6" />
                     </div>
                     <div className="space-y-4">
@@ -124,7 +126,8 @@ const TopUp: NextPage = () => {
                     </div>
                   )}
 
-                  <div className="mt-6 p-4 bg-warning/10 border border-warning/20 rounded-lg">                    <div className="flex items-start gap-3">
+                    <div className="mt-6 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+                      <div className="flex items-start gap-3">
                       <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <strong className="text-warning">Wichtiger Hinweis:</strong>

@@ -109,7 +109,7 @@ const UserOverview = () => {
                         </div>
                       </td>
                       <td className="text-right">
-                        <Balance balance={user.balance} />
+                        <Balance balance={user.balance} allowOverdraw={user.allowOverdraw} />
                       </td>
                       <td className="text-center hidden md:table-cell">
                         {user.allowOverdraw ? (
