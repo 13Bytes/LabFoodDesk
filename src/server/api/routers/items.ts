@@ -33,6 +33,9 @@ export const itemRouter = createTRPCRouter({
   }),
 
   getBuyable: protectedProcedure.query(async ({ ctx }) => {
+    const twoYearsAgo = new Date()
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
+
     const items = await ctx.prisma.item.findMany({
       where: { is_active: true, for_grouporders: false },
       include: { categories: true },
@@ -43,7 +46,14 @@ export const itemRouter = createTRPCRouter({
       _count: { _all: true },
     })
     const recentOrders = await ctx.prisma.itemCategoryMapping.findMany({
-      where: { Transaction: { userId: ctx.session.user.id, canceled: false, type: 0 } },
+      where: {
+        Transaction: {
+          userId: ctx.session.user.id,
+          canceled: false,
+          type: 0,
+          createdAt: { gte: twoYearsAgo },
+        },
+      },
       select: {
         canonicalItemId: true,
         Transaction: {
