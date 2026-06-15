@@ -25,6 +25,7 @@ ARG DATABASE_URL
 ARG NEXT_PUBLIC_CLIENTVAR
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/src/generated ./src/generated
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
