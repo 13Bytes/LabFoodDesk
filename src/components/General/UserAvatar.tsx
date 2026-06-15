@@ -31,7 +31,7 @@ export function UserAvatar({
   return (
     <div
       {...props}
-      className={`flex shrink-0 items-center justify-center rounded-full ${sizeClasses[size]} ${toneClasses[tone]} ${props.className}`}
+      className={`flex shrink-0 items-center justify-center rounded-full ${sizeClasses[size]} ${toneClasses[tone]} ${props.className ?? ""}`}
     >
       <span className={`block leading-none ${weight === "bold" ? "font-bold" : "font-semibold"}`}>
         {getUsernameLetters(name)}

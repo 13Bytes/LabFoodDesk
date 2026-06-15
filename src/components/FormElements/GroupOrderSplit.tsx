@@ -265,7 +265,7 @@ const GroupOrderSplit = (props: Props) => {
               allUsersOverwritten === undefined ? totalAmount : allUsersOverwritten?.toFixed(2)
             }
             placeholder="Gesamter Betrag"
-            className={`\ input input-sm w-full max-w-xs
+            className={`input input-sm w-full max-w-xs
               ${Number.isNaN(totalAmount) ? "input-error" : ""} \
               ${allUsersOverwritten !== undefined ? "input-warning!" : ""}`}
             disabled={allUsersOverwritten !== undefined}
