@@ -4,12 +4,13 @@ RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Install Prisma Client
+ENV DATABASE_URL="file:/app/DB-IgnoredAsOnlyForBuild"
 COPY prisma ./prisma
-COPY prisma.config.ts ./
+COPY prisma.config.ts .
 
 # Install dependencies based on the preferred package manager
 
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml\* ./
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml\* .
 
 RUN \
     if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
@@ -19,7 +20,6 @@ RUN \
     fi
 
 ##### BUILDER
-
 FROM node:24-alpine AS builder
 ARG DATABASE_URL
 ARG NEXT_PUBLIC_CLIENTVAR
@@ -54,7 +54,6 @@ COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-COPY --from=deps /app/node_modules ./node_modules
 
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
