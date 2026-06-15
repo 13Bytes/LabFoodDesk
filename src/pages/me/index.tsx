@@ -2,9 +2,9 @@ import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { Balance } from "~/components/General/Balance"
+import { UserAvatar } from "~/components/General/UserAvatar"
 import { Info } from "lucide-react"
 import { api } from "~/utils/api"
-import { getUsernameLetters } from "~/helper/generalFunctions"
 import LowCreditWarning from "~/components/PageComponents/LowCreditWarning"
 
 const Me: NextPage = () => {
@@ -17,13 +17,7 @@ const Me: NextPage = () => {
                 {/* Profile Header */}
                 <div className="text-center mb-8">
                     <div className="flex flex-col items-center gap-4 mb-6">
-                        <div className="avatar placeholder">
-                            <div className="bg-primary text-primary-content rounded-full w-20 h-20">
-                                <span className="text-3xl font-bold">
-                                    {getUsernameLetters(userData?.name)}
-                                </span>
-                            </div>
-                        </div>
+                        <UserAvatar name={userData?.name} size="xl" weight="bold" />
                         <div className="text-center">
                             <h1 className="text-4xl font-bold text-base-content mb-2">
                                 {userData?.name || "Lade..."}
@@ -120,7 +114,7 @@ const Me: NextPage = () => {
                                 type="text"
                                 disabled
                                 value={userData?.name || ""}
-                                className="input input-bordered w-full bg-base-200"
+                                className="input w-full bg-base-200"
                                 placeholder="Lade..."
                             />
                             <label className="label">

@@ -9,10 +9,10 @@ import ActionResponsePopup, {
 } from "~/components/General/ActionResponsePopup"
 import BuyItemCard from "~/components/General/BuyItemCard"
 import { ConfirmationModal } from "~/components/General/ConfirmationModal"
+import { UserAvatar } from "~/components/General/UserAvatar"
 
 import CenteredPage from "~/components/Layout/CenteredPage"
 import Modal from "~/components/Layout/Modal"
-import { getUsernameLetters } from "~/helper/generalFunctions"
 import { localStringOptions } from "~/helper/globalTypes"
 import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
@@ -111,7 +111,7 @@ const GroupOrders: NextPage = () => {
                   ))}
                 </div>
 
-                <table className="table table-zebra table-sm">
+                <table className="table">
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -165,7 +165,7 @@ const GroupOrders: NextPage = () => {
                   </button>
                   {new Date() > groupOrder.ordersCloseAt && (
                     <button
-                      className="btn btn-warning btn-sm !flex !flex-col items-center justify-center mt-7 max-md:h-12 py-0 leading-tight"
+                      className="btn btn-warning btn-sm flex! flex-col! items-center justify-center mt-7 py-0 leading-tight"
                       onClick={() => {
                         setCloseOrderId(groupOrder.id)
                       }}
@@ -192,7 +192,7 @@ const GroupOrders: NextPage = () => {
         </div>
       </CenteredPage>
 
-      <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="!w-11/12 !max-w-5xl pt-11">
+      <Modal setOpen={setOpenBuyModal} open={openBuyModal} className="w-11/12! max-w-5xl! pt-11">
         <div className="flex flex-row flex-wrap justify-center gap-4">
           {groupOrderProcurementItems.data?.map((item) => (
             <BuyItemCard
@@ -233,11 +233,7 @@ const GroupOrders: NextPage = () => {
 const UserItem = (props: { orderId: string; userName: string | null }) => {
   return (
     <div key={props.orderId} className="tooltip tooltip-top" data-tip={props.userName}>
-      <div className="avatar placeholder">
-        <div className="w-12 rounded-full bg-base-100 text-neutral-content">
-          <span>{getUsernameLetters(props.userName)}</span>
-        </div>
-      </div>
+      <UserAvatar name={props.userName} tone="neutral" />
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { api, type RouterInputs, type RouterOutputs } from "~/utils/api"
-import { Receipt, User, Target, Wallet, Calendar, Ban, AlertCircle } from "lucide-react"
+import { Receipt, User, Target, Wallet, Calendar, Ban } from "lucide-react"
 import { localStringOptions } from "~/helper/globalTypes"
 import CSVParser from 'papaparse';
 import { useState } from "react";
@@ -32,6 +32,7 @@ const getTransactionTypeLabel = (type: number): string => {
 
 
 const TransactionList = (props: Props) => {
+  const trpcUtils = api.useUtils()
   const legendRow = (
     <tr>
       <th>Datum & Zeit</th>
@@ -45,10 +46,14 @@ const TransactionList = (props: Props) => {
 
 
 
-  const [queryDuration, setQueryDuration] = useState<Timespans>()
   const [exportStatus, setExportStatus] = useState<'idle' | 'loading'>('idle')
-  api.transaction.getAllFixedTimespan.useQuery({ timespan: queryDuration! }, {
-    onSuccess: (data) => {
+
+  const startExport = async (duration: Timespans) => {
+    setExportStatus('loading')
+    try {
+      const data = await trpcUtils.transaction.getAllFixedTimespan.fetch({
+        timespan: duration,
+      })
       console.log("converting to csv")
       const flatData = data.map((item) => toFlatPropertyMap(item))
       const csv = CSVParser.unparse(flatData, { delimiter: ';', skipEmptyLines: true })
@@ -57,18 +62,10 @@ const TransactionList = (props: Props) => {
       window.open(url, "_blank");
       setTimeout(() => {
         URL.revokeObjectURL(url)
-      }, 1000) 
-    },
-    onSettled: () => {
+      }, 1000)
+    } finally {
       setExportStatus('idle')
-      setQueryDuration(undefined)
-    },
-    enabled: !!queryDuration,
-  })
-
-  const startExport = (duration: Timespans) => {
-    setQueryDuration(duration)
-    setExportStatus('loading')
+    }
   }
 
   if (props.transactions === undefined) {
@@ -214,7 +211,7 @@ const TransactionList = (props: Props) => {
           {props.transactions.map((row) => (
             <div
               key={row.id}
-              className={`card flex flex-grow border border-base-300 bg-base-200 shadow-sm ${
+              className={`card flex grow border border-base-300 bg-base-200 shadow-sm ${
                 row.canceled ? "opacity-60" : ""
               }`}
             >

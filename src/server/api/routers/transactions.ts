@@ -206,8 +206,6 @@ export const transactionRouter = createTRPCRouter({
       const moneySourceUser = await prisma.user.findUniqueOrThrow({
         where: { id: input.moneySourceUserId },
       })
-      const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
-
       if (input.amount <= 0) {
         throw new TRPCError({
           code: "BAD_REQUEST",

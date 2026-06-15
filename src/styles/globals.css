@@ -1,3 +1,47 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "daisyui" {
+  themes: false;
+}
+
+/*
+ * Keep the application's established dark palette independent from DaisyUI's
+ * built-in theme changes. These values preserve the softer v4 contrast while
+ * retaining the v5 component improvements.
+ */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-base-100: oklch(25.3267% 0.015896 252.417568);
+  --color-base-200: oklch(23.2607% 0.013807 253.100675);
+  --color-base-300: oklch(21.1484% 0.01165 254.087939);
+  --color-base-content: oklch(74.6477% 0.0216 264.435964);
+
+  --color-primary: oklch(65.69% 0.196 275.75);
+  --color-primary-content: oklch(13.138% 0.0392 275.75);
+  --color-secondary: oklch(74.8% 0.26 342.55);
+  --color-secondary-content: oklch(14.96% 0.052 342.55);
+  --color-accent: oklch(74.51% 0.167 183.61);
+  --color-accent-content: oklch(14.902% 0.0334 183.61);
+
+  --color-neutral: oklch(31.3815% 0.021108 254.139175);
+  --color-neutral-content: oklch(74.6477% 0.0216 264.435964);
+  --color-info: oklch(72.06% 0.191 231.6);
+  --color-info-content: oklch(0% 0 0);
+  --color-success: oklch(64.8% 0.15 160);
+  --color-success-content: oklch(0% 0 0);
+  --color-warning: oklch(84.71% 0.199 83.87);
+  --color-warning-content: oklch(0% 0 0);
+  --color-error: oklch(71.76% 0.221 22.18);
+  --color-error-content: oklch(0% 0 0);
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}

@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getCronRateLimiter } from '~/server/rateLimits'
-import { api } from '~/utils/api'
 import { prisma } from "~/server/db"
 import dayjs from 'dayjs'
 
@@ -16,12 +15,12 @@ export default function handler(
 ) {
 
   rateLimiter.consume("alwaysSameIdentifier")
-    .then((rateLimiterRes) => {
+    .then(() => {
       console.log("cron got triggered")
       cronAction()
       res.status(200).json({ message: 'cron triggered' })
     })
-    .catch((rateLimiterRes) => {
+    .catch(() => {
       // Command already triggered in the last min
       res.status(429).json({ message: 'too many requests' })
     });

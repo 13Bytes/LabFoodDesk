@@ -35,7 +35,7 @@ const ClearingAccountForm = (props: Props) => {
 
   useEffect(() => {
     reset()
-  }, [props.id])
+  }, [props.id, reset])
 
   const onSubmit: SubmitHandler<FormType> = async (data) => {
     if (!!props.id) {
@@ -61,7 +61,7 @@ const ClearingAccountForm = (props: Props) => {
               type="text"
               {...addItemRegister("name")}
               defaultValue={clearingAccount.data?.name ?? ""}
-              className="input input-bordered input-primary w-full"
+              className="input input-primary w-full"
               placeholder="Name"
             />
           </div>

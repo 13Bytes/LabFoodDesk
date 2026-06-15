@@ -1,6 +1,6 @@
 import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
-import { Users, UserPlus, Shield, Coins } from "lucide-react"
+import { Users, Shield, Coins } from "lucide-react"
 import Modal from "~/components/Layout/Modal"
 import AdminSectionCard from "~/components/Layout/AdminSectionCard"
 import { type Tid } from "~/helper/zodTypes"
@@ -15,9 +15,6 @@ const UserOverview = () => {
   const animationRef = useRef<AnimationHandle>(null)
   const { data: sessionData } = useSession()
 
-  const trpcUtils = api.useUtils()
-  const [detailView, setDetailView] = useState<Tid>()
-
   const userIsAdmin = sessionData?.user.is_admin ?? false
 
   // Calculate statistics
@@ -29,11 +26,6 @@ const UserOverview = () => {
     (sum, user) => sum + (user.balance > 0 ? user.balance : 0), 
     0
   ) ?? 0
-  const negativeBalance = allUsersRequest.data?.reduce(
-    (sum, user) => sum + (user.balance < 0 ? user.balance : 0), 
-    0
-  ) ?? 0
-
   const stats = [
     {
       icon: Users,
@@ -176,7 +168,7 @@ const UserOverview = () => {
         )}
       </AdminSectionCard>
 
-      <Modal open={!!selectedUser} setOpen={(a) => setSelectedUser(undefined)}>
+      <Modal open={!!selectedUser} setOpen={() => setSelectedUser(undefined)}>
         <UserForm id={selectedUser} finishAction={() => setSelectedUser(undefined)} />
       </Modal>
 

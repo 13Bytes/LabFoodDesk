@@ -158,7 +158,7 @@ const BuyPage: NextPage = () => {
                     <input
                       type="text"
                       placeholder="Nach Produkten suchen..."
-                      className="input input-bordered w-full pr-20 pl-10"
+                      className="input w-full pr-20 pl-10"
                       value={searchString}
                       onChange={(e) => setSearchString(e.target.value)}
                     />
@@ -242,7 +242,7 @@ const BuyPage: NextPage = () => {
                       key={category.id}
                       className={`btn btn-sm transition-all duration-200 ${isSelected
                         ? "btn-primary"
-                        : "btn-outline hover:btn-primary hover:btn-outline-primary"
+                        : "btn-outline"
                         }`}
                       onClick={() => {
                         const id = category.id

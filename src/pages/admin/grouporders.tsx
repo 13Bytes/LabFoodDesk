@@ -28,7 +28,7 @@ const GroupOrdersPage = () => {
   } = api.groupOrders.getAll.useInfiniteQuery(
     {},
     {
-      keepPreviousData: true,
+      placeholderData: (previousData) => previousData,
       getNextPageParam: (lastPage) => {
         if (lastPage.nextPageExists) {
           return lastPage.pageNumber + 1

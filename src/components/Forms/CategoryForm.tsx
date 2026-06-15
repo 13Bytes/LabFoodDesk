@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -33,21 +33,26 @@ const CategoryForm = (props: Props) => {
     register: addItemRegister,
     handleSubmit: addItemSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm<AddCategoryInput>({
     resolver: zodResolver(addCategoryValidationSchem),
   })
 
+  const formValues = useMemo(
+    () => ({
+      defaultUnfoldedDisplay: category.data?.defaultUnfoldedDisplay ?? true,
+      markupDescription: category.data?.markupDescription ?? "",
+      markupDestination: category.data?.markupDestinationId ?? "",
+      markupFixed: category.data?.markupFixed ?? 0,
+      markupPercentage: category.data?.markupPercentage ?? 0,
+      name: category.data?.name ?? "",
+    }),
+    [category.data],
+  )
+
   useEffect(() => {
-    reset()
-    setValue("name", category.data?.name ?? "")
-    setValue("markupDestination", category.data?.markupDestinationId ?? "")
-    setValue("markupPercentage", category.data?.markupPercentage ?? 0)
-    setValue("markupFixed", category.data?.markupFixed ?? 0)
-    setValue("markupDescription", category.data?.markupDescription ?? "")
-    setValue("defaultUnfoldedDisplay", category.data?.defaultUnfoldedDisplay ?? true)
-  },[category.data, props.id??''])
+    reset(formValues)
+  }, [reset, formValues])
 
   const onSubmit: SubmitHandler<AddCategoryInput> = async (data) => {
     if (!!props.id) {
@@ -72,7 +77,7 @@ const CategoryForm = (props: Props) => {
             <input
               type="text"
               {...addItemRegister("name")}  
-              className="input-bordered input-primary input w-full max-w-md"
+              className="input-primary input w-full max-w-md"
               placeholder="Name"
             />
             {errors.name && <p>{errors.name.message}</p>}
@@ -90,7 +95,7 @@ const CategoryForm = (props: Props) => {
             <input
               type="text"
               {...addItemRegister("markupDescription")}
-              className="input-bordered input-primary input w-full max-w-md"
+              className="input-primary input w-full max-w-md"
             />
             {errors.markupDescription && <p>{errors.markupDescription.message}</p>}
           </div>
@@ -104,7 +109,7 @@ const CategoryForm = (props: Props) => {
               min={0}
               max={300}
               {...addItemRegister("markupPercentage", { valueAsNumber: true })}
-              className="input-bordered input-primary input w-full max-w-md"
+              className="input-primary input w-full max-w-md"
             />
             {errors.markupPercentage && <p>{errors.markupPercentage.message}</p>}
           </div>
@@ -117,7 +122,7 @@ const CategoryForm = (props: Props) => {
               step={0.01}
               min={0}
               {...addItemRegister("markupFixed", { valueAsNumber: true })}
-              className="input-bordered input-primary input w-full max-w-md"
+              className="input-primary input w-full max-w-md"
             />
             {errors.markupFixed && <p>{errors.markupFixed.message}</p>}
           </div>

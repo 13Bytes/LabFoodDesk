@@ -5,6 +5,9 @@ import nextVitals from "eslint-config-next/core-web-vitals"
 
 export default defineConfig([
   {
+    ignores: ["src/generated/prisma/**"],
+  },
+  {
     files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },

@@ -8,7 +8,7 @@ type Props = {
 }
 const OrderSummaryModal = (props: Props) => {
   const { order } = props
-  const procurementList = order.procurementWishes.map((o) => o.items.map((item, id) => item.name))
+  const procurementList = order.procurementWishes.map((o) => o.items.map((item) => item.name))
   const orderList = order.orders
     .filter((o) => !o.canceled)
     .map((o) => o.items.map((items) => items.item.name))

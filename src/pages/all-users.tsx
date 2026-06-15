@@ -1,6 +1,5 @@
 import { type NextPage } from "next"
 import CenteredPage from "~/components/Layout/CenteredPage"
-import SendMoney from "~/components/PageComponents/SendMoney"
 import { api } from "~/utils/api"
 
 const SplitPage: NextPage = () => {

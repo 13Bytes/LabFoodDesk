@@ -1,5 +1,4 @@
-import type { Overwrite } from "@trpc/server"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -10,7 +9,7 @@ import ActionResponsePopup, { type AnimationHandle, animate } from "../General/A
 
 export const validationSchema = z.object({
   name: z.string().optional(),
-  ordersCloseAt: z.date(),
+  ordersCloseAt: z.coerce.date<string>(),
   groupOrderTemplate: id.optional(),
 })
 
@@ -28,34 +27,41 @@ const AddGrouporderForm = (props: Props) => {
 
   const currentGroupOrder = api.groupOrders.get.useQuery({ id: props.id! }, { enabled: !!props.id })
 
-  type AddGrouporderInput = z.infer<typeof validationSchema>
-  type AddGrouporderFormInput = Overwrite<AddGrouporderInput, { ordersCloseAt: string }>
+  type AddGrouporderFormInput = z.input<typeof validationSchema>
+  type AddGrouporderInput = z.output<typeof validationSchema>
 
-  const { register, handleSubmit, reset, getValues } = useForm<AddGrouporderFormInput>({
+  const { register, handleSubmit, reset } = useForm<
+    AddGrouporderFormInput,
+    unknown,
+    AddGrouporderInput
+  >({
     resolver: zodResolver(validationSchema),
   })
 
-  useEffect(() => {
-    if (props.id) {
-      const mappedData = {
-        name: currentGroupOrder.data?.name ?? "",
-        ordersCloseAt: currentGroupOrder.data?.ordersCloseAt.toISOString().split(":", 2).join(":"),
-      }
-      reset(mappedData)
-    } else {
-      reset({ name: "", ordersCloseAt: "" })
-    }
-  }, [currentGroupOrder.data, props.id ?? ""])
+  const formValues = useMemo(
+    () =>
+      props.id
+        ? {
+            name: currentGroupOrder.data?.name ?? "",
+            ordersCloseAt: currentGroupOrder.data?.ordersCloseAt.toISOString().split(":", 2).join(":"),
+          }
+        : { name: "", ordersCloseAt: "" },
+    [currentGroupOrder.data, props.id],
+  )
 
-  const onSubmit: SubmitHandler<AddGrouporderFormInput> = async (data) => {
-    const dataToSend = {
+  useEffect(() => {
+    reset(formValues)
+  }, [reset, formValues])
+
+  const onSubmit: SubmitHandler<AddGrouporderInput> = async (data) => {
+    const input = {
       ...data,
-      ordersCloseAt: data.ordersCloseAt as unknown as Date, // tranformation of react-hook-form not visible to ts : (
+      ordersCloseAt: data.ordersCloseAt.toISOString(),
     }
     if (!!props.id) {
-      await updateGrouporder.mutateAsync({ id: props.id, ...dataToSend })
+      await updateGrouporder.mutateAsync({ id: props.id, ...input })
     } else {
-      await createGrouporder.mutateAsync(dataToSend)
+      await createGrouporder.mutateAsync(input)
     }
     await trpcUtils.groupOrders.invalidate()
     props.finishAction()
@@ -67,7 +73,7 @@ const AddGrouporderForm = (props: Props) => {
         await deleteGrouporder.mutateAsync({ id: props.id })
         props.finishAction()
         await trpcUtils.groupOrders.invalidate()
-      } catch (e) {
+      } catch {
         animate(animationRef, "failure")
       }
     }
@@ -85,7 +91,7 @@ const AddGrouporderForm = (props: Props) => {
             <input
               type="text"
               {...register("name", { required: true })}
-              className="input input-bordered input-primary w-full max-w-md"
+              className="input input-primary w-full max-w-md"
               placeholder="Name"
             />
           </div>
@@ -95,8 +101,8 @@ const AddGrouporderForm = (props: Props) => {
             </label>
             <input
               type="datetime-local"
-              {...register("ordersCloseAt", { required: true, valueAsDate: true })}
-              className="input input-bordered input-primary w-full max-w-md"
+              {...register("ordersCloseAt", { required: true })}
+              className="input input-primary w-full max-w-md"
             />
           </div>
 

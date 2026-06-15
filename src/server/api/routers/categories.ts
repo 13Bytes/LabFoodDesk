@@ -1,11 +1,8 @@
-import { z } from "zod"
 import { addCategoryValidationSchem } from "~/components/Forms/CategoryForm"
-import { Prisma } from "@prisma/client"
 import { prisma } from "~/server/db"
 
 import {
   createTRPCRouter,
-  publicProcedure,
   protectedProcedure,
   adminProcedure,
 } from "~/server/api/trpc"
@@ -61,7 +58,14 @@ export const categoryRouter = createTRPCRouter({
       }
 
       const oldCategory = await ctx.prisma.category.findUniqueOrThrow({ where: { id } })
-      const { markupDestinationId, itemPurchaseId, ...oldCategoryWithoutMoneyDest } = oldCategory
+      const oldCategoryWithoutMoneyDest = {
+        defaultUnfoldedDisplay: oldCategory.defaultUnfoldedDisplay,
+        is_active: oldCategory.is_active,
+        markupDescription: oldCategory.markupDescription,
+        markupFixed: oldCategory.markupFixed,
+        markupPercentage: oldCategory.markupPercentage,
+        name: oldCategory.name,
+      }
       const oldCategoryWithInclude = await ctx.prisma.category.findUniqueOrThrow({
         where: { id },
         include: { items: true, procurementItems: true },

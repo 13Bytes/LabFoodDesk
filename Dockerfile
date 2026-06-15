@@ -1,10 +1,11 @@
 ##### DEPENDENCIES
-FROM node:23-alpine AS deps
+FROM node:24-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Install Prisma Client
-COPY prisma ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./
 
 # Install dependencies based on the preferred package manager
 
@@ -19,7 +20,7 @@ RUN \
 
 ##### BUILDER
 
-FROM node:23-alpine AS builder
+FROM node:24-alpine AS builder
 ARG DATABASE_URL
 ARG NEXT_PUBLIC_CLIENTVAR
 WORKDIR /app
@@ -52,6 +53,8 @@ RUN chmod +x /code/entrypoint.sh
 COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --from=deps /app/node_modules ./node_modules
 
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

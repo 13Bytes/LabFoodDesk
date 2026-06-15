@@ -5,7 +5,7 @@ import ActionResponsePopup, {
   type AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
-import { ArrowRight, Info, Send, Wallet } from "lucide-react"
+import { ArrowRight, Info, Send } from "lucide-react"
 import RegularPage from "~/components/Layout/RegularPage"
 import ClearingAccountOverview from "~/components/PageComponents/ClearingAccountOverview"
 import { type Tid, id } from "~/helper/zodTypes"
@@ -86,7 +86,7 @@ const ClearingAccountPage = () => {
             <div className="flex items-center gap-2">
               <input
                 type="number"
-                className="input input-bordered w-32 font-bold"
+                className="input w-32 font-bold"
                 value={amountSend}
                 step={0.01}
                 onChange={(e) => setAmountSend(parseFloat(e.target.value))}
@@ -102,7 +102,7 @@ const ClearingAccountPage = () => {
             </label>
             <input
               type="text"
-              className="input input-bordered w-full"
+              className="input w-full"
               value={noteSend}
               placeholder="Grund für Überweisung eingeben..."
               onChange={(e) => setNoteSend(e.target.value)}

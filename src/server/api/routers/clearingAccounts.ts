@@ -34,21 +34,21 @@ export const clearingAccountRouter = createTRPCRouter({
 
   update: adminProcedure.input(clearingAccountValidationSchema.extend({id: id})).mutation(async ({ ctx, input }) => {
     const {id, ...data} = input
-    const account = await ctx.prisma.clearingAccount.update({where: {id: input.id}, data })
+    const account = await ctx.prisma.clearingAccount.update({where: {id}, data })
     return account
   }),
 
   sendMoneyFromClearingAccount: adminProcedure
   .input(sendMoneyFromClearingAccountSchema)
   .mutation(async ({ ctx, input }) => {
-    const clearingAccount = await ctx.prisma.clearingAccount.findUniqueOrThrow({
+    await ctx.prisma.clearingAccount.findUniqueOrThrow({
       where: { id: input.sourceClearingAccountId },
     })
 
     await ctx.prisma.$transaction(
       async (tx) => {
         // 1. Decrement amount from the sender.
-        const sender = await tx.clearingAccount.update({
+        await tx.clearingAccount.update({
           data: {
             balance: {
               decrement: input.amount,
@@ -59,7 +59,7 @@ export const clearingAccountRouter = createTRPCRouter({
           },
         })
         // 2. Increment the recipient's balance
-        const recipient = await tx.user.update({
+        await tx.user.update({
           data: {
             balance: {
               increment: input.amount,
@@ -70,7 +70,7 @@ export const clearingAccountRouter = createTRPCRouter({
           },
         })
         // 3. Create transaction
-        const transaction = await tx.transaction.create({
+        await tx.transaction.create({
           data: {
             type: 3,
             totalAmount: input.amount,

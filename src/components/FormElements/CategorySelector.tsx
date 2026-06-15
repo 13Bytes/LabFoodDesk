@@ -1,15 +1,28 @@
-import type { Category } from "@prisma/client"
-import type { Control } from "react-hook-form"
+import type { Category } from "~/generated/prisma/client"
+import type { Control, FieldValues, Path } from "react-hook-form"
 import { Controller } from "react-hook-form"
 import Select from "react-select"
 
+type CategoryOption = {
+  label: string
+  value: string
+}
 
-type Props = {
-    
-    control: Control<any>
+type Props<
+  TFieldValues extends FieldValues,
+  TContext,
+  TTransformedValues extends FieldValues | undefined,
+> = {
+    control: Control<TFieldValues, TContext, TTransformedValues>
     categories: Category[] | undefined
 }
-const CategorySelector = (props: Props) => {
+const CategorySelector = <
+  TFieldValues extends FieldValues,
+  TContext,
+  TTransformedValues extends FieldValues | undefined,
+>(
+  props: Props<TFieldValues, TContext, TTransformedValues>,
+) => {
 
     const categories = props.categories ? props.categories: []
     const options = categories.map((category) => ({
@@ -20,15 +33,14 @@ const CategorySelector = (props: Props) => {
     return (
       <Controller
         control={props.control}
-        name={"categories"}
-        defaultValue={[]}
+        name={"categories" as Path<TFieldValues>}
         render={({ field: { onChange, onBlur, value, name, ref } }) => (
-          <Select
+          <Select<CategoryOption, true>
             options={options}
             onChange={onChange}
             isMulti={true}
             onBlur={onBlur}
-            value={value}
+            value={value as CategoryOption[] | undefined}
             name={name}
             ref={ref}
             id="select_categories"

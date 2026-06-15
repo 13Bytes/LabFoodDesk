@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { Plus, Trash2, Package, ShoppingCart, Users, Tag } from "lucide-react"
+import { Plus, Package, ShoppingCart, Users, Tag } from "lucide-react"
 import Modal from "~/components/Layout/Modal"
 import AdminSectionCard from "~/components/Layout/AdminSectionCard"
 import { ConfirmationModal } from "~/components/General/ConfirmationModal"

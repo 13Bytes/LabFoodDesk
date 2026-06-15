@@ -1,7 +1,6 @@
-import { type Transaction } from "@prisma/client"
-import { ClipboardList, TrendingUp, Undo, MessageCircleWarning } from "lucide-react"
+import { type Transaction } from "~/generated/prisma/client"
+import { ClipboardList, TrendingUp, Undo } from "lucide-react"
 import { type NextPage } from "next"
-import { useSession } from "next-auth/react"
 import Link from "next/link"
 import React, { type ComponentProps, useRef } from "react"
 import ActionResponsePopup, {
@@ -9,19 +8,17 @@ import ActionResponsePopup, {
   animate,
 } from "~/components/General/ActionResponsePopup"
 import { Pagination } from "~/components/General/Pagination"
+import { UserAvatar } from "~/components/General/UserAvatar"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import LowCreditWarning from "~/components/PageComponents/LowCreditWarning"
-import { getUsernameLetters } from "~/helper/generalFunctions"
-import { ITEM_SECURITY_DEPOSIT } from "~/helper/globalTypes"
 import { type Tid } from "~/helper/zodTypes"
-import { type RouterOutputs, api } from "~/utils/api"
+import { api } from "~/utils/api"
 
 const AccountPage: NextPage = () => {
   const [page, setPage] = React.useState(0)
   const [currentTime, setCurrentTime] = React.useState(() => Date.now())
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
-  const { data: sessionData } = useSession()
   const allBalancesRequest = api.user.getAllBalances.useQuery()
 
   React.useEffect(() => {
@@ -34,8 +31,7 @@ const AccountPage: NextPage = () => {
     }
   }, [])
 
-  const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery()
-  type TransactionData = RouterOutputs["transaction"]["getMineInfinite"]["items"][0]
+  const { data: userData } = api.user.getMe.useQuery()
   const {
     data: transactionData,
     fetchNextPage,
@@ -43,7 +39,7 @@ const AccountPage: NextPage = () => {
   } = api.transaction.getMineInfinite.useInfiniteQuery(
     {},
     {
-      keepPreviousData: true,
+      placeholderData: (previousData) => previousData,
       getNextPageParam: (lastPage) => {
         if (lastPage.nextPageExists) {
           return lastPage.pageNumber + 1
@@ -138,13 +134,7 @@ const AccountPage: NextPage = () => {
           {/* Header Section */}
           <div className="space-y-4 text-center">
             <div className="flex items-center justify-center gap-4">
-              <div className="avatar placeholder">
-                <div className="h-16 w-16 rounded-full bg-primary text-primary-content">
-                  <span className="text-2xl font-bold">
-                    {getUsernameLetters(userData?.name)}
-                  </span>
-                </div>
-              </div>
+              <UserAvatar name={userData?.name} size="lg" weight="bold" />
               <div className="text-left">
                 <h1 className="text-4xl font-bold text-base-content">
                   Konto von <span className="text-primary">{userData?.name}</span>

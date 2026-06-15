@@ -54,7 +54,8 @@ declare module "next-auth/jwt" {
 }
 
 /** IMPORTANT FOR INTEGRATING KEYCLOAK */
-const prismaAdapter = PrismaAdapter(prisma) as Adapter
+type PrismaAdapterClient = Parameters<typeof PrismaAdapter>[0]
+const prismaAdapter = PrismaAdapter(prisma as unknown as PrismaAdapterClient) as Adapter
 const extendedPrismaAdapter: Adapter = {
   ...prismaAdapter,
   async linkAccount(account: AdapterAccount) {

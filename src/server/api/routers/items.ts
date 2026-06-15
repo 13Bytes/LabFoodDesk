@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto"
-import { type Prisma, type PrismaClient } from "@prisma/client"
+import { type Prisma, type PrismaClient } from "~/generated/prisma/client"
 import { z } from "zod"
 import { createItemSchema } from "~/components/Forms/ItemForm"
 import { createProcItemSchema } from "~/components/Forms/ProcurementItemForm"
@@ -111,7 +111,7 @@ export const itemRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const categories = await Promise.all(
         input.categories.map(async (categoryId) => {
-          return prisma.category.findUniqueOrThrow({
+          return ctx.prisma.category.findUniqueOrThrow({
             where: {
               id: categoryId,
             },
@@ -119,13 +119,13 @@ export const itemRouter = createTRPCRouter({
         }),
       )
       const { id, ...inputData } = input
-      const existingItem = await prisma.item.findUniqueOrThrow({
+      const existingItem = await ctx.prisma.item.findUniqueOrThrow({
         where: { id },
         select: { canonicalItemId: true },
       })
-      await prisma.$transaction([
-        prisma.item.update({ where: { id: input.id }, data: { is_active: false } }),
-        prisma.item.create({
+      await ctx.prisma.$transaction([
+        ctx.prisma.item.update({ where: { id }, data: { is_active: false } }),
+        ctx.prisma.item.create({
           data: {
             ...inputData,
             canonicalItemId: existingItem.canonicalItemId,
@@ -155,14 +155,14 @@ export const itemRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const categories = await Promise.all(
         input.categories.map(async (categoryId) => {
-          return prisma.category.findUniqueOrThrow({
+          return ctx.prisma.category.findUniqueOrThrow({
             where: {
               id: categoryId,
             },
           })
         }),
       )
-      const item = await prisma.procurementItem.create({
+      const item = await ctx.prisma.procurementItem.create({
         data: {
           name: input.name,
           categories: { connect: categories.map((category) => ({ id: category.id })) },
@@ -177,7 +177,7 @@ export const itemRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const categories = await Promise.all(
         input.categories.map(async (categoryId) => {
-          return prisma.category.findUniqueOrThrow({
+          return ctx.prisma.category.findUniqueOrThrow({
             where: {
               id: categoryId,
             },
@@ -187,9 +187,9 @@ export const itemRouter = createTRPCRouter({
 
       const { id, ...inputData } = input
 
-      await prisma.$transaction([
-        prisma.procurementItem.update({ where: { id: input.id }, data: { is_active: false } }),
-        prisma.procurementItem.create({
+      await ctx.prisma.$transaction([
+        ctx.prisma.procurementItem.update({ where: { id }, data: { is_active: false } }),
+        ctx.prisma.procurementItem.create({
           data: {
             ...inputData,
             categories: { connect: categories.map((category) => ({ id: category.id })) },

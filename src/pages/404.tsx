@@ -1,7 +1,7 @@
 import { type NextPage } from "next"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { Home, ArrowLeft, Search, Coffee } from "lucide-react"
+import { Home, ArrowLeft, Coffee } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 
 const Custom404: NextPage = () => {

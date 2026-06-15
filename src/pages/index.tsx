@@ -1,4 +1,4 @@
-import { CheckCircle, Github, Info, XCircle } from "lucide-react"
+import { CheckCircle, Code2, Info, XCircle } from "lucide-react"
 import { type GetServerSidePropsContext, type InferGetServerSidePropsType, type NextPage } from "next"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/router"
@@ -173,7 +173,7 @@ const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled 
                     <input
                       type="text"
                       placeholder="max.mustermann"
-                      className={`input input-bordered w-full ${errors.username ? "input-error" : ""}`}
+                      className={`input w-full ${errors.username ? "input-error" : ""}`}
                       {...register("username", {
                         required: "Benutzername ist erforderlich",
                         minLength: { value: 2, message: "Benutzername muss mindestens 2 Zeichen lang sein" }
@@ -193,7 +193,7 @@ const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled 
                     <input
                       type="password"
                       placeholder="••••••••"
-                      className={`input input-bordered w-full ${errors.password ? "input-error" : ""}`}
+                      className={`input w-full ${errors.password ? "input-error" : ""}`}
                       {...register("password", {
                         required: "Passwort ist erforderlich",
                         minLength: { value: 1, message: "Passwort darf nicht leer sein" }
@@ -235,7 +235,7 @@ const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled 
                     <input
                       type="email"
                       placeholder="max.mustermann@example.com"
-                      className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`}
+                      className={`input w-full ${errors.email ? "input-error" : ""}`}
                       {...register("email", {
                         required: "E-Mail-Adresse ist erforderlich",
                         pattern: {
@@ -298,7 +298,7 @@ const Home: NextPage<HomeProps> = ({ isProduction, keycloakEnabled, ldapEnabled 
               rel="noopener noreferrer"
               href="https://github.com/13bytes/labfooddesk"
             >
-              <Github className="h-6 w-6" />
+              <Code2 className="h-6 w-6" />
               <span className="ml-2">GitHub</span>
             </a>
           </div>

@@ -1,4 +1,4 @@
-import type { ProcurementItem } from "@prisma/client"
+import type { ProcurementItem } from "~/generated/prisma/client"
 import { Coins } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { type ChangeEvent, useMemo, useRef, useState } from "react"
@@ -265,9 +265,9 @@ const GroupOrderSplit = (props: Props) => {
               allUsersOverwritten === undefined ? totalAmount : allUsersOverwritten?.toFixed(2)
             }
             placeholder="Gesamter Betrag"
-            className={`\ input input-sm  input-bordered w-full max-w-xs
-               ${Number.isNaN(totalAmount) ? "input-error" : ""} \
-               ${allUsersOverwritten !== undefined ? "!input-warning " : ""}`}
+            className={`\ input input-sm w-full max-w-xs
+              ${Number.isNaN(totalAmount) ? "input-error" : ""} \
+              ${allUsersOverwritten !== undefined ? "input-warning!" : ""}`}
             disabled={allUsersOverwritten !== undefined}
           />
         </label>
@@ -308,7 +308,7 @@ const GroupOrderSplit = (props: Props) => {
                           min={0}
                           value={item.overwritenCost || ""}
                           onChange={(e) => overwriteUserExpence(e, item.item.id)}
-                          className="input input-sm input-bordered max-w-[6rem]"
+                          className="input input-sm max-w-24"
                         />
                       </td>
                     </tr>

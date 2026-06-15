@@ -1,13 +1,13 @@
 import { type NextPage } from "next"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
-import { Download, Upload, Send, ArrowDownToLine, ArrowUpRight, ArrowDownLeft, Zap, BarChart3, User, Plus } from "lucide-react"
+import { ArrowUpRight, ArrowDownLeft, Zap, BarChart3, User, Plus } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import GetMoney from "~/components/PageComponents/GetMoney"
 import SendMoney from "~/components/PageComponents/SendMoney"
 import { Balance } from "~/components/General/Balance"
+import { UserAvatar } from "~/components/General/UserAvatar"
 import { api } from "~/utils/api"
-import { getUsernameLetters } from "~/helper/generalFunctions"
 
 const SplitPage: NextPage = () => {
   const session = useSession()
@@ -20,13 +20,7 @@ const SplitPage: NextPage = () => {
           {/* Header with personal balance */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-4 mb-6">
-              <div className="avatar placeholder">
-                <div className="bg-primary text-primary-content rounded-full w-16 h-16">
-                  <span className="text-2xl font-bold">
-                    {getUsernameLetters(session.data?.user.name)}
-                  </span>
-                </div>
-              </div>
+              <UserAvatar name={session.data?.user.name} size="lg" weight="bold" />
               <div className="text-left">
                 <h1 className="text-3xl font-bold text-base-content">
                   Hallo, {session.data?.user.name}!
@@ -46,8 +40,8 @@ const SplitPage: NextPage = () => {
           <div className="grid lg:grid-cols-2 gap-8 mb-8">
             {/* Send Money Section */}
             <div className="space-y-6">              <div className="flex items-center gap-4">
-              <div className="p-4 bg-gradient-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
-                <ArrowUpRight className="h-6 w-6" />
+              <div className="p-4 bg-linear-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
+                <ArrowUpRight className="h-6 w-6 text-success" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-base-content flex items-center gap-2">
@@ -62,8 +56,8 @@ const SplitPage: NextPage = () => {
 
             {/* Get Money Section */}
             <div className="space-y-6">              <div className="flex items-center gap-4">
-              <div className="p-4 bg-gradient-to-br from-warning/20 to-warning/5 rounded-2xl border border-warning/20">
-                <ArrowDownLeft className="h-6 w-6" />
+              <div className="p-4 bg-linear-to-br from-warning/20 to-warning/5 rounded-2xl border border-warning/20">
+                <ArrowDownLeft className="h-6 w-6 text-warning" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-base-content">Geld einfordern</h2>

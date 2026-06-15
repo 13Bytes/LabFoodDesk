@@ -1,4 +1,4 @@
-import type { Category, Item, ProcurementItem } from "@prisma/client"
+import type { Category, Item } from "~/generated/prisma/client"
 import { type Tid } from "./zodTypes"
 import { type RouterOutputs } from "~/utils/api"
 

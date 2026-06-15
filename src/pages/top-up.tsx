@@ -2,9 +2,9 @@ import { AlertTriangle, Info, Plus, Send, Users } from "lucide-react"
 import { type NextPage } from "next"
 import { useSession } from "next-auth/react"
 import { Balance } from "~/components/General/Balance"
+import { UserAvatar } from "~/components/General/UserAvatar"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import SendMoney from "~/components/PageComponents/SendMoney"
-import { getUsernameLetters } from "~/helper/generalFunctions"
 import { api } from "~/utils/api"
 
 const TopUp: NextPage = () => {
@@ -21,8 +21,8 @@ const TopUp: NextPage = () => {
           {/* Page Header */}
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border border-primary/20">
-                <Plus className="h-6 w-6" />
+              <div className="p-3 bg-linear-to-br from-primary/20 to-primary/5 rounded-2xl border border-primary/20">
+                <Plus className="h-6 w-6 text-primary" />
               </div>
               <h1 className="text-4xl font-bold text-base-content">Geld einzahlen</h1>
             </div>
@@ -32,7 +32,7 @@ const TopUp: NextPage = () => {
           </div>
 
           {/* Current Balance Display */}
-          <div className="card bg-gradient-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
+          <div className="card bg-linear-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
             <div className="card-body p-6 text-center">
               <h2 className="text-xl font-semibold text-base-content/80 mb-2">Dein aktuelles Guthaben</h2>
               <div className="text-4xl font-bold">
@@ -44,11 +44,11 @@ const TopUp: NextPage = () => {
           {isAuthorizedUser ? (
             /* Authorized User Section */
             <div className="space-y-6">
-              <div className="card bg-gradient-to-br from-success/10 to-success/5 border border-success/20 shadow-lg">
+              <div className="card bg-linear-to-br from-success/10 to-success/5 border border-success/20 shadow-lg">
                 <div className="card-body p-6">
                   <div className="flex items-center gap-4 mb-4">                    
-                    <div className="p-3 bg-gradient-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
-                      <Send className="h-6 w-6" />
+                    <div className="p-3 bg-linear-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
+                      <Send className="h-6 w-6 text-success" />
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold text-base-content">Geld übertragen</h2>
@@ -69,11 +69,11 @@ const TopUp: NextPage = () => {
           ) : (
             /* Regular User Section */
             <div className="space-y-6">
-              <div className="card bg-gradient-to-br from-info/10 to-info/5 border border-info/20 shadow-lg">
+                <div className="card bg-linear-to-br from-info/10 to-info/5 border border-info/20 shadow-lg">
                 <div className="card-body p-6">
                     <div className="flex items-start gap-4">
-                      <div className="p-3 bg-gradient-to-br from-info/20 to-info/5 rounded-2xl border border-info/20 flex-shrink-0">
-                      <Info className="h-6 w-6" />
+                      <div className="p-3 bg-linear-to-br from-info/20 to-info/5 rounded-2xl border border-info/20 shrink-0">
+                        <Info className="h-6 w-6 text-info" />
                     </div>
                     <div className="space-y-4">
                       <div>
@@ -90,7 +90,7 @@ const TopUp: NextPage = () => {
               </div>
 
               {/* Authorized Users List */}
-              <div className="card bg-gradient-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
+                <div className="card bg-linear-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
                 <div className="card-body p-6">
                   <h3 className="text-xl font-semibold text-base-content mb-4 flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
@@ -105,14 +105,10 @@ const TopUp: NextPage = () => {
                     </div>
                   ) : userWithAllowOverdrawRequest.data && userWithAllowOverdrawRequest.data.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {userWithAllowOverdrawRequest.data.map((user, index) => (
-                        <div key={user.id} className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20 hover:border-primary/30 transition-all duration-200">
+                          {userWithAllowOverdrawRequest.data.map((user) => (
+                            <div key={user.id} className="p-4 bg-linear-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20 hover:border-primary/30 transition-all duration-200">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-primary font-semibold text-lg">
-                                {getUsernameLetters(user.name)}
-                              </span>
-                            </div>
+                                <UserAvatar name={user.name} size="sm" tone="primary" />
                             <div>
                               <div className="font-semibold text-base-content">{user.name}</div>
                             </div>
@@ -128,7 +124,7 @@ const TopUp: NextPage = () => {
 
                     <div className="mt-6 p-4 bg-warning/10 border border-warning/20 rounded-lg">
                       <div className="flex items-start gap-3">
-                      <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                        <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <strong className="text-warning">Wichtiger Hinweis:</strong>
                         <p className="text-base-content/70 mt-1">

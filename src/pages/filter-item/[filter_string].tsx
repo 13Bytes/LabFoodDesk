@@ -1,11 +1,10 @@
 import { type NextPage } from "next"
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import ActionResponsePopup, {
   type AnimationHandle,
   animate,
 } from "~/components/General/ActionResponsePopup"
 import BuyItemCardBig from "~/components/General/BuyItemCardBig"
-import RegularPage from "~/components/Layout/RegularPage"
 import { api } from "~/utils/api"
 
 import { useRouter } from "next/router"

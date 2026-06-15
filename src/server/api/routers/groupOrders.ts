@@ -1,4 +1,4 @@
-import { type Prisma } from "@prisma/client"
+import { type Prisma } from "~/generated/prisma/client"
 import { TRPCError } from "@trpc/server"
 import dayjs from "dayjs"
 import { z } from "zod"
@@ -142,7 +142,7 @@ export const grouporderRouter = createTRPCRouter({
       }
     }),
 
-  create: adminProcedure.input(groupOrderValidationSchema).mutation(async ({ ctx, input }) => {
+  create: adminProcedure.input(groupOrderValidationSchema).mutation(async ({ input }) => {
     let groupOrderTemplate = null
     if (input.groupOrderTemplate) {
       groupOrderTemplate = await prisma.groupOrderTemplate.findUniqueOrThrow({
@@ -558,7 +558,7 @@ export const grouporderRouter = createTRPCRouter({
 
   createTemplate: adminProcedure
     .input(groupOrderTemplateValidationSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const item = await prisma.groupOrderTemplate.create({
         data: {
           name: input.name,
@@ -572,13 +572,13 @@ export const grouporderRouter = createTRPCRouter({
 
   updateTemplate: adminProcedure
     .input(groupOrderTemplateValidationSchema.extend({ id }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { id, ordersCloseAt_h, ordersCloseAt_min, ...inputWithoutID } = input
       const item = await prisma.groupOrderTemplate.update({
         where: { id: id },
         data: {
           ...inputWithoutID,
-          ordersCloseAt: timeToDate(ordersCloseAt_h, input.ordersCloseAt_min),
+          ordersCloseAt: timeToDate(ordersCloseAt_h, ordersCloseAt_min),
         },
       })
       return item
@@ -586,8 +586,8 @@ export const grouporderRouter = createTRPCRouter({
 
   deleteTemplate: adminProcedure
     .input(z.object({ id }))
-    .mutation(async ({ ctx, input }) => {
-      const item = await prisma.groupOrderTemplate.delete({
+    .mutation(async ({ input }) => {
+      await prisma.groupOrderTemplate.delete({
         where: { id: input.id },
       })
     }),

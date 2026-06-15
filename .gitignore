@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/src/generated/prisma
 /.pnp
 .pnp.js
 
@@ -12,6 +13,8 @@
 /prisma/db.sqlite
 /prisma/db.sqlite*
 /prisma/db.sqlite-journal
+/db.sqlite
+/screenshots.db*
 
 # next.js
 /.next/

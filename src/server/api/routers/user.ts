@@ -63,7 +63,7 @@ export const userRouter = createTRPCRouter({
       })
     }),
 
-  getCtx: publicProcedure.query(({ ctx }) => {
+  getCtx: publicProcedure.query(() => {
     return {
       LDAP_URL: env.LDAP_URL,
       LDAP_BIND_USER: env.LDAP_BIND_USER,

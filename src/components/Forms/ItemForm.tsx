@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -32,7 +32,8 @@ const ItemForm = (props: Props) => {
 
   const currentItem = api.item.getItem.useQuery({ id: props.id! }, { enabled: !!props.id })
 
-  type AddItemForm = z.infer<typeof itemValidationSchema>
+  type AddItemFormInput = z.input<typeof itemValidationSchema>
+  type AddItemForm = z.output<typeof itemValidationSchema>
 
   const {
     register: addItemRegister,
@@ -41,26 +42,28 @@ const ItemForm = (props: Props) => {
     reset,
     setError,
     formState: { errors },
-  } = useForm<AddItemForm>({
+  } = useForm<AddItemFormInput, unknown, AddItemForm>({
     resolver: zodResolver(itemValidationSchema),
   })
 
+  const formValues = useMemo(
+    () =>
+      props.id
+        ? {
+            ...currentItem.data,
+            account: currentItem.data?.accountId,
+            categories: currentItem.data?.categories.map((category) => ({
+              label: category.name,
+              value: category.id,
+            })),
+          }
+        : { name: "", price: 0, for_grouporders: false, categories: [] },
+    [currentItem.data, props.id],
+  )
+
   useEffect(() => {
-    if (props.id) {
-      const mappedData = {
-        ...currentItem.data,
-        categories: currentItem.data?.categories.map((category) => ({
-          label: category.name,
-          value: category.id,
-        }),
-      ),
-      account: currentItem.data?.accountId
-      }
-      reset(mappedData)
-    } else {
-      reset({ name: "", price: 0, for_grouporders: false, categories: [] })
-    }
-  }, [currentItem.data, props.id ?? ""])
+    reset(formValues)
+  }, [reset, formValues])
 
   const onSubmit: SubmitHandler<AddItemForm> = async (data) => {
     const dataToSend = {
@@ -94,7 +97,7 @@ const ItemForm = (props: Props) => {
             <input
               type="text"
               {...addItemRegister("name", { required: true })}
-              className="input input-bordered input-primary w-full max-w-md"
+              className="input input-primary w-full max-w-md"
               placeholder="Name"
             />
             {errors.name && <p>{errors.name.message}</p>}
@@ -110,7 +113,7 @@ const ItemForm = (props: Props) => {
                 required: true,
                 valueAsNumber: true,
               })}
-              className="input input-bordered input-primary w-full max-w-md"
+              className="input input-primary w-full max-w-md"
               placeholder="Preis"
             />
             {errors.price && <p>{errors.price.message}</p>}
@@ -151,7 +154,6 @@ const ItemForm = (props: Props) => {
             Item Anlegen
           </button>
         </form>
-        {/* <DevTool control={control} /> */}
       </div>
     </>
   )

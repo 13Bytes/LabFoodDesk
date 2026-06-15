@@ -13,21 +13,20 @@ import {
   User,
   UserCog,
   Users,
-  TriangleAlert
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { getUsernameLetters } from "~/helper/generalFunctions"
 import { api } from "~/utils/api"
 import { Balance } from "../General/Balance"
+import { UserAvatar } from "../General/UserAvatar"
 import { LowCreditWarningSymbol } from "../PageComponents/LowCreditWarning"
 
 export default function Header() {
   const { data: sessionData } = useSession()
   const router = useRouter()
   const loggedIn = !!sessionData?.user
-  const { data: userData, isLoading: userIsLoading } = api.user.getMe.useQuery(undefined, {
+  const { data: userData } = api.user.getMe.useQuery(undefined, {
     enabled: loggedIn,
   })
 
@@ -109,7 +108,7 @@ export default function Header() {
               <Shield className="h-4 w-4" />
               Admin
             </summary>
-            <ul className="z-[100] mt-1 rounded-box border border-base-300 bg-base-200 shadow-xl">
+            <ul className="z-100 mt-1 rounded-box border border-base-300 bg-base-200 shadow-xl">
               <li>
                 <Link
                   href="/admin/inventory"
@@ -175,14 +174,14 @@ export default function Header() {
       {loggedIn && (
         <>
           <div className="navbar-start">
-            <div className="dropdown menu-sm">
+            <div className="dropdown menu">
               {" "}
               <div tabIndex={0} role="button" className="btn btn-ghost hover:bg-base-300 lg:hidden">
                 <Menu className="h-6 w-6" />
               </div>
               <ul
                 tabIndex={0}
-                className="menu dropdown-content menu-lg z-[1] mt-3 w-64 rounded-box border border-base-300 bg-base-200 p-3 shadow-2xl"
+                className="menu dropdown-content menu-lg z-1 mt-3 w-64 rounded-box border border-base-300 bg-base-200 p-3 shadow-2xl"
                 onClick={() => {
                   const elem = document.activeElement
                   if (elem) {
@@ -221,18 +220,15 @@ export default function Header() {
               <Balance balance={userData?.balance} allowOverdraw={userData?.allowOverdraw} />
             </Link>
           </div>
-          <div className="avatar placeholder dropdown dropdown-end">
-            <div
+          <div className="dropdown dropdown-end">
+            <UserAvatar
               tabIndex={0}
-              className="hover:bg-primary-focus w-12 cursor-pointer rounded-full bg-primary text-primary-content shadow-lg transition-all duration-200 hover:scale-105"
-            >
-              <span className="text-sm font-semibold">
-                {getUsernameLetters(sessionData?.user?.name)}
-              </span>
-            </div>
+              name={sessionData?.user?.name}
+              className="cursor-pointer shadow-lg transition-all duration-200 hover:scale-105 hover:bg-primary-focus"
+            />
             <ul
               tabIndex={0}
-              className="menu dropdown-content z-[1] mt-2 w-44 rounded-box border border-base-300 bg-base-200 p-3 shadow-2xl"
+              className="menu dropdown-content z-1 mt-2 w-44 rounded-box border border-base-300 bg-base-200 p-3 shadow-2xl"
             >
               {" "}
               <li>

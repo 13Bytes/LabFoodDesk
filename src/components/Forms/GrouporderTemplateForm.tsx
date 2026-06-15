@@ -5,7 +5,7 @@ import { weekdays } from "~/helper/globalTypes"
 import { api } from "~/utils/api"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { type Tid } from "~/helper/zodTypes"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { getTimeFromDateString } from "~/helper/dataProcessing"
 
 export const validationSchema = z.object({
@@ -41,34 +41,35 @@ const AddGrouporderTemplateForm = (props: Props) => {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
   } = useForm<AddGrouporderFormInput>({
     resolver: zodResolver(formSchema),
   })
-  console.log("useForm", errors)
+
+  const formValues = useMemo(
+    () =>
+      props.id
+        ? currentGroupOrderTemplate.data
+          ? {
+              ...currentGroupOrderTemplate.data,
+              ordersCloseAt: getTimeFromDateString(
+                currentGroupOrderTemplate.data.ordersCloseAt_h,
+                currentGroupOrderTemplate.data.ordersCloseAt_min,
+              ),
+            }
+          : {}
+        : { name: "", weekday: undefined, ordersCloseAt: undefined },
+    [currentGroupOrderTemplate.data, props.id],
+  )
 
   useEffect(() => {
-    if (props.id) {
-      let data = currentGroupOrderTemplate.data
-      if (data != undefined) {
-        const content = {
-          ...data,
-          ordersCloseAt: getTimeFromDateString(data!.ordersCloseAt_h, data!.ordersCloseAt_min),
-        }
-        reset(content)
-      } else {
-        reset({})
-      }
-    } else {
-      reset({ name: "", weekday: undefined, ordersCloseAt: undefined })
-    }
-  }, [currentGroupOrderTemplate.data, props.id ?? ""])
+    reset(formValues)
+  }, [reset, formValues])
 
   const onSubmit: SubmitHandler<AddGrouporderFormInput> = async (data) => {
     if (!data.ordersCloseAt) {
       return
     }
-    const { ordersCloseAt, ...payload } = data
+    const { ordersCloseAt } = data
     const [ordersCloseAt_h, ordersCloseAt_min] = ordersCloseAt.split(":").map(Number)
     const dataToSend = {
       ordersCloseAt_h: ordersCloseAt_h ?? 0,
@@ -104,7 +105,7 @@ const AddGrouporderTemplateForm = (props: Props) => {
             <input
               type="text"
               {...register("name", { required: true })}
-              className="input input-bordered input-primary w-full max-w-md"
+              className="input input-primary w-full max-w-md"
               placeholder="Name"
             />
           </div>
@@ -130,7 +131,7 @@ const AddGrouporderTemplateForm = (props: Props) => {
             <input
               type="time"
               {...register("ordersCloseAt", { required: true })}
-              className="input input-bordered input-primary w-full max-w-md"
+              className="input input-primary w-full max-w-md"
             />
           </div>
 

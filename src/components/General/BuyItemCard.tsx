@@ -1,4 +1,4 @@
-import type { Category, Item } from "@prisma/client"
+import type { Category, Item } from "~/generated/prisma/client"
 import { useState } from "react"
 import { calculateAdditionalItemPricing } from "~/helper/dataProcessing"
 import { ConfirmationModal } from "./ConfirmationModal"
@@ -114,7 +114,7 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
         cancelText="Abbrechen"
         proceedText="Jetzt kaufen"
         proceedButtonClass="btn btn-primary"
-        className="z-[70]"
+        className="z-1000"
       >
         <div className="space-y-3">
           <p className="text-base">
@@ -139,7 +139,7 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
                   min="1"
                   value={quantity}
                   onChange={(e) => handleQuantityInput(e.target.value)}
-                  className="input input-bordered input-sm w-20 text-center"
+                  className="input input-sm w-20 text-center"
                 />
                 <button
                   type="button"

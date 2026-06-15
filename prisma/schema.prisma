@@ -2,210 +2,211 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider      = "prisma-client-js"
-    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
-    provider = "sqlite"
-    // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+  provider = "sqlite"
+  // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+  // Further reading:
+  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
 }
 
 // -----------------------------------------------------------------------------
 // Business models
 model Item {
-    // items must be immutable and shouldn't be deleted (if transactions exists) 
-    // - create copy instead and set is_active=false
-    id              String                @id @default(cuid())
-    canonicalItemId String
-    name            String
-    categories      Category[]
-    price           Float
-    account         ClearingAccount       @relation(fields: [accountId], references: [id])
-    purchases       ItemCategoryMapping[]
-    is_active       Boolean               @default(true)
-    for_grouporders Boolean               @default(false)
-    accountId       String
-    @@index([canonicalItemId])
+  // items must be immutable and shouldn't be deleted (if transactions exists)
+  // - create copy instead and set is_active=false
+  id              String                @id @default(cuid())
+  canonicalItemId String
+  name            String
+  categories      Category[]
+  price           Float
+  account         ClearingAccount       @relation(fields: [accountId], references: [id])
+  purchases       ItemCategoryMapping[]
+  is_active       Boolean               @default(true)
+  for_grouporders Boolean               @default(false)
+  accountId       String
+
+  @@index([canonicalItemId])
 }
 
 model ProcurementItem {
-    // items must be immutable and shouldn't be deleted (if transactions exists) 
-    // - create copy instead and set is_active=false
-    id              String                   @id @default(cuid())
-    name            String
-    categories      Category[]
-    is_active       Boolean                  @default(true)
-    transactions    ProcurementItemBilling[]
-    ProcurementWish ProcurementWish[]
+  // items must be immutable and shouldn't be deleted (if transactions exists)
+  // - create copy instead and set is_active=false
+  id              String                   @id @default(cuid())
+  name            String
+  categories      Category[]
+  is_active       Boolean                  @default(true)
+  transactions    ProcurementItemBilling[]
+  ProcurementWish ProcurementWish[]
 }
 
 model ProcurementWish {
-    id           String            @id @default(cuid())
-    user         User              @relation(fields: [userId], references: [id])
-    userId       String
-    items        ProcurementItem[]
-    createdAt    DateTime          @default(now())
-    GroupOrder   GroupOrder?       @relation(fields: [groupOrderId], references: [id])
-    groupOrderId String?
+  id           String            @id @default(cuid())
+  user         User              @relation(fields: [userId], references: [id])
+  userId       String
+  items        ProcurementItem[]
+  createdAt    DateTime          @default(now())
+  GroupOrder   GroupOrder?       @relation(fields: [groupOrderId], references: [id])
+  groupOrderId String?
 }
 
 model GroupOrder {
-    id                   String              @id @default(cuid())
-    name                 String?
-    orders               Transaction[]
-    procurementWishes    ProcurementWish[]
-    ordersCloseAt        DateTime
-    ordersClosedAt       DateTime?
-    closedBy             User?               @relation("closedBy", fields: [closedById], references: [id])
-    revertedBy           User?               @relation("revertedBy", fields: [revertedById], references: [id])
-    closedById           String?
-    revertedById         String?
-    status               Int                 @default(0) // 0: open, 5: incoming orders stoped, 6: orders fulfilled, 99: aborted (orders not fulfilled)
-    GroupOrderTemplate   GroupOrderTemplate? @relation(fields: [groupOrderTemplateId], references: [id])
-    groupOrderTemplateId String?
+  id                   String              @id @default(cuid())
+  name                 String?
+  orders               Transaction[]
+  procurementWishes    ProcurementWish[]
+  ordersCloseAt        DateTime
+  ordersClosedAt       DateTime?
+  closedBy             User?               @relation("closedBy", fields: [closedById], references: [id])
+  revertedBy           User?               @relation("revertedBy", fields: [revertedById], references: [id])
+  closedById           String?
+  revertedById         String?
+  status               Int                 @default(0) // 0: open, 5: incoming orders stoped, 6: orders fulfilled, 99: aborted (orders not fulfilled)
+  GroupOrderTemplate   GroupOrderTemplate? @relation(fields: [groupOrderTemplateId], references: [id])
+  groupOrderTemplateId String?
 }
 
 model GroupOrderTemplate {
-    id            String       @id @default(cuid())
-    name          String
-    weekday       Int //0:sun, 1: mon, ..., 6:sat
-    ordersCloseAt DateTime // only time relevant - date not important
-    active        Boolean      @default(true)
-    GroupOrders   GroupOrder[]
+  id            String       @id @default(cuid())
+  name          String
+  weekday       Int //0:sun, 1: mon, ..., 6:sat
+  ordersCloseAt DateTime // only time relevant - date not important
+  active        Boolean      @default(true)
+  GroupOrders   GroupOrder[]
 }
 
 model Category {
-    // items must be immutable and shouldn't be deleted (if linked with item) 
-    // - create copy instead and set is_active=false
-    id                     String               @id @default(cuid())
-    is_active              Boolean              @default(true)
-    name                   String
-    defaultUnfoldedDisplay Boolean              @default(true)
-    items                  Item[]
-    procurementItems       ProcurementItem[]
-    markupDescription      String?
-    markupPercentage       Int? // integer ->  [%] = value/100
-    markupFixed            Float? // in €
-    markupDestination      ClearingAccount?     @relation(fields: [markupDestinationId], references: [id], onDelete: NoAction)
-    markupDestinationId    String?
-    ItemPurchase           ItemCategoryMapping? @relation(fields: [itemPurchaseId], references: [id])
-    itemPurchaseId         String?
+  // items must be immutable and shouldn't be deleted (if linked with item)
+  // - create copy instead and set is_active=false
+  id                     String               @id @default(cuid())
+  is_active              Boolean              @default(true)
+  name                   String
+  defaultUnfoldedDisplay Boolean              @default(true)
+  items                  Item[]
+  procurementItems       ProcurementItem[]
+  markupDescription      String?
+  markupPercentage       Int? // integer ->  [%] = value/100
+  markupFixed            Float? // in €
+  markupDestination      ClearingAccount?     @relation(fields: [markupDestinationId], references: [id], onDelete: NoAction)
+  markupDestinationId    String?
+  ItemPurchase           ItemCategoryMapping? @relation(fields: [itemPurchaseId], references: [id])
+  itemPurchaseId         String?
 }
 
 model ClearingAccount {
-    id          String        @id @default(cuid())
-    name        String
-    balance     Float         @default(0)
-    categories  Category[]
-    items       Item[]
-    transaction Transaction[]
+  id          String        @id @default(cuid())
+  name        String
+  balance     Float         @default(0)
+  categories  Category[]
+  items       Item[]
+  transaction Transaction[]
 }
 
 model ItemCategoryMapping {
-    id         String     @id @default(cuid())
-    item       Item       @relation(fields: [itemId], references: [id])
-    canonicalItemId String
-    categories Category[]
+  id              String     @id @default(cuid())
+  item            Item       @relation(fields: [itemId], references: [id])
+  canonicalItemId String
+  categories      Category[]
 
-    Transaction   Transaction @relation(fields: [transactionId], references: [id])
-    itemId        String
-    transactionId String
-    @@index([canonicalItemId])
+  Transaction   Transaction @relation(fields: [transactionId], references: [id])
+  itemId        String
+  transactionId String
+
+  @@index([canonicalItemId])
 }
 
 model ProcurementItemBilling {
-    id                String          @id @default(cuid())
-    item              ProcurementItem @relation(fields: [procurementItemId], references: [id])
-    transaction       Transaction     @relation(fields: [transactionId], references: [id])
-    cost              Float // without category-markup
-    procurementItemId String
-    transactionId     String
+  id                String          @id @default(cuid())
+  item              ProcurementItem @relation(fields: [procurementItemId], references: [id])
+  transaction       Transaction     @relation(fields: [transactionId], references: [id])
+  cost              Float // without category-markup
+  procurementItemId String
+  transactionId     String
 }
 
 model Transaction {
-    id                     String                   @id @default(cuid())
-    user                   User                     @relation("user", fields: [userId], references: [id], onDelete: NoAction)
-    userId                 String
-    canceled               Boolean                  @default(false)
-    canceledDate           DateTime?
-    canceledBy             User?                    @relation("canceledBy", fields: [canceledByUserId], references: [id])
-    canceledByUserId       String?
-    items                  ItemCategoryMapping[]
-    procurementItems       ProcurementItemBilling[]
-    amountWithoutFees      Float? // without category-markup
-    totalAmount            Float // without category-markup
-    createdAt              DateTime                 @default(now())
-    type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer, 3: procurement (of grouporder)  |  90: rescinded buy, 91:  rescinded sell
-    groupOrder             GroupOrder?              @relation(fields: [groupOrderId], references: [id])
-    groupOrderId           String?
-    //  --- if buy or transfer (type=0|2)
-    clearingAccount        ClearingAccount?         @relation(fields: [clearingAccountId], references: [id])
-    clearingAccountId      String?
-    //  --- only if transfer (type=2)
-    moneyDestination       User?                    @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
-    moneyDestinationUserId String?
-    note                   String?
+  id                     String                   @id @default(cuid())
+  user                   User                     @relation("user", fields: [userId], references: [id], onDelete: NoAction)
+  userId                 String
+  canceled               Boolean                  @default(false)
+  canceledDate           DateTime?
+  canceledBy             User?                    @relation("canceledBy", fields: [canceledByUserId], references: [id])
+  canceledByUserId       String?
+  items                  ItemCategoryMapping[]
+  procurementItems       ProcurementItemBilling[]
+  amountWithoutFees      Float? // without category-markup
+  totalAmount            Float // without category-markup
+  createdAt              DateTime                 @default(now())
+  type                   Int                      @default(0) // 0: buy, 1: sell, 2: transfer, 3: procurement (of grouporder)  |  90: rescinded buy, 91:  rescinded sell
+  groupOrder             GroupOrder?              @relation(fields: [groupOrderId], references: [id])
+  groupOrderId           String?
+  //  --- if buy or transfer (type=0|2)
+  clearingAccount        ClearingAccount?         @relation(fields: [clearingAccountId], references: [id])
+  clearingAccountId      String?
+  //  --- only if transfer (type=2)
+  moneyDestination       User?                    @relation("moneyDestination", fields: [moneyDestinationUserId], references: [id], onDelete: NoAction)
+  moneyDestinationUserId String?
+  note                   String?
 }
 
 // -----------------------------------------------------------------------------
 // Necessary for Next auth
 model Account {
-    id                 String  @id @default(cuid())
-    userId             String
-    type               String
-    provider           String
-    providerAccountId  String
-    refresh_token      String? // @db.Text
-    refresh_expires_in Int?
-    access_token       String? // @db.Text
-    expires_at         Int?
-    token_type         String?
-    scope              String?
-    id_token           String? // @db.Text
-    session_state      String?
-    user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? // @db.Text
+  refresh_expires_in Int?
+  access_token       String? // @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? // @db.Text
+  session_state      String?
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-    id                      String            @id @default(cuid())
-    name                    String?
-    email                   String?           @unique
-    emailVerified           DateTime?
-    image                   String?
-    accounts                Account[]
-    sessions                Session[]
-    //  ---
-    is_active               Boolean           @default(true)
-    is_admin                Boolean           @default(false)
-    allowOverdraw           Boolean           @default(false)
-    balance                 Float             @default(0)
-    transactions            Transaction[]     @relation("user")
-    is_transfer_destiantion Transaction[]     @relation("moneyDestination")
-    ProcurementWish         ProcurementWish[]
-    Transaction             Transaction[]     @relation("canceledBy")
-    groupOrdersClosed       GroupOrder[]      @relation("closedBy")
-    groupOrdersReverted     GroupOrder[]      @relation("revertedBy")
+  id                      String            @id @default(cuid())
+  name                    String?
+  email                   String?           @unique
+  emailVerified           DateTime?
+  image                   String?
+  accounts                Account[]
+  sessions                Session[]
+  //  ---
+  is_active               Boolean           @default(true)
+  is_admin                Boolean           @default(false)
+  allowOverdraw           Boolean           @default(false)
+  balance                 Float             @default(0)
+  transactions            Transaction[]     @relation("user")
+  is_transfer_destiantion Transaction[]     @relation("moneyDestination")
+  ProcurementWish         ProcurementWish[]
+  Transaction             Transaction[]     @relation("canceledBy")
+  groupOrdersClosed       GroupOrder[]      @relation("closedBy")
+  groupOrdersReverted     GroupOrder[]      @relation("revertedBy")
 }
 
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
 }

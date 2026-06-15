@@ -14,7 +14,7 @@ const AdminTransactionPage = () => {
   } = api.transaction.getAllInfinite.useInfiniteQuery(
     {},
     {
-      keepPreviousData: true,
+      placeholderData: (previousData) => previousData,
       getNextPageParam: (lastPage) => {
         if (lastPage.nextPageExists) {
           return lastPage.pageNumber + 1

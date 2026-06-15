@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -35,22 +35,25 @@ const ProcurementItemForm = (props: Props) => {
     formState: { errors },
   } = useForm<AddProcurementItemForm>({
     resolver: zodResolver(itemValidationSchema),
-})
+  })
 
-useEffect(() => {
-  if (props.id) {
-    const mappedData = {
-      ...currentItem.data,
-      categories: currentItem.data?.categories.map((category) => ({
-        label: category.name,
-        value: category.id,
-      })),
-    }
-    reset(mappedData)
-  } else {
-    reset({name: "",  categories: []})
-  }
-}, [currentItem.data, props.id ?? ""])
+  const formValues = useMemo(
+    () =>
+      props.id
+        ? {
+            ...currentItem.data,
+            categories: currentItem.data?.categories.map((category) => ({
+              label: category.name,
+              value: category.id,
+            })),
+          }
+        : { name: "", categories: [] },
+    [currentItem.data, props.id],
+  )
+
+  useEffect(() => {
+    reset(formValues)
+  }, [reset, formValues])
 
   const onAddItemSubmit: SubmitHandler<AddProcurementItemForm> = async (data) => {
     const dataToSend = {
@@ -78,7 +81,7 @@ useEffect(() => {
             <input
               type="text"
               {...addItemRegister("name", { required: true })}
-              className="input-bordered input-primary input w-full max-w-md"
+              className="input-primary input w-full max-w-md"
               placeholder="Name"
             />
             {errors.name && <p>{errors.name.message}</p>}

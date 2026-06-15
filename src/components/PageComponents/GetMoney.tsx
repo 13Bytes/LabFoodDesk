@@ -56,7 +56,7 @@ const GetMoney = (props: Props) => {
 
   return (
     <>
-      <div className="card bg-gradient-to-br from-base-100 to-base-200 shadow-xl border border-base-300 hover:shadow-2xl transition-all duration-300">
+      <div className="card bg-linear-to-br from-base-100 to-base-200 shadow-xl border border-base-300 hover:shadow-2xl transition-all duration-300">
         <div className="card-body p-6">
           {/* Amount Input */}
           <div className="form-control mb-4">
@@ -66,7 +66,7 @@ const GetMoney = (props: Props) => {
             <div className="relative">
               <input
                 type="number"
-                className="input input-bordered input-lg w-full pr-12 text-2xl font-semibold"
+                className="input input-lg w-full pr-12 text-2xl font-semibold"
                 value={amountSend}
                 min={0}
                 step={0.01}
@@ -109,7 +109,7 @@ const GetMoney = (props: Props) => {
               <span className="label-text font-medium">Anmerkung (optional)</span>
             </label>
             <textarea
-              className="textarea textarea-bordered resize-none"
+              className="textarea textarea-bordered textarea-lg w-full"
               rows={3}
               value={noteSend}
               placeholder="Grund für die Forderung..."
