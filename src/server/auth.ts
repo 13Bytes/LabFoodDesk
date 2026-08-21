@@ -9,10 +9,10 @@ import {
 } from "next-auth"
 import type { Adapter, AdapterAccount } from "next-auth/adapters"
 import CredentialsProvider from "next-auth/providers/credentials"
-import EmailProvider from "next-auth/providers/email"
 import KeycloakProvider from "next-auth/providers/keycloak"
 import { env } from "~/env.mjs"
 import { prisma } from "~/server/db"
+import { DevelopmentEmailProvider } from "./developmentEmailProvider"
 import { manageLdapLogin } from "./ldap"
 
 export const keycloakEnabled =
@@ -147,10 +147,12 @@ export const authOptions: NextAuthOptions = {
       : []),
     ...(env.NODE_ENV === "development"
       ? [
-        EmailProvider({
+        DevelopmentEmailProvider({
           server: {
             host: env.EMAIL_SERVER_HOST,
-            port: env.EMAIL_SERVER_PORT,
+            port: env.EMAIL_SERVER_PORT
+              ? Number.parseInt(env.EMAIL_SERVER_PORT, 10)
+              : undefined,
             auth: {
               user: env.EMAIL_SERVER_USER,
               pass: env.EMAIL_SERVER_PASSWORD,
