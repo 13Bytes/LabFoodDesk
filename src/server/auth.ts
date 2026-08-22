@@ -25,6 +25,13 @@ export const ldapEnabled =
   !!env.LDAP_BIND_USER &&
   !!env.LDAP_BIND_PASSWORT
 
+const emailServerConfigured = !!(
+  env.EMAIL_SERVER_HOST ||
+  env.EMAIL_SERVER_PORT ||
+  env.EMAIL_SERVER_USER ||
+  env.EMAIL_SERVER_PASSWORD
+)
+
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -148,16 +155,20 @@ export const authOptions: NextAuthOptions = {
     ...(env.NODE_ENV === "development"
       ? [
         DevelopmentEmailProvider({
-          server: {
-            host: env.EMAIL_SERVER_HOST,
-            port: env.EMAIL_SERVER_PORT
-              ? Number.parseInt(env.EMAIL_SERVER_PORT, 10)
-              : undefined,
-            auth: {
-              user: env.EMAIL_SERVER_USER,
-              pass: env.EMAIL_SERVER_PASSWORD,
-            },
-          },
+          ...(emailServerConfigured
+            ? {
+                server: {
+                  host: env.EMAIL_SERVER_HOST,
+                  port: env.EMAIL_SERVER_PORT
+                    ? Number.parseInt(env.EMAIL_SERVER_PORT, 10)
+                    : undefined,
+                  auth: {
+                    user: env.EMAIL_SERVER_USER,
+                    pass: env.EMAIL_SERVER_PASSWORD,
+                  },
+                },
+              }
+            : {}),
           ...(env.EMAIL_DEV_PRINT_TOKEN === "true" && env.NODE_ENV === "development" && {
             sendVerificationRequest(params) {
               console.log("\n", "=".repeat(40))
