@@ -9,10 +9,10 @@ import {
 } from "next-auth"
 import type { Adapter, AdapterAccount } from "next-auth/adapters"
 import CredentialsProvider from "next-auth/providers/credentials"
-import EmailProvider from "next-auth/providers/email"
 import KeycloakProvider from "next-auth/providers/keycloak"
 import { env } from "~/env.mjs"
 import { prisma } from "~/server/db"
+import { DevelopmentEmailProvider } from "./developmentEmailProvider"
 import { manageLdapLogin } from "./ldap"
 
 export const keycloakEnabled =
@@ -24,6 +24,13 @@ export const ldapEnabled =
   !!env.LDAP_URL &&
   !!env.LDAP_BIND_USER &&
   !!env.LDAP_BIND_PASSWORT
+
+const emailServerConfigured = !!(
+  env.EMAIL_SERVER_HOST ||
+  env.EMAIL_SERVER_PORT ||
+  env.EMAIL_SERVER_USER ||
+  env.EMAIL_SERVER_PASSWORD
+)
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -147,15 +154,21 @@ export const authOptions: NextAuthOptions = {
       : []),
     ...(env.NODE_ENV === "development"
       ? [
-        EmailProvider({
-          server: {
-            host: env.EMAIL_SERVER_HOST,
-            port: env.EMAIL_SERVER_PORT,
-            auth: {
-              user: env.EMAIL_SERVER_USER,
-              pass: env.EMAIL_SERVER_PASSWORD,
-            },
-          },
+        DevelopmentEmailProvider({
+          ...(emailServerConfigured
+            ? {
+                server: {
+                  host: env.EMAIL_SERVER_HOST,
+                  port: env.EMAIL_SERVER_PORT
+                    ? Number.parseInt(env.EMAIL_SERVER_PORT, 10)
+                    : undefined,
+                  auth: {
+                    user: env.EMAIL_SERVER_USER,
+                    pass: env.EMAIL_SERVER_PASSWORD,
+                  },
+                },
+              }
+            : {}),
           ...(env.EMAIL_DEV_PRINT_TOKEN === "true" && env.NODE_ENV === "development" && {
             sendVerificationRequest(params) {
               console.log("\n", "=".repeat(40))
