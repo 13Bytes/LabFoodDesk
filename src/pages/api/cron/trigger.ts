@@ -27,28 +27,33 @@ export default function handler(
 }
 
 const cronAction = async () => {
-  const DAYS_IN_ADVANCE = 3
-  const date = new Date()
+  const now = dayjs()
   const templates = await prisma.groupOrderTemplate.findMany({ where: { active: true }, include: { GroupOrders: true } })
   for (const template of templates) {
-    const runWeekday = template.weekday - 3 < 0 ? template.weekday - DAYS_IN_ADVANCE + 7 : template.weekday - DAYS_IN_ADVANCE
-    if (runWeekday === date.getDay()) {
-      const orderAlreadyCreated = template.GroupOrders.some(groupOrder => groupOrder.ordersCloseAt > date)
-      if (!orderAlreadyCreated) {
-        console.debug("creating new grouporder based on template", template.id) 
-        const ordersCloseAt = dayjs().add(DAYS_IN_ADVANCE, 'day')
-          .set('hour', template.ordersCloseAt.getHours())
-          .set('minute', template.ordersCloseAt.getMinutes())
-          .set('second', 0)
-          .toDate()
-        await prisma.groupOrder.create({
-          data: {
-            groupOrderTemplateId: template.id,
-            ordersCloseAt,
-            name: template.name,
-          }
-        })
-      }
+    // next deadline of this template (weekday + time)
+    let ordersCloseAt = now
+      .day(template.weekday)
+      .set('hour', template.ordersCloseAt.getHours())
+      .set('minute', template.ordersCloseAt.getMinutes())
+      .set('second', 0)
+      .set('millisecond', 0)
+    if (!ordersCloseAt.isAfter(now)) {
+      ordersCloseAt = ordersCloseAt.add(7, 'day')
+    }
+    // create grouporder only within "ordersStartsAt" hours before the deadline
+    if (now.isBefore(ordersCloseAt.subtract(template.ordersStartsAt, 'hour'))) {
+      continue
+    }
+    const orderAlreadyCreated = template.GroupOrders.some(groupOrder => groupOrder.ordersCloseAt > now.toDate())
+    if (!orderAlreadyCreated) {
+      console.debug("creating new grouporder based on template", template.id)
+      await prisma.groupOrder.create({
+        data: {
+          groupOrderTemplateId: template.id,
+          ordersCloseAt: ordersCloseAt.toDate(),
+          name: template.name,
+        }
+      })
     }
   }
 

@@ -13,11 +13,13 @@ export const validationSchema = z.object({
   weekday: z.number().min(0).max(6),
   ordersCloseAt_h: z.number().nonnegative(),
   ordersCloseAt_min: z.number().nonnegative(),
+  ordersStartsAt: z.number().min(1).max(160),
 })
 export const formSchema = z.object({
   name: z.string(),
   weekday: z.number().min(0).max(6),
   ordersCloseAt: z.string(),
+  ordersStartsAt: z.number().min(1).max(160),
 })
 
 type Props = {
@@ -27,8 +29,8 @@ type Props = {
 const AddGrouporderTemplateForm = (props: Props) => {
   const trpcUtils = api.useUtils()
   const createGrouporderTemplate = api.groupOrders.createTemplate.useMutation()
-  const updateGrouporderTempate = api.groupOrders.updateTemplate.useMutation()
-  const deleteGrouporderTempate = api.groupOrders.deleteTemplate.useMutation()
+  const updateGrouporderTemplate = api.groupOrders.updateTemplate.useMutation()
+  const deleteGrouporderTemplate = api.groupOrders.deleteTemplate.useMutation()
 
   const currentGroupOrderTemplate = api.groupOrders.getTemplate.useQuery(
     { id: props.id! },
@@ -57,7 +59,7 @@ const AddGrouporderTemplateForm = (props: Props) => {
               ),
             }
           : {}
-        : { name: "", weekday: undefined, ordersCloseAt: undefined },
+        : { name: "", weekday: undefined, ordersCloseAt: undefined, ordersStartsAt: 72 },
     [currentGroupOrderTemplate.data, props.id],
   )
 
@@ -77,7 +79,7 @@ const AddGrouporderTemplateForm = (props: Props) => {
       ...data,
     }
     if (!!props.id) {
-      await updateGrouporderTempate.mutateAsync({ id: props.id, ...dataToSend})
+      await updateGrouporderTemplate.mutateAsync({ id: props.id, ...dataToSend})
     } else {
       await createGrouporderTemplate.mutateAsync(dataToSend)
     }
@@ -87,7 +89,7 @@ const AddGrouporderTemplateForm = (props: Props) => {
 
   const onDelete = async () => {
     if (!!props.id) {
-      await deleteGrouporderTempate.mutateAsync({ id: props.id })
+      await deleteGrouporderTemplate.mutateAsync({ id: props.id })
       props.finishAction()
       await trpcUtils.groupOrders.invalidate()
     }
@@ -117,9 +119,10 @@ const AddGrouporderTemplateForm = (props: Props) => {
               className="select select-bordered select-primary w-full max-w-xs"
               {...register("weekday", { required: true, valueAsNumber: true })}
             >
-              {weekdays.map((day, index) => (
+              {/* show monday first - value stays the JS weekday (0: sunday) */}
+              {[1, 2, 3, 4, 5, 6, 0].map((index) => (
                 <option key={index} value={index}>
-                  {day}
+                  {weekdays[index]}
                 </option>
               ))}
             </select>
@@ -132,6 +135,16 @@ const AddGrouporderTemplateForm = (props: Props) => {
               type="time"
               {...register("ordersCloseAt", { required: true })}
               className="input input-primary w-full max-w-md"
+            />
+          </div>
+          <div>
+            <label className="label">
+              <span className="label-text text-base">Abfrage ab ...h vorher</span>
+            </label>
+            <input
+              type="number"
+              {...register("ordersStartsAt", { required: true, valueAsNumber: true })}
+              className="input input-bordered input-primary w-full max-w-md"
             />
           </div>
 

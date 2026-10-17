@@ -564,6 +564,7 @@ export const grouporderRouter = createTRPCRouter({
           name: input.name,
           weekday: input.weekday,
           ordersCloseAt: timeToDate(input.ordersCloseAt_h, input.ordersCloseAt_min),
+          ordersStartsAt: input.ordersStartsAt,
           active: true,
         },
       })

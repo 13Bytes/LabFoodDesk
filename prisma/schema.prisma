@@ -71,12 +71,13 @@ model GroupOrder {
 }
 
 model GroupOrderTemplate {
-  id            String       @id @default(cuid())
-  name          String
-  weekday       Int //0:sun, 1: mon, ..., 6:sat
-  ordersCloseAt DateTime // only time relevant - date not important
-  active        Boolean      @default(true)
-  GroupOrders   GroupOrder[]
+  id             String       @id @default(cuid())
+  name           String
+  weekday        Int //0:sun, 1: mon, ..., 6:sat
+  ordersCloseAt  DateTime // only time relevant - date not important
+  ordersStartsAt Int          @default(72) // hours before ordersCloseAt when the grouporder gets created
+  active         Boolean      @default(true)
+  GroupOrders    GroupOrder[]
 }
 
 model Category {
