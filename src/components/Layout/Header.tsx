@@ -40,12 +40,8 @@ export default function Header() {
     path: string,
     baseClasses = "hover:bg-primary hover:text-primary-content transition-colors duration-200 font-medium",
   ) => {
-    if (path === "/top-up") {
-      const activeClasses = "bg-success text-success-content"
-      return isActive(path) ? `${baseClasses} ${activeClasses}` : baseClasses
-    }
-
-    const activeClasses = "bg-primary text-primary-content"
+    const activeClasses =
+      path === "/admin" ? "bg-warning text-warning-content" : "bg-primary text-primary-content"
     return isActive(path) ? `${baseClasses} ${activeClasses}` : baseClasses
   }
 
@@ -70,13 +66,7 @@ export default function Header() {
         </Link>
       </li>
       <li>
-        <Link
-          href="/top-up"
-          className={getNavItemClasses(
-            "/top-up",
-            "font-medium transition-colors duration-200 hover:bg-success hover:text-success-content",
-          )}
-        >
+        <Link href="/top-up" className={getNavItemClasses("/top-up")}>
           <Plus className="h-4 w-4" />
           Aufladen
         </Link>
