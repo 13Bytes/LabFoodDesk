@@ -201,36 +201,61 @@ export const transactionRouter = createTRPCRouter({
     }),
 
   retractMoney: protectedProcedure
-    .input(z.object({ moneySourceUserId: id, amount: z.number(), note: z.string().optional() }))
-    .mutation(async ({ ctx, input }) => {
-      const moneySourceUser = await prisma.user.findUniqueOrThrow({
-        where: { id: input.moneySourceUserId },
+    .input(
+      z.object({
+        requests: z.array(z.object({ moneySourceUserId: id, amount: z.number() })).min(1),
+        note: z.string().optional(),
       })
-      if (input.amount <= 0) {
+    )
+    .mutation(async ({ ctx, input }) => {
+      const sourceUserIds = input.requests.map((request) => request.moneySourceUserId)
+      if (new Set(sourceUserIds).size !== sourceUserIds.length) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't request money from the same user twice",
+        })
+      }
+      if (sourceUserIds.includes(ctx.session.user.id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't request money from yourself",
+        })
+      }
+      if (input.requests.some((request) => !(request.amount > 0))) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You can't request a negative amount - send money instead",
         })
       }
+      const moneySourceUsers = await ctx.prisma.user.findMany({
+        where: { id: { in: sourceUserIds } },
+        select: { id: true },
+      })
+      if (moneySourceUsers.length !== sourceUserIds.length) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" })
+      }
+      const totalAmount = input.requests.reduce((sum, request) => sum + request.amount, 0)
 
       // atomic action:
       await ctx.prisma.$transaction([
-        ctx.prisma.transaction.create({
-          data: {
-            user: { connect: { id: ctx.session.user.id } },
-            type: 2,
-            moneyDestination: { connect: { id: moneySourceUser.id } },
-            totalAmount: -input.amount,  // send negative amount to retract money but still indicate the executing user
-            note: input.note,
-          },
-        }),
+        ...input.requests.flatMap((request) => [
+          ctx.prisma.transaction.create({
+            data: {
+              user: { connect: { id: ctx.session.user.id } },
+              type: 2,
+              moneyDestination: { connect: { id: request.moneySourceUserId } },
+              totalAmount: -request.amount,  // send negative amount to retract money but still indicate the executing user
+              note: input.note,
+            },
+          }),
+          ctx.prisma.user.update({
+            where: { id: request.moneySourceUserId },
+            data: { balance: { decrement: request.amount } },
+          }),
+        ]),
         ctx.prisma.user.update({
           where: { id: ctx.session.user.id },
-          data: { balance: { increment: input.amount } },
-        }),
-        ctx.prisma.user.update({
-          where: { id: moneySourceUser.id },
-          data: { balance: { decrement: input.amount } },
+          data: { balance: { increment: totalAmount } },
         }),
       ])
     }),

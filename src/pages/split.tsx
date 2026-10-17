@@ -39,7 +39,7 @@ const SplitPage: NextPage = () => {
           {/* Main Actions Grid */}
           <div className="grid lg:grid-cols-2 gap-8 mb-8">
             {/* Send Money Section */}
-            <div className="space-y-6">              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-6 [&>.card]:flex-1">              <div className="flex items-center gap-4">
               <div className="p-4 bg-linear-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
                 <ArrowUpRight className="h-6 w-6 text-success" />
               </div>
@@ -55,7 +55,7 @@ const SplitPage: NextPage = () => {
             </div>
 
             {/* Get Money Section */}
-            <div className="space-y-6">              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-6 [&>.card]:flex-1">              <div className="flex items-center gap-4">
               <div className="p-4 bg-linear-to-br from-warning/20 to-warning/5 rounded-2xl border border-warning/20">
                 <ArrowDownLeft className="h-6 w-6 text-warning" />
               </div>
