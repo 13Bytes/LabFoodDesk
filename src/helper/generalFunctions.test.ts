@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { calculateSplit } from "~/helper/generalFunctions"
+import { calculateSplit, canRevertGroupOrder } from "~/helper/generalFunctions"
 
 describe("calculateSplit", () => {
   it("splits by factors (empty = 1)", () => {
@@ -31,5 +31,24 @@ describe("calculateSplit", () => {
     expect(calculateSplit(NaN, [1, 1], "factor").amounts).toEqual([0, 0])
     expect(calculateSplit(30, [0, 0], "factor").amounts).toEqual([0, 0])
     expect(calculateSplit(0, [NaN, 2], "absolute").amounts).toEqual([0, 2])
+  })
+})
+
+describe("canRevertGroupOrder", () => {
+  const closedAt = new Date("2026-01-01T12:00:00Z")
+  const user = { id: "closer", is_admin: false }
+
+  it("lets admins always revert", () => {
+    expect(canRevertGroupOrder({ id: "admin", is_admin: true }, "closer", undefined)).toBe(true)
+  })
+
+  it("lets the closing user revert within 2h only", () => {
+    expect(canRevertGroupOrder(user, "closer", closedAt, new Date("2026-01-01T13:59:00Z"))).toBe(true)
+    expect(canRevertGroupOrder(user, "closer", closedAt, new Date("2026-01-01T14:01:00Z"))).toBe(false)
+  })
+
+  it("denies other users", () => {
+    expect(canRevertGroupOrder({ id: "other", is_admin: false }, "closer", closedAt, closedAt)).toBe(false)
+    expect(canRevertGroupOrder(undefined, "closer", closedAt, closedAt)).toBe(false)
   })
 })

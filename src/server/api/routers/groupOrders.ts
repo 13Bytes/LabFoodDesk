@@ -13,6 +13,7 @@ import { prisma } from "~/server/db"
 import { checkAccountBacking, getReservedAmount } from "~/server/helper/dbCallHelper"
 import { buyItem } from "./items"
 import { ITEM_SECURITY_DEPOSIT } from "~/helper/globalTypes"
+import { canRevertGroupOrder } from "~/helper/generalFunctions"
 
 const pageSize = 20
 export const grouporderRouter = createTRPCRouter({
@@ -29,6 +30,7 @@ export const grouporderRouter = createTRPCRouter({
         ordersCloseAt: "asc",
       },
       include: {
+        shopper: { select: { id: true, name: true } },
         orders: {
           include: {
             user: { select: { id: true, name: true } },
@@ -57,10 +59,11 @@ export const grouporderRouter = createTRPCRouter({
       include: {
         closedBy: { select: { id: true, name: true } },
         revertedBy: { select: { id: true, name: true } },
+        shopper: { select: { id: true, name: true } },
         orders: {
           include: {
             user: { select: { id: true, name: true } },
-            items: { include: { item: true } },
+            items: { include: { item: { include: { categories: true } } } },
           },
         },
         procurementWishes: {
@@ -98,6 +101,7 @@ export const grouporderRouter = createTRPCRouter({
       },
       include: {
         revertedBy: { select: { id: true, name: true } },
+        shopper: { select: { id: true, name: true } },
         orders: {
           include: {
             user: { select: { id: true, name: true } },
@@ -247,6 +251,9 @@ export const grouporderRouter = createTRPCRouter({
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
       })
+      if (group.status !== 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order is already closed" })
+      }
       const items = await Promise.all(
         input.items.map((item) =>
           ctx.prisma.procurementItem.findUniqueOrThrow({ where: { id: item } }),
@@ -302,6 +309,50 @@ export const grouporderRouter = createTRPCRouter({
       })
     }),
 
+  /**
+   * Announce to go shopping (overwrites a previous shopper) - or step back as shopper
+   */
+  setShopper: protectedProcedure
+    .input(z.object({ groupId: id, goShopping: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.prisma.groupOrder.findUniqueOrThrow({ where: { id: input.groupId } })
+      if (group.status !== 0 || group.ordersClosedAt) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Orders are already closed" })
+      }
+      if (!input.goShopping && group.shopperId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "You are not the shopper of this group order" })
+      }
+      return ctx.prisma.groupOrder.update({
+        where: { id: group.id },
+        data: {
+          shopper: input.goShopping
+            ? { connect: { id: ctx.session.user.id } }
+            : { disconnect: true },
+        },
+      })
+    }),
+
+  /**
+   * Only show items of one category when ordering - set by admins or the shopper
+   */
+  setFilterCategory: protectedProcedure
+    .input(z.object({ groupId: id, categoryId: id.nullable() }))
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.prisma.groupOrder.findUniqueOrThrow({ where: { id: input.groupId } })
+      if (group.status !== 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order is already closed" })
+      }
+      if (!ctx.session.user.is_admin && group.shopperId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only admins or the shopper can set the category" })
+      }
+      return ctx.prisma.groupOrder.update({
+        where: { id: group.id },
+        data: {
+          filterCategory: input.categoryId ? { connect: { id: input.categoryId } } : { disconnect: true },
+        },
+      })
+    }),
+
   stopOrders: protectedProcedure.input(z.object({ groupId: id })).mutation(async ({ ctx, input }) => {
     const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
       where: { id: input.groupId },
@@ -313,7 +364,12 @@ export const grouporderRouter = createTRPCRouter({
 
     const updatedGroup = await prisma.groupOrder.update({
       where: { id: group.id },
-      data: { ordersClosedAt: { set: new Date() }, status: 5 },
+      data: {
+        ordersClosedAt: { set: new Date() },
+        status: 5,
+        // whoever stops the orders goes shopping - if nobody announced it before
+        ...(group.shopperId ? {} : { shopper: { connect: { id: ctx.session.user.id } } }),
+      },
     })
     return updatedGroup
   }),
@@ -323,14 +379,20 @@ export const grouporderRouter = createTRPCRouter({
    */
   close: protectedProcedure
     .input(
-      z.object({ split: splitSubmitSchema, groupId: id, destination: id }),
+      z.object({
+        split: splitSubmitSchema,
+        groupId: id,
+        destination: id,
+        // adjusted prices (without fees) of reserved single-item buys, e.g. if there was an offer
+        itemBuyPrices: z.array(z.object({ id, price: z.number().min(0) })).default([]),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const split = input.split
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
         include: {
-          orders: { include: { items: { include: { item: true, categories: true } } } },
+          orders: { include: { items: { include: { item: { include: { categories: true } } } } } },
           procurementWishes: { include: { items: { include: { categories: true } } } },
         },
       })
@@ -348,9 +410,28 @@ export const grouporderRouter = createTRPCRouter({
       }[] = []
       let creditOfDest = 0
       // reserved single-item buys (type 4) are booked now - their price goes to the destination-user
-      const pendingItemBuys = group.orders.filter((order) => order.type === 4 && !order.canceled)
-      for (const order of pendingItemBuys) {
-        creditOfDest += order.amountWithoutFees ?? 0
+      const pendingItemBuys = group.orders
+        .filter((order) => order.type === 4 && !order.canceled)
+        .map((order) => {
+          const price =
+            input.itemBuyPrices.find((itemBuy) => itemBuy.id === order.id)?.price ??
+            order.amountWithoutFees ??
+            0
+          const fees = calculateFeesPerCategory(
+            price,
+            order.items.flatMap((mapping) => mapping.item.categories),
+          )
+          return { order, price, fees, totalAmount: price + fees.total }
+        })
+      if (
+        input.itemBuyPrices.some(
+          (itemBuy) => !pendingItemBuys.some((pending) => pending.order.id === itemBuy.id),
+        )
+      ) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Item buy is not part of this group order" })
+      }
+      for (const pending of pendingItemBuys) {
+        creditOfDest += pending.price
       }
       for (const wish of group.procurementWishes) {
         const splitIndex = split.findIndex((split) => split.user === wish.userId)
@@ -439,21 +520,21 @@ export const grouporderRouter = createTRPCRouter({
           })
         }
         // book reserved single-item buys
-        for (const order of pendingItemBuys) {
-          await tx.transaction.update({ where: { id: order.id }, data: { type: 0 } })
+        for (const { order, price, fees, totalAmount } of pendingItemBuys) {
+          await tx.transaction.update({
+            where: { id: order.id },
+            data: { type: 0, amountWithoutFees: price, totalAmount },
+          })
           await tx.user.update({
             where: { id: order.userId },
-            data: { balance: { decrement: order.totalAmount } },
+            data: { balance: { decrement: totalAmount } },
           })
-          for (const mapping of order.items) {
-            const fees = calculateFeesPerCategory(mapping.item.price, mapping.categories)
-            for (const cat of fees.categories) {
-              if (cat.clearingAccountId && cat.charges !== 0) {
-                await tx.clearingAccount.update({
-                  where: { id: cat.clearingAccountId },
-                  data: { balance: { increment: cat.charges } },
-                })
-              }
+          for (const cat of fees.categories) {
+            if (cat.clearingAccountId && cat.charges !== 0) {
+              await tx.clearingAccount.update({
+                where: { id: cat.clearingAccountId },
+                data: { balance: { increment: cat.charges } },
+              })
             }
           }
         }
@@ -499,7 +580,12 @@ export const grouporderRouter = createTRPCRouter({
         // close group order (by setting status)
         await tx.groupOrder.update({
           where: { id: group.id },
-          data: { status: 6, closedBy: { connect: { id: ctx.session.user.id } } },
+          data: {
+            status: 6,
+            closedBy: { connect: { id: ctx.session.user.id } },
+            // the user who paid is the one who went shopping
+            shopper: { connect: { id: destinationUser.id } },
+          },
         })
       })
     }),
@@ -515,7 +601,7 @@ export const grouporderRouter = createTRPCRouter({
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
         include: {
-          orders: { include: { procurementItems: { include: { item: { include: { categories: { include: { markupDestination: true } } } } } }, items: { include: { item: true, categories: true } }, clearingAccount: true } },
+          orders: { include: { procurementItems: { include: { item: { include: { categories: { include: { markupDestination: true } } } } } }, items: { include: { item: { include: { categories: true } } } }, clearingAccount: true } },
           procurementWishes: { include: { items: { include: { categories: true } } } },
         },
       })
@@ -524,6 +610,13 @@ export const grouporderRouter = createTRPCRouter({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Orders are not closed yet - can't revert!",
+        })
+      }
+      const compensation = group.orders.find((order) => order.type === 3 && !order.canceled)
+      if (!canRevertGroupOrder(ctx.session.user, group.closedById, compensation?.createdAt)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins or the user who closed the group order (within 2h) can revert it",
         })
       }
 
@@ -576,15 +669,17 @@ export const grouporderRouter = createTRPCRouter({
           }
           else if (transaction.type === 0 && transaction.items.length > 0) {
             // single-item buy: refund and reserve it again (type 4) - it is booked again on the next close
-            for (const mapping of transaction.items) {
-              const fees = calculateFeesPerCategory(mapping.item.price, mapping.categories)
-              for (const cat of fees.categories) {
-                if (cat.clearingAccountId && cat.charges !== 0) {
-                  await tx.clearingAccount.update({
-                    where: { id: cat.clearingAccountId },
-                    data: { balance: { decrement: cat.charges } },
-                  })
-                }
+            // fees based on the booked price (may have been adjusted on close)
+            const fees = calculateFeesPerCategory(
+              transaction.amountWithoutFees ?? 0,
+              transaction.items.flatMap((mapping) => mapping.item.categories),
+            )
+            for (const cat of fees.categories) {
+              if (cat.clearingAccountId && cat.charges !== 0) {
+                await tx.clearingAccount.update({
+                  where: { id: cat.clearingAccountId },
+                  data: { balance: { decrement: cat.charges } },
+                })
               }
             }
             // buys from before the deferred booking credited the item price to the clearing-account

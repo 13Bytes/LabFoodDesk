@@ -1,3 +1,5 @@
+import { GROUP_ORDER_REVERT_TIMEOUT } from "./globalTypes"
+
 export const getUsernameLetters = (name: string | undefined | null) => {
   if (name) {
     const nameSegments = name.trim().split(" ")
@@ -13,6 +15,25 @@ export const getUsernameLetters = (name: string | undefined | null) => {
     return (firstLetter + secondLetter).toUpperCase()
   }
   return "?"
+}
+
+/**
+ * Admins can always revert a closed group order, the user who closed it only within GROUP_ORDER_REVERT_TIMEOUT
+ * @param closedAt creation of the compensation transaction
+ */
+export const canRevertGroupOrder = (
+  user: { id: string; is_admin: boolean } | undefined,
+  closedById: string | null,
+  closedAt: Date | undefined,
+  now: Date = new Date(),
+) => {
+  if (!user) return false
+  if (user.is_admin) return true
+  return (
+    user.id === closedById &&
+    !!closedAt &&
+    now.getTime() - closedAt.getTime() <= GROUP_ORDER_REVERT_TIMEOUT
+  )
 }
 
 export const toggleElementInArray = <T>(array: T[], value: T) => {

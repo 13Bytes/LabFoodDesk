@@ -64,8 +64,13 @@ model GroupOrder {
   ordersClosedAt       DateTime?
   closedBy             User?               @relation("closedBy", fields: [closedById], references: [id])
   revertedBy           User?               @relation("revertedBy", fields: [revertedById], references: [id])
+  shopper              User?               @relation("shopper", fields: [shopperId], references: [id])
   closedById           String?
   revertedById         String?
+  shopperId            String?
+  // only show items of this category when ordering (set by admins or the shopper)
+  filterCategory       Category?           @relation("groupOrderFilter", fields: [filterCategoryId], references: [id], onDelete: SetNull)
+  filterCategoryId     String?
   status               Int                 @default(0) // 0: open, 5: incoming orders stoped, 6: orders fulfilled, 99: aborted (orders not fulfilled)
   GroupOrderTemplate   GroupOrderTemplate? @relation(fields: [groupOrderTemplateId], references: [id])
   groupOrderTemplateId String?
@@ -97,6 +102,7 @@ model Category {
   markupDestinationId    String?
   ItemPurchase           ItemCategoryMapping? @relation(fields: [itemPurchaseId], references: [id])
   itemPurchaseId         String?
+  groupOrdersFiltered    GroupOrder[]         @relation("groupOrderFilter")
 }
 
 model ClearingAccount {
@@ -203,6 +209,7 @@ model User {
   Transaction             Transaction[]     @relation("canceledBy")
   groupOrdersClosed       GroupOrder[]      @relation("closedBy")
   groupOrdersReverted     GroupOrder[]      @relation("revertedBy")
+  groupOrdersShopped      GroupOrder[]      @relation("shopper")
 }
 
 model VerificationToken {

@@ -1,7 +1,7 @@
 import type { ProcurementItem } from "~/generated/prisma/client"
 import { Coins } from "lucide-react"
 import { useSession } from "next-auth/react"
-import { useMemo, useRef, useState } from "react"
+import { type ReactNode, useMemo, useRef, useState } from "react"
 import { z } from "zod"
 import { calculateAdditionalPricing } from "~/helper/dataProcessing"
 import { type Tid, id } from "~/helper/zodTypes"
@@ -55,6 +55,8 @@ type Split = {
 
 type Props = {
   group: RouterOutputs["groupOrders"]["getInProgress"][number]
+  /** further buttons, shown right in the row of the "Abrechnen" button */
+  actions?: ReactNode
 }
 
 const buildDerivedGroupData = (group: RouterOutputs["groupOrders"]["getInProgress"][number]) => {
@@ -110,7 +112,7 @@ const buildDerivedGroupData = (group: RouterOutputs["groupOrders"]["getInProgres
 }
 
 const GroupOrderSplit = (props: Props) => {
-  const { group } = props
+  const { group, actions } = props
 
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
@@ -121,22 +123,36 @@ const GroupOrderSplit = (props: Props) => {
   const { itemList, userItemList, baseSplit } = useMemo(() => buildDerivedGroupData(group), [group])
 
   const [overwrittenCosts, setOverwrittenCosts] = useState<Record<Tid, number | undefined>>({})
+  const [itemBuyPrices, setItemBuyPrices] = useState<Record<Tid, number | undefined>>({})
+  const pendingItemBuys = group.orders.filter((order) => order.type === 4 && !order.canceled)
   const [closeGroupOrderModalOpen, setCloseGroupOrderModalOpen] = useState(false)
 
-  const [selectedDestination, setSelectedDestination] = useState(sessionData?.user.id.toString() ?? "")
+  const [selectedDestination, setSelectedDestination] = useState(
+    group.shopperId ?? sessionData?.user.id.toString() ?? "",
+  )
+  // the session may not be loaded on the first render
+  const destination = selectedDestination || sessionData?.user.id || ""
   const [destinationError, setDestinationError] = useState(false)
 
   const totalItems = itemList.length
   const [totalAmount, setTotalAmount] = useState<number>(0)
-  const overwriteUserExpence = (cost: number, itemId: Tid) => {
+  const [costMode, setCostMode] = useState<"total" | "group">("total")
+  const itemBuysSum = pendingItemBuys.reduce(
+    (sum, order) => sum + (itemBuyPrices[order.id] ?? order.amountWithoutFees ?? 0),
+    0,
+  )
+  const groupAmount = costMode === "total" ? Math.max(0, totalAmount - itemBuysSum) : totalAmount
+  // the total has to cover at least the single items
+  const totalAmountTooLow = costMode === "total" && totalAmount > 0 && totalAmount < itemBuysSum
+  const overwriteUserExpence = (cost: number, key: string) => {
     setOverwrittenCosts((previous) => ({
       ...previous,
-      [itemId]: Number.isNaN(cost) ? undefined : cost,
+      [key]: Number.isNaN(cost) ? undefined : cost,
     }))
   }
 
   const split = useMemo(() => {
-    const defaultCost = totalItems > 0 ? totalAmount / totalItems : 0
+    const defaultCost = totalItems > 0 ? groupAmount / totalItems : 0
 
     const splitWithDefaults = baseSplit.map((userContent) => ({
       ...userContent,
@@ -145,7 +161,7 @@ const GroupOrderSplit = (props: Props) => {
         items: proc.items.map((item) => ({
           ...item,
           defaultCost,
-          overwritenCost: overwrittenCosts[item.item.id],
+          overwritenCost: overwrittenCosts[`${proc.id}-${item.item.id}`],
           finalCost: defaultCost,
         })),
       })),
@@ -167,8 +183,8 @@ const GroupOrderSplit = (props: Props) => {
 
     const remainingItems = totalItems - overwrittenItems
     const pricePerRemainingItem =
-      totalAmount - overwrittenItemsSum > 0 && remainingItems > 0
-        ? (totalAmount - overwrittenItemsSum) / remainingItems
+      groupAmount - overwrittenItemsSum > 0 && remainingItems > 0
+        ? (groupAmount - overwrittenItemsSum) / remainingItems
         : 0
 
     return splitWithDefaults.map((userContent) => ({
@@ -181,7 +197,7 @@ const GroupOrderSplit = (props: Props) => {
         })),
       })),
     }))
-  }, [baseSplit, overwrittenCosts, totalAmount, totalItems])
+  }, [baseSplit, overwrittenCosts, groupAmount, totalItems])
 
   const allUsersOverwritten = useMemo(() => {
     let overwrittenItemsSum = 0
@@ -194,13 +210,13 @@ const GroupOrderSplit = (props: Props) => {
         }
       }
     }
-    return overwrittenItemsSum > totalAmount ? overwrittenItemsSum : undefined
-  }, [split, totalAmount])
+    return overwrittenItemsSum > groupAmount ? overwrittenItemsSum : undefined
+  }, [split, groupAmount])
 
   const closeGroupOrderRequest = api.groupOrders.close.useMutation()
 
   const closeGroupOrder = async () => {
-    if (!selectedDestination) {
+    if (!destination) {
       setDestinationError(true)
       return
     } else {
@@ -220,8 +236,12 @@ const GroupOrderSplit = (props: Props) => {
     await closeGroupOrderRequest.mutateAsync(
       {
         groupId: group.id,
-        destination: selectedDestination,
+        destination,
         split: splitSubmit ?? {},
+        itemBuyPrices: pendingItemBuys.flatMap((order) => {
+          const price = itemBuyPrices[order.id]
+          return price === undefined ? [] : [{ id: order.id, price }]
+        }),
       },
       {
         onError: (error) => {
@@ -240,52 +260,125 @@ const GroupOrderSplit = (props: Props) => {
   return (
     <>
       <div className="container">
-        <label className="form-control w-full max-w-xs">
-          <div className="label">
-            <span className="label-text">Kosten Gesamt</span>
-            {allUsersOverwritten !== undefined && (
-              <span className="label-text text-warning">(verändert)</span>
-            )}
-          </div>
-          <DecimalInput
-            min={0}
-            onChange={setTotalAmount}
-            value={
-              allUsersOverwritten === undefined ? totalAmount : +allUsersOverwritten.toFixed(2)
-            }
-            placeholder="Gesamter Betrag"
-            className={`input input-sm w-full max-w-xs
-              ${Number.isNaN(totalAmount) ? "input-error" : ""} \
-              ${allUsersOverwritten !== undefined ? "input-warning!" : ""}`}
-            disabled={allUsersOverwritten !== undefined}
-          />
-        </label>
+        {totalItems > 0 && (
+          <>
+            <div className="mt-4 flex flex-row items-center gap-2">
+              <p className="text-sm">Kosten</p>
+              <div className="join">
+                <button
+                  className={`btn join-item btn-sm ${costMode === "total" ? "btn-primary" : "btn-outline"}`}
+                  onClick={() => setCostMode("total")}
+                >
+                  Gesamt
+                </button>
+                <button
+                  className={`btn join-item btn-sm ${costMode === "group" ? "btn-primary" : "btn-outline"}`}
+                  onClick={() => setCostMode("group")}
+                >
+                  nur Gruppen-Artikel
+                </button>
+              </div>
+              <label
+                className={`input input-sm w-28
+                  ${Number.isNaN(totalAmount) || totalAmountTooLow ? "input-error" : ""} \
+                  ${allUsersOverwritten !== undefined ? "input-warning!" : ""}`}
+              >
+                <DecimalInput
+                  min={0}
+                  onChange={setTotalAmount}
+                  value={
+                    allUsersOverwritten === undefined
+                      ? totalAmount || undefined // show the 0 only as placeholder
+                      : +(allUsersOverwritten + (costMode === "total" ? itemBuysSum : 0)).toFixed(2)
+                  }
+                  placeholder="0"
+                  className="grow"
+                  disabled={allUsersOverwritten !== undefined}
+                />
+                <span>€</span>
+              </label>
+              {allUsersOverwritten !== undefined && <p className="text-sm text-warning">(verändert)</p>}
+              {costMode === "total" && itemBuysSum > 0 && allUsersOverwritten === undefined && (
+                <p className="text-sm text-base-content/60">
+                  − {itemBuysSum.toFixed(2)}€ Einzel-Artikel = {groupAmount.toFixed(2)}€
+                </p>
+              )}
+            </div>
+            <div className="divider text-sm text-base-content/60">Gruppen-Artikel</div>
+            <div className="overflow-x-auto">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Artikel</th>
+                    <th>Kosten</th>
+                    <th>Kosten anpassen</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {split.map((userContent) =>
+                    userContent.procurementWishs.map((proc) =>
+                      proc.items.map((item, index) => (
+                        <tr key={`${proc.id}-${item.item.id}-${index}`}>
+                          <th>{userItemList[userContent.user]?.username}</th>
+                          <td>{item.item.name}</td>
+                          <td>
+                            <span>{item.finalCost.toFixed(2)}€</span>
+                            <span className="text-xs">
+                              {" "}
+                              +{" "}
+                              {calculateAdditionalPricing(
+                                item.finalCost ?? 0,
+                                item.item.categories,
+                              ).toFixed(2)}
+                              €
+                            </span>
+                          </td>
+                          <td>
+                            <DecimalInput
+                              min={0}
+                              value={item.overwritenCost || undefined}
+                              onChange={(cost) => overwriteUserExpence(cost, `${proc.id}-${item.item.id}`)}
+                              className="input input-sm max-w-24"
+                            />
+                          </td>
+                        </tr>
+                      )),
+                    ),
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
 
-        <div className="overflow-x-auto">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Gerichte</th>
-                <th>Kosten</th>
-                <th>Kosten anpassen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {split.map((userContent) =>
-                userContent.procurementWishs.map((proc) =>
-                  proc.items.map((item) => (
-                    <tr key={userContent.user}>
-                      <th>{userItemList[userContent.user]?.username}</th>
-                      <td>{item.item.name}</td>
+        {pendingItemBuys.length > 0 && (
+          <div className="overflow-x-auto">
+            <div className="divider text-sm text-base-content/60">Einzel-Artikel</div>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Artikel</th>
+                  <th>Kosten</th>
+                  <th>Kosten anpassen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingItemBuys.map((order) => {
+                  const price = itemBuyPrices[order.id] ?? order.amountWithoutFees ?? 0
+                  return (
+                    <tr key={order.id}>
+                      <th>{order.user.name}</th>
+                      <td>{order.items.map((mapping) => mapping.item.name).join(", ")}</td>
                       <td>
-                        <span>{item.finalCost.toFixed(2)}€</span>
+                        <span>{price.toFixed(2)}€</span>
                         <span className="text-xs">
                           {" "}
                           +{" "}
                           {calculateAdditionalPricing(
-                            item.finalCost ?? 0,
-                            item.item.categories,
+                            price,
+                            order.items.flatMap((mapping) => mapping.item.categories),
                           ).toFixed(2)}
                           €
                         </span>
@@ -293,28 +386,34 @@ const GroupOrderSplit = (props: Props) => {
                       <td>
                         <DecimalInput
                           min={0}
-                          value={item.overwritenCost || undefined}
-                          onChange={(cost) => overwriteUserExpence(cost, item.item.id)}
+                          value={itemBuyPrices[order.id]}
+                          placeholder={(order.amountWithoutFees ?? 0).toFixed(2)}
+                          onChange={(cost) =>
+                            setItemBuyPrices((previous) => ({
+                              ...previous,
+                              [order.id]: Number.isNaN(cost) ? undefined : cost,
+                            }))
+                          }
                           className="input input-sm max-w-24"
                         />
                       </td>
                     </tr>
-                  )),
-                ),
-              )}
-            </tbody>
-          </table>
-        </div>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         <div className="mt-6 flex flex-row flex-wrap items-center justify-between gap-2">
           <div className="flex flex-1 flex-row items-center gap-2">
-            <p>Gezahlt von:</p>
+            <p className="text-sm">Gezahlt von:</p>
             <select
               className={`select select-bordered select-sm w-full max-w-xs font-bold ${
                 destinationError ? "select-error" : ""
                 }`}
               id="sel-dest-user"
-              value={selectedDestination}
+              value={destination}
               onChange={(e) => {
                 setSelectedDestination(e.target.value)
               }}
@@ -325,15 +424,15 @@ const GroupOrderSplit = (props: Props) => {
                 </option>
               ))}
             </select>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => setCloseGroupOrderModalOpen(true)}
+            >
+              <Coins className="h-4 w-4" />
+              Abrechnen
+            </button>
           </div>
-
-          <button
-            className="btn btn-primary btn-sm mr-4"
-            onClick={() => setCloseGroupOrderModalOpen(true)}
-          >
-            <Coins className="h-4 w-4" />
-            Abrechnen
-          </button>
+          {actions}
         </div>
       </div>
       <ActionResponsePopup ref={animationRef} />
