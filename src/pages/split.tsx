@@ -85,7 +85,7 @@ const SplitPage: NextPage = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-base-200 rounded-2xl p-6 mb-8">
+          <div className="bg-base-200 border border-base-300 rounded-2xl p-6 mb-8">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Zap className="h-6 w-6 text-primary" />
               Schnellaktionen

@@ -67,7 +67,7 @@ const GetMoney = (props: Props) => {
 
   return (
     <>
-      <div className="card bg-linear-to-br from-base-100 to-base-200 shadow-xl border border-base-300 hover:shadow-2xl transition-all duration-300">
+      <div className="card dither bg-linear-to-br from-base-100 to-base-200 shadow-xl border border-base-300 hover:shadow-2xl transition-all duration-300">
         <div className="card-body p-6">
           {props.groupMode ? <GroupRequestForm {...formProps} /> : <SingleRequestForm {...formProps} />}
         </div>

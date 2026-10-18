@@ -66,7 +66,7 @@ const BuyItemCard = ({ item, buyAction, buyDepositAction, buttonName, userBalanc
 
   return (
     <>
-      <div className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 hover:border-primary/30" key={item.id}>
+      <div className="card dither bg-linear-to-br from-base-100 to-base-200 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 hover:border-primary/30" key={item.id}>
         <div className="card-body p-4">
           {/* Header with title and categories */}
           <div className="space-y-3">

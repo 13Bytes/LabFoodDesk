@@ -107,7 +107,7 @@ const Me: NextPage = () => {
                 {statsRequest.isLoading && (
                     <div className="grid md:grid-cols-3 gap-6 mb-8">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="card bg-base-100 shadow-xl">
+                            <div key={i} className="card dither bg-linear-to-br from-base-100 to-base-200 border border-base-300 shadow-xl">
                                 <div className="card-body">
                                     <div className="skeleton h-16 w-16 rounded-full mx-auto mb-4"></div>
                                     <div className="skeleton h-4 w-24 mx-auto mb-2"></div>
@@ -120,7 +120,7 @@ const Me: NextPage = () => {
                 )}
 
                 {/* Profile Information Card */}
-                <div className="card bg-base-100 shadow-xl mb-6">
+                <div className="card dither bg-linear-to-br from-base-100 to-base-200 border border-base-300 shadow-xl mb-6">
                     <div className="card-body">            <h2 className="card-title text-xl mb-4">
                         <Info className="h-6 w-6" />
                         Profil Information

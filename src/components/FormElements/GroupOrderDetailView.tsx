@@ -35,7 +35,7 @@ const GroupOrderDetailView = (props: Props) => {
   return (
     <>
       <div className="container">
-        <div key={group.id} className="card mx-auto mb-5 max-w-5xl bg-base-200 p-3">
+        <div key={group.id} className="card mx-auto mb-5 max-w-5xl border border-base-300 dither bg-linear-to-br from-base-100 to-base-200 p-3 shadow-sm">
           <div className="flex  flex-col justify-start gap-1 p-1">
             <div className="flex flex-row items-end justify-between">
               <div>

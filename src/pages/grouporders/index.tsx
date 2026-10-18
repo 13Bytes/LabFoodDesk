@@ -133,7 +133,7 @@ const GroupOrders: NextPage = () => {
       <CenteredPage>
         <div className="container">
           {groupOrderRequest.data?.map((groupOrder) => (
-            <div key={groupOrder.id} className="card mx-auto mb-5 max-w-5xl bg-base-200 p-3">
+            <div key={groupOrder.id} className="card mx-auto mb-5 max-w-5xl border border-base-300 dither bg-linear-to-br from-base-100 to-base-200 p-3 shadow-sm">
               <div className="flex flex-col justify-start gap-1 p-1">
                 <div className="flex flex-col items-start justify-between md:flex-row md:items-end">
                   <div>
