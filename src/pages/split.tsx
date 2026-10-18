@@ -1,6 +1,7 @@
 import { type NextPage } from "next"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
+import { useState } from "react"
 import { ArrowUpRight, ArrowDownLeft, Zap, BarChart3, User, Plus } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import GetMoney from "~/components/PageComponents/GetMoney"
@@ -12,11 +13,12 @@ import { api } from "~/utils/api"
 const SplitPage: NextPage = () => {
   const session = useSession()
   const userData = api.user.getMe.useQuery();
+  const [groupMode, setGroupMode] = useState(false)
 
   return (
     <>
       <CenteredPage>
-        <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="w-full max-w-6xl mx-auto px-4 py-6">
           {/* Header with personal balance */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -63,8 +65,22 @@ const SplitPage: NextPage = () => {
                 <h2 className="text-2xl font-bold text-base-content">Geld einfordern</h2>
                 <p className="text-base-content/70">Fordere ausstehende Beträge ein</p>
               </div>
+              <div className="join ml-auto">
+                <button
+                  className={`btn btn-sm join-item ${groupMode ? "" : "btn-warning"}`}
+                  onClick={() => setGroupMode(false)}
+                >
+                  Einzeln
+                </button>
+                <button
+                  className={`btn btn-sm join-item ${groupMode ? "btn-warning" : ""}`}
+                  onClick={() => setGroupMode(true)}
+                >
+                  Gruppe
+                </button>
+              </div>
             </div>
-              <GetMoney />
+              <GetMoney groupMode={groupMode} />
             </div>
           </div>
 
