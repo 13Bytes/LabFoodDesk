@@ -240,7 +240,7 @@ const BuyPage: NextPage = () => {
                   </button>
                   <button
                     onClick={handleClearAllCategories}
-                    className="btn btn-xs btn-ghost"
+                    className="btn btn-xs btn-outline"
                     disabled={noCategoriesSelected}
                   >
                     Alle abwählen
