@@ -8,6 +8,7 @@ import ActionResponsePopup, {
 } from "~/components/General/ActionResponsePopup"
 import { ConfirmationModal } from "~/components/General/ConfirmationModal"
 import CenteredPage from "~/components/Layout/CenteredPage"
+import { canRevertGroupOrder } from "~/helper/generalFunctions"
 import { localStringOptions } from "~/helper/globalTypes"
 import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
@@ -20,7 +21,6 @@ const GroupOrdersHistory: NextPage = () => {
 
   const animationRef = useRef<AnimationHandle>(null)
   const sessionData = useSession().data
-  const userIsAdmin = sessionData?.user.is_admin ?? false
 
   const [annulateOrderConfirmation, setAnnulateOrderConfirmation] = useState<Tid>()
 
@@ -46,18 +46,23 @@ const GroupOrdersHistory: NextPage = () => {
         <div className="container">
           {groupOrdersLatelyClosed.data?.map((group) => (
             <div key={group.id} className="container">
-              <div key={group.id} className="card mb-5 max-w-5xl bg-base-200 p-3">
+              <div key={group.id} className="card mx-auto mb-5 max-w-5xl border border-base-300 dither bg-linear-to-br from-base-100 to-base-200 p-3 shadow-sm">
                 <div className="flex  flex-col justify-start gap-1 p-1">
                   <div className="flex flex-row items-end justify-between">
-                    <h1 className="text-2xl font-bold">{group.name}</h1>
+                    <div>
+                      <h1 className="text-2xl font-bold">{group.name}</h1>
+                      <p className="mt-1 mb-3 text-sm text-base-content/70">
+                        Einkauf: <span className="font-semibold">{group.shopper?.name ?? "unbekannt"}</span>
+                      </p>
+                    </div>
                     <p className="text-md font-bold">
                       {group.ordersCloseAt.toLocaleString("de", localStringOptions)}
                     </p>
                   </div>
 
-                  <div>
-                    <div className="flex flex-col flex-wrap gap-2 overflow-x-auto">
-                      <h2 className="font-bold">Artikel-Übersicht</h2>
+                  {group.orders.some((transaction) => transaction.type < 3 && transaction.procurementItems.length > 0) && (
+                    <div className="overflow-x-auto">
+                      <div className="divider text-sm text-base-content/60">Gruppen-Artikel</div>
                       <table className="table table-zebra table-sm">
                         <thead>
                           <tr>
@@ -67,32 +72,55 @@ const GroupOrdersHistory: NextPage = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {group.orders.map((transaction) => {
-                            if (transaction.type < 3) {
-                              return (
-                                <tr key={`${transaction.id}`}>
-                                  <td>
-                                    <p className="font-semibold">{transaction.user.name}</p>
-                                  </td>
-                                  <td>
-                                    {[...transaction.items, ...transaction.procurementItems]
-                                      .map((item) => item.item.name)
-                                      .concat(", ")}
-                                  </td>
-                                  <td>{transaction.totalAmount.toFixed(2)}€</td>
-                                </tr>
-                              )
-                            } else {
-                              return null
-                            }
-                          })}
+                          {group.orders
+                            .filter((transaction) => transaction.type < 3 && transaction.procurementItems.length > 0)
+                            .map((transaction) => (
+                              <tr key={transaction.id}>
+                                <td>
+                                  <p className="font-semibold">{transaction.user.name}</p>
+                                </td>
+                                <td>{transaction.procurementItems.map((item) => item.item.name).join(", ")}</td>
+                                <td>{transaction.totalAmount.toFixed(2)}€</td>
+                              </tr>
+                            ))}
                         </tbody>
                       </table>
                     </div>
-                  </div>
+                  )}
+                  {group.orders.some((transaction) => transaction.type < 3 && transaction.items.length > 0) && (
+                    <div className="overflow-x-auto">
+                      <div className="divider text-sm text-base-content/60">Einzel-Artikel</div>
+                      <table className="table table-zebra table-sm">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Artikel</th>
+                            <th>Preis</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {group.orders
+                            .filter((transaction) => transaction.type < 3 && transaction.items.length > 0)
+                            .map((transaction) => (
+                              <tr key={transaction.id}>
+                                <td>
+                                  <p className="font-semibold">{transaction.user.name}</p>
+                                </td>
+                                <td>{transaction.items.map((item) => item.item.name).join(", ")}</td>
+                                <td>{transaction.totalAmount.toFixed(2)}€</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                   <div className="flex justify-between px-3">
                     <div className="flex ">
-                      {userIsAdmin && (
+                      {canRevertGroupOrder(
+                        sessionData?.user,
+                        group.closedById,
+                        group.orders.find((order) => order.type === 3 && !order.canceled)?.createdAt,
+                      ) && (
                         <button
                           className="btn btn-primary btn-sm mr-4 mt-1"
                           onClick={() => {

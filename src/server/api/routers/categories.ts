@@ -16,13 +16,6 @@ export const categoryRouter = createTRPCRouter({
     })
   }),
 
-  getAllWithItems: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.category.findMany({
-      where: { is_active: true },
-      include: { items: true, procurementItems: true },
-    })
-  }),
-
   get: protectedProcedure.input(idObj).query(({ ctx, input }) => {
     return ctx.prisma.category.findUniqueOrThrow({
       where: { id: input.id },
@@ -31,7 +24,6 @@ export const categoryRouter = createTRPCRouter({
   }),
 
   create: adminProcedure.input(addCategoryValidationSchem).mutation(async ({ ctx, input }) => {
-    console.log(input)
     const { markupDestination, ...correctedData } = input
     const entryWithMarkup = markupDestination != undefined && markupDestination !== ""
     if (!entryWithMarkup) {

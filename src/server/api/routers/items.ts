@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import { type Prisma, type PrismaClient } from "~/generated/prisma/client"
 import { z } from "zod"
@@ -11,7 +12,7 @@ import {
   protectedProcedure
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
-import { checkAccountBacking } from "~/server/helper/dbCallHelper"
+import { checkAccountBacking, getReservedAmount } from "~/server/helper/dbCallHelper"
 
 export const itemRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
@@ -98,6 +99,7 @@ export const itemRouter = createTRPCRouter({
         id: canonicalItemId,
         name: input.name,
         price: input.price,
+        deposit: input.deposit,
         account: { connect: { id: input.account } },
         categories: { connect: categories.map((category) => ({ id: category.id })) },
         is_active: true,
@@ -226,11 +228,54 @@ export const itemRouter = createTRPCRouter({
     }),
 
   buyItem: protectedProcedure
-    .input(z.object({ productID: id, quantity: z.number().min(1).default(1) }))
+    .input(z.object({ productID: id, quantity: z.number().int().min(1).default(1) }))
     .mutation(async ({ ctx, input }) => {
       await buyItem(ctx.prisma, input.productID, ctx.session.user.id, undefined, input.quantity)
+    }),
+
+  buyDeposit: protectedProcedure
+    .input(z.object({ productID: id, quantity: z.number().int().min(1).default(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await buyDeposit(ctx.prisma, input.productID, ctx.session.user.id, input.quantity)
     })
 })
+
+/**
+ * Books only the deposit of an item as its own buy (without category-markup) on the item's clearing-account
+ */
+export const buyDeposit = async (prisma: PrismaClient, productID: Tid, userId: Tid, quantity: number = 1) => {
+  const product = await prisma.item.findUniqueOrThrow({ where: { id: productID } })
+  if (!(product.deposit > 0)) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "This item has no deposit" })
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUniqueOrThrow({ where: { id: userId } })
+    checkAccountBacking(user, product.deposit * quantity + (await getReservedAmount(tx, userId)))
+
+    // one transaction per piece - like buyItem
+    for (let i = 1; i <= quantity; i++) {
+      await tx.transaction.create({
+        data: {
+          user: { connect: { id: userId } },
+          clearingAccount: { connect: { id: product.accountId } },
+          type: 0,
+          amountWithoutFees: product.deposit,
+          totalAmount: product.deposit,
+          note: `Pfand: ${product.name}`,
+        },
+      })
+    }
+    await tx.user.update({
+      where: { id: userId },
+      data: { balance: { decrement: product.deposit * quantity } },
+    })
+    await tx.clearingAccount.update({
+      where: { id: product.accountId },
+      data: { balance: { increment: product.deposit * quantity } },
+    })
+  })
+}
 
 export const buyItem = async (
   prisma: PrismaClient,
@@ -247,11 +292,18 @@ export const buyItem = async (
   })
 
   const fees = calculateFeesPerCategory(product.price, product.categories)
+  // fees without a clearing-account would be charged but booked nowhere
+  if (fees.categories.some((cat) => cat.charges !== 0 && !cat.clearingAccountId)) {
+    throw new TRPCError({
+      code: "METHOD_NOT_SUPPORTED",
+      message: "Category has no clearing-account set - please contact an admin and let them fix it",
+    })
+  }
   const totalPriceSingleQty = product.price + fees.total
 
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.findUniqueOrThrow({ where: { id: userId } })
-    checkAccountBacking(user, totalPriceSingleQty * quantity)
+    checkAccountBacking(user, totalPriceSingleQty * quantity + (await getReservedAmount(tx, userId)))
 
     const transaction: Prisma.TransactionCreateInput = {
       user: { connect: { id: userId } },
@@ -272,13 +324,20 @@ export const buyItem = async (
       totalAmount: totalPriceSingleQty,
     }
     if (groupId) {
+      // group-order buys are only reserved (type 4) and booked when the group order is closed;
+      // the item price then goes to the destination-user instead of the clearing-account
       transaction["groupOrder"] = { connect: { id: groupId } }
+      transaction.type = 4
+      delete transaction.clearingAccount
     }
 
     for (let i = 1; i <= quantity; i++) {
       await tx.transaction.create({
         data: transaction
       })
+      if (groupId) {
+        continue
+      }
       await tx.user.update({
         where: { id: userId },
         data: { balance: { decrement: totalPriceSingleQty } },

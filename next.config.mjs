@@ -8,6 +8,10 @@
 const config = {
   reactStrictMode: true,
   output: 'standalone',
+  // new value on every build - sessions of older builds are rejected (src/server/sessionBuild.ts)
+  env: {
+    SESSION_BUILD_ID: String(Date.now()),
+  },
   /**
    * If you have the "experimental: { appDir: true }" setting enabled, then you
    * must comment the below `i18n` config out.

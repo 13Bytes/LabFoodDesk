@@ -8,21 +8,32 @@ interface Props {
     categories: Category[]
   }) | { categories: Category[], id: string, name: string },
   buyAction: (itemID: string, quantity?: number) => Promise<void>,
+  buyDepositAction?: (itemID: string, quantity?: number) => Promise<void>,
   buttonName?: string
   userBalance?: number
 }
 
-const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
+const BuyItemCard = ({ item, buyAction, buyDepositAction, buttonName, userBalance }: Props) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [quantity, setQuantity] = useState(1)
+  const [buyDeposit, setBuyDeposit] = useState(false)
 
   const itemWithPrice = 'price' in item
   const additionalPricing = itemWithPrice ? calculateAdditionalItemPricing(item, item.categories) : 0
   const totalPrice = itemWithPrice ? item.price + additionalPricing : NaN
+  const deposit = itemWithPrice ? item.deposit : 0
+  const unitPrice = buyDeposit ? deposit : totalPrice
 
   const handleBuyClick = () => {
     setQuantity(1) // Reset quantity when opening modal
+    setBuyDeposit(false)
+    setShowConfirmModal(true)
+  }
+
+  const handleBuyDepositClick = () => {
+    setQuantity(1)
+    setBuyDeposit(true)
     setShowConfirmModal(true)
   }
 
@@ -30,7 +41,11 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
     setIsProcessing(true)
     setShowConfirmModal(false)
     try {
-      await buyAction(item.id, quantity)
+      if (buyDeposit) {
+        await buyDepositAction?.(item.id, quantity)
+      } else {
+        await buyAction(item.id, quantity)
+      }
     } finally {
       setIsProcessing(false)
     }
@@ -51,7 +66,7 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
 
   return (
     <>
-      <div className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 hover:border-primary/30" key={item.id}>
+      <div className="card dither bg-linear-to-br from-base-100 to-base-200 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 hover:border-primary/30" key={item.id}>
         <div className="card-body p-4">
           {/* Header with title and categories */}
           <div className="space-y-3">
@@ -80,6 +95,16 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
                     <span className="text-sm text-base-content/60">
                       ({item.price}€ + {additionalPricing.toFixed(2)}€)
                     </span>
+                  )}
+                  {buyDepositAction && deposit > 0 && (
+                    <button
+                      className="btn btn-outline btn-xs ml-auto self-center"
+                      onClick={handleBuyDepositClick}
+                      disabled={isProcessing}
+                      title={`Nur den Pfand von ${deposit.toFixed(2)}€ kaufen`}
+                    >
+                      + Pfand {deposit.toFixed(2)}€
+                    </button>
                   )}
                 </>
               }
@@ -110,15 +135,15 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
         open={showConfirmModal}
         close={() => setShowConfirmModal(false)}
         proceed={handleConfirmBuy}
-        title="Kauf bestätigen"
+        title={buyDeposit ? "Pfand-Kauf bestätigen" : "Kauf bestätigen"}
         cancelText="Abbrechen"
-        proceedText="Jetzt kaufen"
+        proceedText={buyDeposit ? "Pfand kaufen" : "Jetzt kaufen"}
         proceedButtonClass="btn btn-primary"
         className="z-1000"
       >
         <div className="space-y-3">
           <p className="text-base">
-            Möchtest du <span className="font-semibold">{item.name}</span> wirklich kaufen?
+            Möchtest du {buyDeposit && "den Pfand für "}<span className="font-semibold">{item.name}</span> wirklich kaufen?
           </p>
           
           {/* Quantity Selector */}
@@ -156,10 +181,10 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
             <>
               <div className="bg-base-200 rounded-lg p-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-base-content/70">Preis pro Stück:</span>
-                  <span className="text-lg font-bold text-primary">{totalPrice.toFixed(2)}€</span>
+                  <span className="text-base-content/70">{buyDeposit ? "Pfand pro Stück:" : "Preis pro Stück:"}</span>
+                  <span className="text-lg font-bold text-primary">{unitPrice.toFixed(2)}€</span>
                 </div>
-                {additionalPricing > 0 && (
+                {!buyDeposit && additionalPricing > 0 && (
                   <div className="text-xs text-base-content/60 mt-1 text-right">
                     (Grundpreis: {item.price}€ + Gebühren: {additionalPricing.toFixed(2)}€)
                   </div>
@@ -167,7 +192,7 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
                 {quantity > 1 && (
                   <div className="flex justify-between items-center mt-2 pt-2 border-t border-base-300">
                     <span className="text-base-content/70">Gesamtpreis:</span>
-                    <span className="text-xl font-bold text-primary">{(totalPrice * quantity).toFixed(2)}€</span>
+                    <span className="text-xl font-bold text-primary">{(unitPrice * quantity).toFixed(2)}€</span>
                   </div>
                 )}
               </div>
@@ -179,8 +204,8 @@ const BuyItemCard = ({ item, buyAction, buttonName, userBalance }: Props) => {
                   </div>
                   <div className="flex justify-between items-center mt-2 pt-2 border-t border-base-300">
                     <span className="text-base-content/70">Nach Kauf:</span>
-                    <span className={`text-lg font-bold ${userBalance - (totalPrice * quantity) < 0 ? 'text-error' : 'text-success'}`}>
-                      {(userBalance - (totalPrice * quantity)).toFixed(2)}€
+                    <span className={`text-lg font-bold ${userBalance - (unitPrice * quantity) < 0 ? 'text-error' : 'text-success'}`}>
+                      {(userBalance - (unitPrice * quantity)).toFixed(2)}€
                     </span>
                   </div>
                 </div>

@@ -16,3 +16,4 @@ export const localStringOptions: Intl.DateTimeFormatOptions = {
 }
 
 export const ITEM_SECURITY_DEPOSIT = 2 // secure x€ per item for procurement orders
+export const GROUP_ORDER_REVERT_TIMEOUT = 1000 * 60 * 60 * 2 // the user who closed a group order can revert it for 2h - in ms

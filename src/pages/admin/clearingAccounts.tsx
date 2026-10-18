@@ -6,6 +6,7 @@ import ActionResponsePopup, {
   animate,
 } from "~/components/General/ActionResponsePopup"
 import { ArrowRight, Info, Send } from "lucide-react"
+import DecimalInput from "~/components/General/DecimalInput"
 import RegularPage from "~/components/Layout/RegularPage"
 import ClearingAccountOverview from "~/components/PageComponents/ClearingAccountOverview"
 import { type Tid, id } from "~/helper/zodTypes"
@@ -84,12 +85,10 @@ const ClearingAccountPage = () => {
               <span className="label-text font-semibold">Betrag</span>
             </label>
             <div className="flex items-center gap-2">
-              <input
-                type="number"
+              <DecimalInput
                 className="input w-32 font-bold"
                 value={amountSend}
-                step={0.01}
-                onChange={(e) => setAmountSend(parseFloat(e.target.value))}
+                onChange={setAmountSend}
               />
               <span className="text-lg font-semibold">€</span>
             </div>
