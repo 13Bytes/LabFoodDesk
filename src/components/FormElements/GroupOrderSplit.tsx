@@ -1,13 +1,14 @@
 import type { ProcurementItem } from "~/generated/prisma/client"
 import { Coins } from "lucide-react"
 import { useSession } from "next-auth/react"
-import { type ChangeEvent, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { z } from "zod"
 import { calculateAdditionalPricing } from "~/helper/dataProcessing"
 import { type Tid, id } from "~/helper/zodTypes"
 import { type RouterOutputs, api } from "~/utils/api"
 import ActionResponsePopup, { type AnimationHandle, animate } from "../General/ActionResponsePopup"
 import { ConfirmationModal } from "../General/ConfirmationModal"
+import DecimalInput from "../General/DecimalInput"
 
 type UserItemList = {
   [user: Tid]: {
@@ -127,17 +128,7 @@ const GroupOrderSplit = (props: Props) => {
 
   const totalItems = itemList.length
   const [totalAmount, setTotalAmount] = useState<number>(0)
-  const typeTotalAmount = (e: ChangeEvent<HTMLInputElement>) => {
-    const userInput = e.currentTarget.value
-    const value = parseFloat(userInput)
-    setTotalAmount(value)
-  }
-
-  const overwriteUserExpence = (
-    e: ChangeEvent<HTMLInputElement>,
-    itemId: Tid,
-  ) => {
-    const cost = parseFloat(e.currentTarget.value)
+  const overwriteUserExpence = (cost: number, itemId: Tid) => {
     setOverwrittenCosts((previous) => ({
       ...previous,
       [itemId]: Number.isNaN(cost) ? undefined : cost,
@@ -256,13 +247,11 @@ const GroupOrderSplit = (props: Props) => {
               <span className="label-text text-warning">(verändert)</span>
             )}
           </div>
-          <input
-            type="number"
-            step={0.01}
+          <DecimalInput
             min={0}
-            onChange={typeTotalAmount}
+            onChange={setTotalAmount}
             value={
-              allUsersOverwritten === undefined ? totalAmount : allUsersOverwritten?.toFixed(2)
+              allUsersOverwritten === undefined ? totalAmount : +allUsersOverwritten.toFixed(2)
             }
             placeholder="Gesamter Betrag"
             className={`input input-sm w-full max-w-xs
@@ -302,12 +291,10 @@ const GroupOrderSplit = (props: Props) => {
                         </span>
                       </td>
                       <td>
-                        <input
-                          type="number"
-                          step={0.01}
+                        <DecimalInput
                           min={0}
-                          value={item.overwritenCost || ""}
-                          onChange={(e) => overwriteUserExpence(e, item.item.id)}
+                          value={item.overwritenCost || undefined}
+                          onChange={(cost) => overwriteUserExpence(cost, item.item.id)}
                           className="input input-sm max-w-24"
                         />
                       </td>

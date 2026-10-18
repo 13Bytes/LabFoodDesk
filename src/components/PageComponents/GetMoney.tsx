@@ -5,6 +5,7 @@ import ActionResponsePopup, {
   animate,
   type AnimationHandle,
 } from "~/components/General/ActionResponsePopup"
+import DecimalInput from "~/components/General/DecimalInput"
 import { calculateSplit, type SplitMode } from "~/helper/generalFunctions"
 import { api } from "~/utils/api"
 
@@ -89,18 +90,13 @@ const AmountInput = (props: {
       <span className="label-text font-medium">{props.label}</span>
     </label>
     <div className="relative">
-      <input
-        type="number"
+      <DecimalInput
         className="input input-lg w-full pr-12 text-2xl font-semibold"
         value={props.value}
         min={0}
-        step={0.01}
         placeholder="0.00"
         disabled={props.disabled}
-        onChange={(e) => {
-          const amount = parseFloat(e.target.value)
-          if (!(amount < 0)) props.onChange(amount)
-        }}
+        onChange={props.onChange}
       />
       <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-2xl font-semibold text-base-content/60">
         €
@@ -351,20 +347,14 @@ const GroupRequestForm = (props: FormProps) => {
       <div key={key} className="contents">
         <span className="truncate font-medium">{name}</span>
         <div className="relative w-24">
-          <input
-            type="number"
-            className="input input-sm w-full pr-6 text-right placeholder:text-base-content/50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            value={value === undefined ? "" : +value.toFixed(4)}
+          <DecimalInput
+            className="input input-sm w-full pr-6 text-right placeholder:text-base-content/50"
+            value={value}
             placeholder={(+(shares[index] ?? 0).toFixed(4)).toString()}
             min={0}
             max={splitMode === "percent" ? 100 : undefined}
-            step={splitMode === "factor" ? 0.5 : 0.01}
-            onChange={(e) => {
-              const share = parseFloat(e.target.value)
-              // empty field: automatic again
-              if (Number.isNaN(share)) onChange(undefined)
-              else if (share >= 0 && (splitMode !== "percent" || share <= 100)) onChange(share)
-            }}
+            // empty field: automatic again
+            onChange={(share) => onChange(Number.isNaN(share) ? undefined : share)}
           />
           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-base-content/60">{unit}</span>
         </div>

@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useMemo } from "react"
 import type { SubmitHandler } from "react-hook-form"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
+import DecimalInput from "~/components/General/DecimalInput"
 import { type Tid, formCategories, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import CategorySelector from "../FormElements/CategorySelector"
@@ -106,15 +107,20 @@ const ItemForm = (props: Props) => {
             <label className="label">
               <span className="label-text text-base">Preis [€]</span>
             </label>
-            <input
-              type="number"
-              step={0.01}
-              {...addItemRegister("price", {
-                required: true,
-                valueAsNumber: true,
-              })}
-              className="input input-primary w-full max-w-md"
-              placeholder="Preis"
+            <Controller
+              control={control}
+              name="price"
+              rules={{ required: true }}
+              render={({ field }) => (
+                <DecimalInput
+                  name={field.name}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  className="input input-primary w-full max-w-md"
+                  placeholder="Preis"
+                />
+              )}
             />
             {errors.price && <p>{errors.price.message}</p>}
           </div>

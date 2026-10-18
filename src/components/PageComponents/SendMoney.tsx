@@ -5,6 +5,7 @@ import ActionResponsePopup, {
   animate,
   type AnimationHandle,
 } from "~/components/General/ActionResponsePopup"
+import DecimalInput from "~/components/General/DecimalInput"
 import { api } from "~/utils/api"
 
 type Props = {
@@ -64,14 +65,12 @@ const SendMoney = (props: Props) => {
               <span className="label-text font-medium">Betrag</span>
             </label>
             <div className="relative">
-              <input
-                type="number"
+              <DecimalInput
                 className="input input-lg w-full pr-12 text-2xl font-semibold"
                 value={amountSend}
                 min={0}
-                step={0.01}
                 placeholder="0.00"
-                onChange={(e) => setAmountSend(parseFloat(e.target.value))}
+                onChange={setAmountSend}
               />
               <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-2xl font-semibold text-base-content/60">
                 €
