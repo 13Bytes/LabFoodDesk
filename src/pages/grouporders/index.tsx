@@ -27,6 +27,7 @@ const GroupOrders: NextPage = () => {
   const buyItemRequest = api.groupOrders.buyGroupOrderItem.useMutation()
   const procureItemRequest = api.groupOrders.procureGroupOrderItem.useMutation()
   const undoProcureGroupOrderItemRequest = api.groupOrders.undoProcureGroupOrderItem.useMutation()
+  const undoBuyGroupOrderItemRequest = api.groupOrders.undoBuyGroupOrderItem.useMutation()
   const stopOrderRequest = api.groupOrders.stopOrders.useMutation()
   const sessionUser = useSession().data?.user
   const animationRef = useRef<AnimationHandle>(null)
@@ -54,15 +55,20 @@ const GroupOrders: NextPage = () => {
     await trpcUtils.groupOrders.invalidate()
     await trpcUtils.user.invalidate()
   }
+  const rescindBuy = async (transactionId: Tid) => {
+    await undoBuyGroupOrderItemRequest.mutateAsync({ transactionId })
+    await trpcUtils.groupOrders.invalidate()
+  }
 
   const buyItemInGroupOrder = async (
     groupId: string,
     itemID: string,
     type: "procurement" | "order",
+    quantity = 1,
   ) => {
     if (type === "order") {
       await buyItemRequest.mutateAsync(
-        { groupId, item: itemID },
+        { groupId, item: itemID, quantity },
         {
           onError: (error) => {
             console.error(error)
@@ -75,7 +81,7 @@ const GroupOrders: NextPage = () => {
       )
     } else if (type === "procurement") {
       await procureItemRequest.mutateAsync(
-        { groupId, items: [itemID] },
+        { groupId, items: [itemID], quantity },
         {
           onError: (error) => {
             console.error(error)
@@ -145,7 +151,17 @@ const GroupOrders: NextPage = () => {
                           <td>
                             <p className="font-semibold">{o.user.name}</p>
                           </td>
-                          <td>{o.items.map((item) => item.item.name).join(", ")}</td>
+                          <td>
+                            {o.items.map((item) => item.item.name).join(", ")}
+                            {o.userId === sessionUser?.id && o.type === 4 && (
+                              <button
+                                className="btn btn-outline btn-xs ml-3"
+                                onClick={() => rescindBuy(o.id)}
+                              >
+                                stornieren
+                              </button>
+                            )}
+                          </td>
                           <td></td>
                         </tr>
                       )
@@ -199,8 +215,8 @@ const GroupOrders: NextPage = () => {
               key={item.id}
               item={item}
               buttonName="Wünschen"
-              buyAction={async () => {
-                await buyItemInGroupOrder(selectedGroupOrder!, item.id, "procurement")
+              buyAction={async (_itemID, quantity) => {
+                await buyItemInGroupOrder(selectedGroupOrder!, item.id, "procurement", quantity)
               }}
             />
           ))}
@@ -208,8 +224,8 @@ const GroupOrders: NextPage = () => {
             <BuyItemCard
               key={item.id}
               item={item}
-              buyAction={async () => {
-                await buyItemInGroupOrder(selectedGroupOrder!, item.id, "order")
+              buyAction={async (_itemID, quantity) => {
+                await buyItemInGroupOrder(selectedGroupOrder!, item.id, "order", quantity)
               }}
             />
           ))}

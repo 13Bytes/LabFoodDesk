@@ -11,7 +11,7 @@ import {
   protectedProcedure
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
-import { checkAccountBacking } from "~/server/helper/dbCallHelper"
+import { checkAccountBacking, getReservedAmount } from "~/server/helper/dbCallHelper"
 
 export const itemRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
@@ -251,7 +251,7 @@ export const buyItem = async (
 
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.findUniqueOrThrow({ where: { id: userId } })
-    checkAccountBacking(user, totalPriceSingleQty * quantity)
+    checkAccountBacking(user, totalPriceSingleQty * quantity + (await getReservedAmount(tx, userId)))
 
     const transaction: Prisma.TransactionCreateInput = {
       user: { connect: { id: userId } },
@@ -272,13 +272,20 @@ export const buyItem = async (
       totalAmount: totalPriceSingleQty,
     }
     if (groupId) {
+      // group-order buys are only reserved (type 4) and booked when the group order is closed;
+      // the item price then goes to the destination-user instead of the clearing-account
       transaction["groupOrder"] = { connect: { id: groupId } }
+      transaction.type = 4
+      delete transaction.clearingAccount
     }
 
     for (let i = 1; i <= quantity; i++) {
       await tx.transaction.create({
         data: transaction
       })
+      if (groupId) {
+        continue
+      }
       await tx.user.update({
         where: { id: userId },
         data: { balance: { decrement: totalPriceSingleQty } },

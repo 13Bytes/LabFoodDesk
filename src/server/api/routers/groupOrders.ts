@@ -10,7 +10,7 @@ import { calculateFeesPerCategory, timeToDate } from "~/helper/dataProcessing"
 import { type Tid, id } from "~/helper/zodTypes"
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
-import { checkAccountBacking } from "~/server/helper/dbCallHelper"
+import { checkAccountBacking, getReservedAmount } from "~/server/helper/dbCallHelper"
 import { buyItem } from "./items"
 import { ITEM_SECURITY_DEPOSIT } from "~/helper/globalTypes"
 
@@ -198,13 +198,41 @@ export const grouporderRouter = createTRPCRouter({
       z.object({
         groupId: id,
         item: id,
+        quantity: z.number().int().min(1).default(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
       })
-      await buyItem(ctx.prisma, input.item, ctx.session.user.id, group.id)
+      if (group.status !== 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order is already closed" })
+      }
+      await buyItem(ctx.prisma, input.item, ctx.session.user.id, group.id, input.quantity)
+    }),
+
+  undoBuyGroupOrderItem: protectedProcedure
+    .input(
+      z.object({
+        transactionId: id,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.$transaction(async (tx) => {
+        const transaction = await tx.transaction.findUniqueOrThrow({
+          where: {
+            id: input.transactionId,
+            userId: ctx.session.user.id,
+          },
+          include: { groupOrder: true },
+        })
+        if (transaction.type !== 4 || transaction.groupOrder?.status !== 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Group Order is already closed" })
+        }
+        // nothing has been booked yet (see buyItem) - so just remove the reservation
+        await tx.itemCategoryMapping.deleteMany({ where: { transactionId: transaction.id } })
+        await tx.transaction.delete({ where: { id: transaction.id } })
+      })
     }),
 
   procureGroupOrderItem: protectedProcedure
@@ -212,6 +240,7 @@ export const grouporderRouter = createTRPCRouter({
       z.object({
         groupId: id,
         items: z.array(id),
+        quantity: z.number().int().min(1).default(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -224,21 +253,26 @@ export const grouporderRouter = createTRPCRouter({
         ),
       )
 
-      const requiredBacking = items.length * ITEM_SECURITY_DEPOSIT // secure x€ per item
+      const requiredBacking = items.length * input.quantity * ITEM_SECURITY_DEPOSIT // secure x€ per item
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
 
       if (env.DISABLE_PROCUREMENT_ACCOUNT_BACKING_CHECK !== "true") {
-        checkAccountBacking(user, requiredBacking)
+        checkAccountBacking(user, requiredBacking + (await getReservedAmount(ctx.prisma, user.id)))
       }
 
-      const procWish = await prisma.procurementWish.create({
-        data: {
-          user: { connect: { id: ctx.session.user.id } },
-          GroupOrder: { connect: { id: group.id } },
-          items: { connect: items.map((itm) => ({ id: itm.id })) },
-        },
-      })
-      return procWish
+      // one wish per piece, as a wish can contain every item only once
+      const procWishes = await prisma.$transaction(
+        Array.from({ length: input.quantity }, () =>
+          prisma.procurementWish.create({
+            data: {
+              user: { connect: { id: ctx.session.user.id } },
+              GroupOrder: { connect: { id: group.id } },
+              items: { connect: items.map((itm) => ({ id: itm.id })) },
+            },
+          }),
+        ),
+      )
+      return procWishes
     }),
 
   undoProcureGroupOrderItem: protectedProcedure
@@ -296,7 +330,7 @@ export const grouporderRouter = createTRPCRouter({
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
         include: {
-          orders: true,
+          orders: { include: { items: { include: { item: true, categories: true } } } },
           procurementWishes: { include: { items: { include: { categories: true } } } },
         },
       })
@@ -313,6 +347,11 @@ export const grouporderRouter = createTRPCRouter({
         totalAmountWithCat: number
       }[] = []
       let creditOfDest = 0
+      // reserved single-item buys (type 4) are booked now - their price goes to the destination-user
+      const pendingItemBuys = group.orders.filter((order) => order.type === 4 && !order.canceled)
+      for (const order of pendingItemBuys) {
+        creditOfDest += order.amountWithoutFees ?? 0
+      }
       for (const wish of group.procurementWishes) {
         const splitIndex = split.findIndex((split) => split.user === wish.userId)
         if (splitIndex !== -1) {
@@ -399,6 +438,25 @@ export const grouporderRouter = createTRPCRouter({
             },
           })
         }
+        // book reserved single-item buys
+        for (const order of pendingItemBuys) {
+          await tx.transaction.update({ where: { id: order.id }, data: { type: 0 } })
+          await tx.user.update({
+            where: { id: order.userId },
+            data: { balance: { decrement: order.totalAmount } },
+          })
+          for (const mapping of order.items) {
+            const fees = calculateFeesPerCategory(mapping.item.price, mapping.categories)
+            for (const cat of fees.categories) {
+              if (cat.clearingAccountId && cat.charges !== 0) {
+                await tx.clearingAccount.update({
+                  where: { id: cat.clearingAccountId },
+                  data: { balance: { increment: cat.charges } },
+                })
+              }
+            }
+          }
+        }
         // add money to clearing-account
         for (const cat of allCategorieFees) {
           if (cat.charges !== 0) {
@@ -457,7 +515,7 @@ export const grouporderRouter = createTRPCRouter({
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
         include: {
-          orders: { include: { procurementItems: { include: { item: { include: { categories: { include: { markupDestination: true } } } } } }, items: true, clearingAccount: true } },
+          orders: { include: { procurementItems: { include: { item: { include: { categories: { include: { markupDestination: true } } } } } }, items: { include: { item: true, categories: true } }, clearingAccount: true } },
           procurementWishes: { include: { items: { include: { categories: true } } } },
         },
       })
@@ -482,7 +540,6 @@ export const grouporderRouter = createTRPCRouter({
           if (transaction.canceled) {
             continue
           }
-          // Only undo procurement items; regular items should already be fulfilled
           if (transaction.type === 0 && transaction.procurementItems.length > 0) {
             if (transaction.items.length > 0) {
               throw new TRPCError({
@@ -512,6 +569,35 @@ export const grouporderRouter = createTRPCRouter({
               },
             })
             // revert user-balance
+            await tx.user.update({
+              where: { id: transaction.userId },
+              data: { balance: { increment: transaction.totalAmount } },
+            })
+          }
+          else if (transaction.type === 0 && transaction.items.length > 0) {
+            // single-item buy: refund and reserve it again (type 4) - it is booked again on the next close
+            for (const mapping of transaction.items) {
+              const fees = calculateFeesPerCategory(mapping.item.price, mapping.categories)
+              for (const cat of fees.categories) {
+                if (cat.clearingAccountId && cat.charges !== 0) {
+                  await tx.clearingAccount.update({
+                    where: { id: cat.clearingAccountId },
+                    data: { balance: { decrement: cat.charges } },
+                  })
+                }
+              }
+            }
+            // buys from before the deferred booking credited the item price to the clearing-account
+            if (transaction.clearingAccountId) {
+              await tx.clearingAccount.update({
+                where: { id: transaction.clearingAccountId },
+                data: { balance: { decrement: transaction.amountWithoutFees ?? 0 } },
+              })
+            }
+            await tx.transaction.update({
+              where: { id: transaction.id },
+              data: { type: 4, clearingAccount: { disconnect: true } },
+            })
             await tx.user.update({
               where: { id: transaction.userId },
               data: { balance: { increment: transaction.totalAmount } },

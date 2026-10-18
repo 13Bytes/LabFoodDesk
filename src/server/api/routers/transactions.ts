@@ -9,7 +9,7 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
-import { checkAccountBacking } from "~/server/helper/dbCallHelper"
+import { checkAccountBacking, getReservedAmount } from "~/server/helper/dbCallHelper"
 
 export const sendMoneyProcurementSchema = z.object({
   destinationUserId: id,
@@ -176,7 +176,7 @@ export const transactionRouter = createTRPCRouter({
           message: "You can't send a negative amount",
         })
       }
-      checkAccountBacking(user, input.amount)
+      checkAccountBacking(user, input.amount + (await getReservedAmount(ctx.prisma, user.id)))
 
       // atomic action:
       await ctx.prisma.$transaction([

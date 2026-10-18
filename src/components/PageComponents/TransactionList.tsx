@@ -21,6 +21,8 @@ const getTransactionTypeLabel = (type: number): string => {
       return "Überweisung"
     case 3:
       return "Beschaffung"
+    case 4:
+      return "Vorgemerkter Kauf"
     case 90:
       return "Stornierter Kauf"
     case 91:

@@ -306,29 +306,29 @@ const GroupOrderSplit = (props: Props) => {
           </table>
         </div>
 
-        <div className="mt-6 flex flex-row items-center gap-2">
-          <p>Gezahlt von:</p>
-          <select
-            className={`select select-bordered select-sm w-full max-w-xs font-bold ${
-              destinationError ? "select-error" : ""
-              }`}
-            id="sel-dest-user"
-            value={selectedDestination}
-            onChange={(e) => {
-              setSelectedDestination(e.target.value)
-            }}
-          >
-            {allUserRequest.data?.map((user) => (
-              <option value={user.id} key={user.id} className="">
-                {user.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <div className="mt-6 flex flex-row flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-1 flex-row items-center gap-2">
+            <p>Gezahlt von:</p>
+            <select
+              className={`select select-bordered select-sm w-full max-w-xs font-bold ${
+                destinationError ? "select-error" : ""
+                }`}
+              id="sel-dest-user"
+              value={selectedDestination}
+              onChange={(e) => {
+                setSelectedDestination(e.target.value)
+              }}
+            >
+              {allUserRequest.data?.map((user) => (
+                <option value={user.id} key={user.id} className="">
+                  {user.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="flex justify-end">
           <button
-            className="btn btn-primary btn-sm mr-4 mt-1"
+            className="btn btn-primary btn-sm mr-4"
             onClick={() => setCloseGroupOrderModalOpen(true)}
           >
             <Coins className="h-4 w-4" />
