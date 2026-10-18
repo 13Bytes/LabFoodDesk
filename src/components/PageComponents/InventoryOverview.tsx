@@ -93,6 +93,7 @@ const InventoryOverview = () => {
       </th>
       <th>Name</th>
       <th className="text-right">Preis</th>
+      <th className="text-right">Pfand</th>
       <th className="hidden md:table-cell">Konto</th>
       <th className="hidden lg:table-cell">Kategorien</th>
       <th className="text-right">Aktionen</th>
@@ -159,6 +160,13 @@ const InventoryOverview = () => {
                     </td>
                     <td className="text-right">
                       <span className="font-semibold text-lg">{item.price.toFixed(2)}€</span>
+                    </td>
+                    <td className="text-right">
+                      {item.deposit > 0 ? (
+                        <span>{item.deposit.toFixed(2)}€</span>
+                      ) : (
+                        <span className="text-base-content/40">–</span>
+                      )}
                     </td>
                     <td className="hidden md:table-cell">
                       <span className="badge badge-outline">{item.account.name}</span>

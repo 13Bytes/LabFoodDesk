@@ -49,6 +49,7 @@ const BuyPage: NextPage = () => {
   const [categoryOverrides, setCategoryOverrides] = useState<{ [index: string]: boolean }>({})
 
   const apiBuyOneItemMultiple = api.item.buyItem.useMutation()
+  const apiBuyDeposit = api.item.buyDeposit.useMutation()
 
   const handleSortModeChange = (newSortMode: SortMode) => {
     window.localStorage.setItem(SORT_MODE_STORAGE_KEY, newSortMode)
@@ -65,6 +66,21 @@ const BuyPage: NextPage = () => {
       animate(animationRef, "success", message)
       await trpcUtils.user.invalidate()
       await trpcUtils.item.getBuyable.invalidate()
+    } catch (error: any) {
+      console.error(error)
+      animate(animationRef, "failure", error.message)
+      throw error
+    }
+  }
+
+  const buyDepositAction = async (itemID: string, quantity: number = 1): Promise<void> => {
+    try {
+      await apiBuyDeposit.mutateAsync({ productID: itemID, quantity })
+      const message = quantity === 1
+        ? "Pfand erfolgreich gekauft!"
+        : `${quantity}x Pfand erfolgreich gekauft!`
+      animate(animationRef, "success", message)
+      await trpcUtils.user.invalidate()
     } catch (error: any) {
       console.error(error)
       animate(animationRef, "failure", error.message)
@@ -286,6 +302,7 @@ const BuyPage: NextPage = () => {
                   key={item.id}
                   item={item}
                   buyAction={buyAction}
+                  buyDepositAction={buyDepositAction}
                   userBalance={userDataRequest.data?.balance}
                 />
               ))}

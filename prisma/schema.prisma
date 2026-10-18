@@ -24,6 +24,7 @@ model Item {
   name            String
   categories      Category[]
   price           Float
+  deposit         Float                 @default(0) // optional deposit (Pfand) in €, bought separately
   account         ClearingAccount       @relation(fields: [accountId], references: [id])
   purchases       ItemCategoryMapping[]
   is_active       Boolean               @default(true)
