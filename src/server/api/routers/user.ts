@@ -16,12 +16,50 @@ import {
   rankByCountPerWeek,
 } from "~/server/helper/statistics"
 
+// retractions are transfers with a negative amount, booked by the user who requested the money
+const retractedFromUser = (userId: string) => ({
+  type: 2,
+  moneyDestinationUserId: userId,
+  totalAmount: { lt: 0 },
+  canceled: false,
+})
+
 export const userRouter = createTRPCRouter({
   getMe: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.user.findUnique({
       where: { id: ctx.session.user.id },
     })
   }),
+
+  // money retracted from the user by someone else that they haven't seen yet
+  getUnseenRetractionCount: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.prisma.user.findUniqueOrThrow({
+      where: { id: ctx.session.user.id },
+      select: { retractionsSeenAt: true },
+    })
+    return ctx.prisma.transaction.count({
+      where: {
+        ...retractedFromUser(ctx.session.user.id),
+        ...(user.retractionsSeenAt && { createdAt: { gt: user.retractionsSeenAt } }),
+      },
+    })
+  }),
+
+  // seenUntil: creation date of the newest transaction shown to the user
+  markRetractionsSeen: protectedProcedure
+    .input(z.object({ seenUntil: z.date() }))
+    .mutation(async ({ ctx, input }) => {
+      const now = new Date()
+      const seenUntil = input.seenUntil > now ? now : input.seenUntil
+      // never move backwards, e.g. when an older tab reports in late
+      await ctx.prisma.user.updateMany({
+        where: {
+          id: ctx.session.user.id,
+          OR: [{ retractionsSeenAt: null }, { retractionsSeenAt: { lt: seenUntil } }],
+        },
+        data: { retractionsSeenAt: seenUntil },
+      })
+    }),
 
   getStats: protectedProcedure.query(async ({ ctx }) => {
     const user = await ctx.prisma.user.findUniqueOrThrow({

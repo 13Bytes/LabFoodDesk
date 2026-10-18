@@ -203,6 +203,7 @@ model User {
   is_admin                Boolean           @default(false)
   allowOverdraw           Boolean           @default(false)
   balance                 Float             @default(0)
+  retractionsSeenAt       DateTime? // newest money retraction by others the user has seen on the account page
   transactions            Transaction[]     @relation("user")
   is_transfer_destiantion Transaction[]     @relation("moneyDestination")
   ProcurementWish         ProcurementWish[]
