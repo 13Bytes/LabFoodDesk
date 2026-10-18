@@ -1,5 +1,5 @@
 import { type NextPage } from "next"
-import { useRef, useState, useSyncExternalStore } from "react"
+import { useMemo, useRef, useState, useSyncExternalStore } from "react"
 import { Search, Package } from "lucide-react"
 import ActionResponsePopup, {
   type AnimationHandle,
@@ -38,6 +38,30 @@ const subscribeToSortMode = (onStoreChange: () => void) => {
   }
 }
 
+const CATEGORY_FILTER_STORAGE_KEY_PREFIX = "buyPageCategoryFilter:"
+
+type CategoryOverrides = { [index: string]: boolean }
+
+const parseCategoryOverrides = (value: string | null): CategoryOverrides => {
+  if (!value) {
+    return {}
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value)
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      return {}
+    }
+    return Object.fromEntries(
+      Object.entries(parsed).filter(
+        (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+      ),
+    )
+  } catch {
+    return {}
+  }
+}
+
 const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
   const allCategoriesRequest = api.category.getAll.useQuery()
@@ -46,7 +70,29 @@ const BuyPage: NextPage = () => {
   const animationRef = useRef<AnimationHandle>(null)
   const [searchString, setSearchString] = useState("")
   const sortMode = useSyncExternalStore(subscribeToSortMode, getStoredSortMode, () => "recent")
-  const [categoryOverrides, setCategoryOverrides] = useState<{ [index: string]: boolean }>({})
+  // category filter is remembered per user (in this browser)
+  const categoryFilterStorageKey = userDataRequest.data?.id
+    ? CATEGORY_FILTER_STORAGE_KEY_PREFIX + userDataRequest.data.id
+    : null
+  const storedCategoryOverrides = useSyncExternalStore(
+    subscribeToSortMode,
+    () => (categoryFilterStorageKey ? window.localStorage.getItem(categoryFilterStorageKey) : null),
+    () => null,
+  )
+  const categoryOverrides = useMemo(
+    () => parseCategoryOverrides(storedCategoryOverrides),
+    [storedCategoryOverrides],
+  )
+  const setCategoryOverrides = (
+    update: CategoryOverrides | ((current: CategoryOverrides) => CategoryOverrides),
+  ) => {
+    if (!categoryFilterStorageKey) {
+      return
+    }
+    const newOverrides = typeof update === "function" ? update(categoryOverrides) : update
+    window.localStorage.setItem(categoryFilterStorageKey, JSON.stringify(newOverrides))
+    window.dispatchEvent(new Event(SORT_MODE_STORAGE_EVENT))
+  }
 
   const apiBuyOneItemMultiple = api.item.buyItem.useMutation()
   const apiBuyDeposit = api.item.buyDeposit.useMutation()
