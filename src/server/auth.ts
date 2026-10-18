@@ -14,6 +14,7 @@ import { env } from "~/env.mjs"
 import { prisma } from "~/server/db"
 import { DevelopmentEmailProvider } from "./developmentEmailProvider"
 import { manageLdapLogin } from "./ldap"
+import { isAdminFromGroups, syncKeycloakAdmin } from "./syncKeycloakAdmin"
 import { renameLdapUser } from "./syncKeycloakNames"
 
 export const keycloakEnabled =
@@ -105,9 +106,17 @@ export const authOptions: NextAuthOptions = {
         is_admin: token.is_admin_jwt,
       },
     }),
-    jwt({ token, user }) {
+    async jwt({ token, user, account, profile }) {
       if (user) {
         token.is_admin_jwt = user.is_admin
+        // existing users are not updated from the profile - sync the admin right on every login
+        if (account?.provider === "keycloak") {
+          token.is_admin_jwt = await syncKeycloakAdmin(
+            prisma,
+            user,
+            (profile as { groups?: unknown } | undefined)?.groups,
+          )
+        }
       }
       return token
     },
@@ -147,10 +156,7 @@ export const authOptions: NextAuthOptions = {
           issuer: env.KEYCLOAK_ISSUER!,
           profile(profile) {
             const uidNumber = profile.uidNumber
-            const isAdmin = Array.isArray(profile.groups) &&
-              profile.groups.some(
-                (group) => typeof group === "string" && group.toUpperCase() === "LABEATS_ADMIN",
-              )
+            const isAdmin = isAdminFromGroups(profile.groups) ?? false
             const user = {
               id: uidNumber ? String(uidNumber) : String(profile.sub),
               name: profile.name ?? profile.preferred_username ?? null,
