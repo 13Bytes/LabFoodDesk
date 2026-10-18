@@ -14,6 +14,7 @@ import { env } from "~/env.mjs"
 import { prisma } from "~/server/db"
 import { DevelopmentEmailProvider } from "./developmentEmailProvider"
 import { manageLdapLogin } from "./ldap"
+import { renameLdapUser } from "./syncKeycloakNames"
 
 export const keycloakEnabled =
   !!env.KEYCLOAK_ISSUER &&
@@ -109,6 +110,17 @@ export const authOptions: NextAuthOptions = {
         token.is_admin_jwt = user.is_admin
       }
       return token
+    },
+  },
+  events: {
+    // users from the LDAP era still have "vorname.nachname" as name - use the Keycloak name instead
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "keycloak") return
+      try {
+        await renameLdapUser(prisma, user, profile?.name)
+      } catch (error) {
+        console.error("User-rename: failed", error)
+      }
     },
   },
   providers: [
