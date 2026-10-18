@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { Plus, Package, ShoppingCart, Users, Tag } from "lucide-react"
+import { Plus, Package, ShoppingCart, Users, Tag, ArrowUp, ArrowDown } from "lucide-react"
 import Modal from "~/components/Layout/Modal"
 import AdminSectionCard from "~/components/Layout/AdminSectionCard"
 import { ConfirmationModal } from "~/components/General/ConfirmationModal"
@@ -8,6 +8,8 @@ import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import ItemForm from "../Forms/ItemForm"
 import ActionResponsePopup, { type AnimationHandle, animate } from "../General/ActionResponsePopup"
+
+type SortKey = "name" | "price" | "deposit" | "account"
 
 const InventoryOverview = () => {
   const allItemsRequest = api.item.getAll.useQuery()
@@ -19,6 +21,26 @@ const InventoryOverview = () => {
   const trpcUtils = api.useUtils()
   const [detailView, setDetailView] = useState<Tid>()
   const [checked, setChecked] = useState<Tid[]>([])
+  const [sort, setSort] = useState<{ key: SortKey; asc: boolean }>()
+
+  const sortValue = (item: NonNullable<typeof allItemsRequest.data>[number], key: SortKey) =>
+    key === "account" ? item.account.name : item[key]
+  const sortedItems = sort
+    ? [...(allItemsRequest.data ?? [])].sort((a, b) => {
+        const [x, y] = [sortValue(a, sort.key), sortValue(b, sort.key)]
+        const result = typeof x === "string" ? x.localeCompare(String(y)) : x - Number(y)
+        return sort.asc ? result : -result
+      })
+    : allItemsRequest.data
+  const sortHeader = (key: SortKey, label: string, className = "") => (
+    <th
+      className={`cursor-pointer select-none ${className}`}
+      onClick={() => setSort({ key, asc: sort?.key === key ? !sort.asc : true })}
+    >
+      {label}
+      {sort?.key === key && (sort.asc ? <ArrowUp className="ml-1 inline h-3 w-3" /> : <ArrowDown className="ml-1 inline h-3 w-3" />)}
+    </th>
+  )
 
   const deleteSelected = async () => {
     await Promise.all(
@@ -91,10 +113,10 @@ const InventoryOverview = () => {
           />
         </label>
       </th>
-      <th>Name</th>
-      <th className="text-right">Preis</th>
-      <th className="text-right">Pfand</th>
-      <th className="hidden md:table-cell">Konto</th>
+      {sortHeader("name", "Name")}
+      {sortHeader("price", "Preis", "text-right")}
+      {sortHeader("deposit", "Pfand", "text-right")}
+      {sortHeader("account", "Konto", "hidden md:table-cell")}
       <th className="hidden lg:table-cell">Kategorien</th>
       <th className="text-right">Aktionen</th>
     </tr>
@@ -130,7 +152,7 @@ const InventoryOverview = () => {
                 {legendRow}
               </thead>
               <tbody>
-                {allItemsRequest.data?.map((item) => (
+                {sortedItems?.map((item) => (
                   <tr
                     key={item.id}
                     className="hover:bg-base-200/50 transition-colors"
