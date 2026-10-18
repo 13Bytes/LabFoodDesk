@@ -14,6 +14,7 @@ import { env } from "~/env.mjs"
 import { prisma } from "~/server/db"
 import { DevelopmentEmailProvider } from "./developmentEmailProvider"
 import { manageLdapLogin } from "./ldap"
+import { isCurrentBuild, sessionBuildId } from "./sessionBuild"
 import { isAdminFromGroups, syncKeycloakAdmin } from "./syncKeycloakAdmin"
 import { renameLdapUser } from "./syncKeycloakNames"
 
@@ -59,6 +60,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     is_admin_jwt: boolean
     subscribed: boolean
+    build_id?: string
   }
 }
 
@@ -108,6 +110,7 @@ export const authOptions: NextAuthOptions = {
     }),
     async jwt({ token, user, account, profile }) {
       if (user) {
+        token.build_id = sessionBuildId
         token.is_admin_jwt = user.is_admin
         // existing users are not updated from the profile - sync the admin right on every login
         if (account?.provider === "keycloak") {
@@ -117,6 +120,9 @@ export const authOptions: NextAuthOptions = {
             (profile as { groups?: unknown } | undefined)?.groups,
           )
         }
+      } else if (!isCurrentBuild(token)) {
+        // NextAuth deletes the session cookie when this callback throws
+        throw new Error("Session from an older build - signing out")
       }
       return token
     },
