@@ -10,6 +10,15 @@ import {
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
 import { checkAccountBacking, getReservedAmount } from "~/server/helper/dbCallHelper"
+import {
+  averageOverWindow,
+  daysAgo,
+  daysPerMonth,
+  daysPerWeek,
+  isDepositTransaction,
+  rankByCountPerWeek,
+  sumSince,
+} from "~/server/helper/statistics"
 
 export const sendMoneyProcurementSchema = z.object({
   destinationUserId: id,
@@ -161,6 +170,78 @@ export const transactionRouter = createTRPCRouter({
         },
       })
     }),
+
+  // anonymous summaries only - no data per person
+  getAdminStats: adminProcedure.query(async ({ ctx }) => {
+    const now = new Date()
+    // reserved group-order buys (type 4) only count once they are booked as type 0
+    const buyTransactions = await ctx.prisma.transaction.findMany({
+      where: { type: 0, canceled: false },
+      select: {
+        userId: true,
+        totalAmount: true,
+        createdAt: true,
+        note: true,
+        groupOrderId: true,
+        items: { select: { canonicalItemId: true, item: { select: { name: true } } } },
+        procurementItems: { select: { item: { select: { name: true } } } },
+      },
+      orderBy: { createdAt: "asc" },
+    })
+    const sales = buyTransactions.filter((transaction) => !isDepositTransaction(transaction))
+    const thirtyDaysAgo = daysAgo(now, 30)
+
+    const soldItems = sales.flatMap((transaction) => [
+      ...transaction.items.map((mapping) => ({
+        key: mapping.canonicalItemId,
+        name: mapping.item.name,
+        createdAt: transaction.createdAt,
+        groupOrder: transaction.groupOrderId !== null,
+      })),
+      ...transaction.procurementItems.map((billing) => ({
+        // procurement items are versioned on update, so they are grouped by name
+        key: `procurement:${billing.item.name}`,
+        name: billing.item.name,
+        createdAt: transaction.createdAt,
+        groupOrder: true,
+      })),
+    ])
+
+    const [credit, overdrawn] = await Promise.all([
+      ctx.prisma.user.aggregate({ where: { balance: { gt: 0 } }, _sum: { balance: true } }),
+      ctx.prisma.user.aggregate({
+        where: { balance: { lt: 0 } },
+        _sum: { balance: true },
+        _count: { _all: true },
+      }),
+    ])
+
+    return {
+      salesLast7Days: sumSince(sales, daysAgo(now, 7)),
+      salesLast30Days: sumSince(sales, thirtyDaysAgo),
+      averageSalesPerWeek: averageOverWindow(sales, now, daysPerWeek),
+      averageSalesPerMonth: averageOverWindow(sales, now, daysPerMonth),
+      depositLast30Days: sumSince(buyTransactions.filter(isDepositTransaction), thirtyDaysAgo),
+      activeUsersLast30Days: new Set(
+        buyTransactions
+          .filter((transaction) => transaction.createdAt >= thirtyDaysAgo)
+          .map((transaction) => transaction.userId),
+      ).size,
+      totalCredit: credit._sum.balance ?? 0,
+      totalOverdrawn: -(overdrawn._sum.balance ?? 0),
+      overdrawnAccounts: overdrawn._count._all,
+      topShopItems: rankByCountPerWeek(
+        soldItems.filter((item) => !item.groupOrder),
+        5,
+        now,
+      ),
+      topGroupOrderItems: rankByCountPerWeek(
+        soldItems.filter((item) => item.groupOrder),
+        5,
+        now,
+      ),
+    }
+  }),
 
   sendMoney: protectedProcedure
     .input(z.object({ destinationUserId: id, amount: z.number(), note: z.string().optional() }))

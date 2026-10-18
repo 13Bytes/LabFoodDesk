@@ -1,5 +1,6 @@
 import {
   Archive,
+  BarChart3,
   CreditCard,
   DollarSign,
   FileText,
@@ -151,6 +152,15 @@ export default function Header() {
                 >
                   <FileText className="h-4 w-4" />
                   Alle Transaktionen
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin/stats"
+                  className={`transition-colors duration-200 hover:bg-base-300 ${isActive("/admin/stats") ? "bg-base-300 font-semibold" : ""}`}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  Statistik
                 </Link>
               </li>
             </ul>

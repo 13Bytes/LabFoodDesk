@@ -8,6 +8,13 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc"
+import {
+  averageOverWindow,
+  daysPerMonth,
+  daysPerWeek,
+  isDepositTransaction,
+  rankByCountPerWeek,
+} from "~/server/helper/statistics"
 
 export const userRouter = createTRPCRouter({
   getMe: protectedProcedure.query(({ ctx }) => {
@@ -20,12 +27,20 @@ export const userRouter = createTRPCRouter({
     const user = await ctx.prisma.user.findUniqueOrThrow({
       where: { id: ctx.session.user.id },
     })
+    // reserved group-order buys (type 4) only count once they are booked as type 0
     const buyTransactions = await ctx.prisma.transaction.findMany({
       where: {
         userId: ctx.session.user.id,
         type: 0,
         canceled: false,
       },
+      select: {
+        totalAmount: true,
+        createdAt: true,
+        note: true,
+        items: { select: { canonicalItemId: true, item: { select: { name: true } } } },
+      },
+      orderBy: { createdAt: "asc" },
     })
     const procurementTransactions = await ctx.prisma.transaction.findMany({
       where: {
@@ -39,10 +54,28 @@ export const userRouter = createTRPCRouter({
         balance: { gt: user.balance },
       },
     })
+    const totalAmountBought = buyTransactions.reduce((acc, curr) => acc + curr.totalAmount, 0)
+    const now = new Date()
     return {
       prepaidVolumePlacement: usersWithMoreMoney.length + 1,
-      totalAmountBought: buyTransactions.reduce((acc, curr) => acc + curr.totalAmount, 0),
-      totalAmountProcured: procurementTransactions.reduce((acc, curr) => acc + curr.totalAmount, 0)
+      totalAmountBought,
+      totalAmountProcured: procurementTransactions.reduce((acc, curr) => acc + curr.totalAmount, 0),
+      averagePerWeek: averageOverWindow(buyTransactions, now, daysPerWeek),
+      averagePerMonth: averageOverWindow(buyTransactions, now, daysPerMonth),
+      depositPaid: buyTransactions
+        .filter(isDepositTransaction)
+        .reduce((acc, curr) => acc + curr.totalAmount, 0),
+      favoriteItems: rankByCountPerWeek(
+        buyTransactions.flatMap((transaction) =>
+          transaction.items.map((mapping) => ({
+            key: mapping.canonicalItemId,
+            name: mapping.item.name,
+            createdAt: transaction.createdAt,
+          })),
+        ),
+        3,
+        now,
+      ),
     }
   }),
 
