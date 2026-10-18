@@ -1,12 +1,10 @@
 import { z } from "zod"
-import { env } from "~/env.mjs"
 import { id } from "~/helper/zodTypes"
 
 import {
   adminProcedure,
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
 } from "~/server/api/trpc"
 import {
   averageOverWindow,
@@ -87,7 +85,7 @@ export const userRouter = createTRPCRouter({
         canceled: false,
       },
     })
-    const usersWithMoreMoney = await ctx.prisma.user.findMany({
+    const usersWithMoreMoney = await ctx.prisma.user.count({
       where: {
         balance: { gt: user.balance },
       },
@@ -95,7 +93,7 @@ export const userRouter = createTRPCRouter({
     const totalAmountBought = buyTransactions.reduce((acc, curr) => acc + curr.totalAmount, 0)
     const now = new Date()
     return {
-      prepaidVolumePlacement: usersWithMoreMoney.length + 1,
+      prepaidVolumePlacement: usersWithMoreMoney + 1,
       totalAmountBought,
       totalAmountProcured: procurementTransactions.reduce((acc, curr) => acc + curr.totalAmount, 0),
       averagePerWeek: averageOverWindow(buyTransactions, now, daysPerWeek),
@@ -133,31 +131,6 @@ export const userRouter = createTRPCRouter({
         data: { allowOverdraw: input.allowOverdraw },
       })
     }),
-
-  getCtx: publicProcedure.query(() => {
-    return {
-      LDAP_URL: env.LDAP_URL,
-      LDAP_BIND_USER: env.LDAP_BIND_USER,
-      LDAP_BIND_PASSWORT: env.LDAP_BIND_PASSWORT,
-      LDAP_SEARCH_BASE: env.LDAP_SEARCH_BASE,
-      LDAP_ADMIN_GROUP: env.LDAP_ADMIN_GROUP,
-    }
-  }),
-
-  // Disabled as name is taken from LDAP
-  // updateMe: protectedProcedure
-  //   .input(
-  //     z.object({
-  //       name: z.string(),
-  //     })
-  //   )
-  //   .mutation(async ({ ctx, input }) => {
-  //     const user = await ctx.prisma.user.update({
-  //       where: { id: ctx.session.user.id },
-  //       data: { name: input.name },
-  //     })
-  //     return user
-  //   }),
 
   getAllUsers: protectedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany({

@@ -40,7 +40,7 @@ const subscribeToSortMode = (onStoreChange: () => void) => {
 
 const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
-  const allCategoriesRequest = api.category.getAllWithItems.useQuery()
+  const allCategoriesRequest = api.category.getAll.useQuery()
   const userDataRequest = api.user.getMe.useQuery()
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)

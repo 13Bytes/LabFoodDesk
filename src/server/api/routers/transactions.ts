@@ -28,13 +28,6 @@ export const sendMoneyProcurementSchema = z.object({
 
 const pageSize = 20
 export const transactionRouter = createTRPCRouter({
-  getMineLatest: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.transaction.findMany({
-      orderBy: { createdAt: "desc" },
-      where: { userId: ctx.session.user.id },
-    })
-  }),
-
   getMineInfinite: protectedProcedure
     .input(
       z.object({
@@ -250,18 +243,19 @@ export const transactionRouter = createTRPCRouter({
         where: { id: input.destinationUserId },
       })
 
-      const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
       if (input.amount <= 0) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You can't send a negative amount",
         })
       }
-      checkAccountBacking(user, input.amount + (await getReservedAmount(ctx.prisma, user.id)))
 
-      // atomic action:
-      await ctx.prisma.$transaction([
-        ctx.prisma.transaction.create({
+      // atomic action - the backing is checked inside so parallel transfers can't overdraw
+      await ctx.prisma.$transaction(async (tx) => {
+        const user = await tx.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
+        checkAccountBacking(user, input.amount + (await getReservedAmount(tx, user.id)))
+
+        await tx.transaction.create({
           data: {
             user: { connect: { id: ctx.session.user.id } },
             type: 2,
@@ -269,16 +263,16 @@ export const transactionRouter = createTRPCRouter({
             totalAmount: input.amount,
             note: input.note,
           },
-        }),
-        ctx.prisma.user.update({
+        })
+        await tx.user.update({
           where: { id: ctx.session.user.id },
           data: { balance: { decrement: input.amount } },
-        }),
-        ctx.prisma.user.update({
+        })
+        await tx.user.update({
           where: { id: destinationUser.id },
           data: { balance: { increment: input.amount } },
-        }),
-      ])
+        })
+      })
     }),
 
   retractMoney: protectedProcedure
@@ -341,6 +335,8 @@ export const transactionRouter = createTRPCRouter({
       ])
     }),
 
+  // ATTENTION: creates money without a counter-booking - not used in the frontend on purpose.
+  // Only for correcting wrong balances by hand (e.g. via the tRPC API), never for regular bookings.
   sendMoneyProcurement: adminProcedure
     .input(sendMoneyProcurementSchema)
     .mutation(async ({ ctx, input }) => {
@@ -396,18 +392,32 @@ export const transactionRouter = createTRPCRouter({
           })
         }
         await ctx.prisma.$transaction(async (tx) => {
-          await tx.transaction.update({
-            where: { id: input.transactionId },
+          // only succeeds once - a second (parallel) undo finds no buy anymore
+          const undone = await tx.transaction.updateMany({
+            where: { id: input.transactionId, type: 0 },
             data: { type: 90 },
           })
+          if (undone.count === 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Transaction was already undone",
+            })
+          }
           await tx.user.update({
             where: { id: transaction.userId },
             data: { balance: { increment: transaction.totalAmount } },
           })
+          // the item price (or the deposit) went to the item's clearing-account (see buyItem / buyDeposit)
+          if (transaction.clearingAccountId) {
+            await tx.clearingAccount.update({
+              where: { id: transaction.clearingAccountId },
+              data: { balance: { decrement: transaction.amountWithoutFees ?? 0 } },
+            })
+          }
           for (const item of transaction.items) {
             const fees = calculateFeesPerCategory(item.item.price, item.categories)
             for (const cat of fees.categories) {
-              if (cat.charges !== 0) {
+              if (cat.clearingAccountId && cat.charges !== 0) {
                 await tx.clearingAccount.update({
                   where: { id: cat.clearingAccountId },
                   data: { balance: { decrement: cat.charges } },

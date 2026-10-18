@@ -26,7 +26,7 @@ export const splitSubmitSchema = z.array(
         items: z.array(
           z.object({
             id: id,
-            price: z.number(),
+            price: z.number().min(0),
           }),
         ),
       }),

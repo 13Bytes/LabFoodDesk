@@ -52,7 +52,6 @@ export const manageLdapLogin = (
       console.info("Found User in LDAP")
       console.info("Checking user-credentials against LDAP")
       await testClient.bind(userData.dn, password)
-      console.log(`Found UserData: ${JSON.stringify(userData)}`)
       const userID = userData.sAMAccountName
       if (userID === undefined || typeof userID !== "string") {
         throw new Error("sAMAccountName not defined")
@@ -83,7 +82,6 @@ export const manageLdapLogin = (
         create: { id: uid, name: username, is_admin },
       })
 
-      console.log(`Authed user: ${JSON.stringify(upsertedUser)}`)
       resolve(upsertedUser)
     } catch (error) {
       console.error("LDAP bind failed - wrong user-credentials?", error)

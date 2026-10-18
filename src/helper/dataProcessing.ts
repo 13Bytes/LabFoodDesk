@@ -1,6 +1,5 @@
 import type { Category, Item } from "~/generated/prisma/client"
 import { type Tid } from "./zodTypes"
-import { type RouterOutputs } from "~/utils/api"
 
 /**
  * Returns all fees for a given price and categories
@@ -36,33 +35,6 @@ export const calculateAdditionalPricing = (price: number, categories: Category[]
  */
 export const calculateAdditionalItemPricing = (item: Item, categories: Category[]) => {
   return calculateAdditionalPricing(item.price, categories)
-}
-
-type TransactionData = RouterOutputs["transaction"]["getMineInfinite"]["items"][0]
-
-/**
- * @returns the total fees of a list of items (without item costs itself)
- */
-export const getItemsFee = (
-  items: TransactionData["items"] = [],
-  procurementItems: TransactionData["procurementItems"] = [],
-) => {
-  let fees = 0
-  for (const item of items) {
-    fees += calculateAdditionalItemPricing(item.item, item.item.categories)
-  }
-  for (const procItem of procurementItems) {
-    procItem.cost
-    fees += calculateAdditionalPricing(procItem.cost, procItem.item.categories)
-  }
-  return fees
-}
-
-/**
- * @returns the total fees of all the items in a transaction (without item costs itself)
- */
-export const getTransactionFees = (transaction: TransactionData) => {
-  return getItemsFee(transaction.items, transaction.procurementItems)
 }
 
 export const getTimeFromDateString = (h: number, min: number) => {

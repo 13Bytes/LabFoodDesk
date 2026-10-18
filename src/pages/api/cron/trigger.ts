@@ -17,7 +17,7 @@ export default function handler(
   rateLimiter.consume("alwaysSameIdentifier")
     .then(() => {
       console.log("cron got triggered")
-      cronAction()
+      cronAction().catch((error) => console.error("cron failed", error))
       res.status(200).json({ message: 'cron triggered' })
     })
     .catch(() => {

@@ -56,7 +56,6 @@ const TransactionList = (props: Props) => {
       const data = await trpcUtils.transaction.getAllFixedTimespan.fetch({
         timespan: duration,
       })
-      console.log("converting to csv")
       const flatData = data.map((item) => toFlatPropertyMap(item))
       const csv = CSVParser.unparse(flatData, { delimiter: ';', skipEmptyLines: true })
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })

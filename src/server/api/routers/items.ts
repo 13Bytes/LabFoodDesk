@@ -228,7 +228,7 @@ export const itemRouter = createTRPCRouter({
     }),
 
   buyItem: protectedProcedure
-    .input(z.object({ productID: id, quantity: z.number().min(1).default(1) }))
+    .input(z.object({ productID: id, quantity: z.number().int().min(1).default(1) }))
     .mutation(async ({ ctx, input }) => {
       await buyItem(ctx.prisma, input.productID, ctx.session.user.id, undefined, input.quantity)
     }),
@@ -292,6 +292,13 @@ export const buyItem = async (
   })
 
   const fees = calculateFeesPerCategory(product.price, product.categories)
+  // fees without a clearing-account would be charged but booked nowhere
+  if (fees.categories.some((cat) => cat.charges !== 0 && !cat.clearingAccountId)) {
+    throw new TRPCError({
+      code: "METHOD_NOT_SUPPORTED",
+      message: "Category has no clearing-account set - please contact an admin and let them fix it",
+    })
+  }
   const totalPriceSingleQty = product.price + fees.total
 
   await prisma.$transaction(async (tx) => {

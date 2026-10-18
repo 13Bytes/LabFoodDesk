@@ -392,7 +392,7 @@ export const grouporderRouter = createTRPCRouter({
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
         include: {
-          orders: { include: { items: { include: { item: { include: { categories: true } } } } } },
+          orders: { include: { items: { include: { categories: true } } } },
           procurementWishes: { include: { items: { include: { categories: true } } } },
         },
       })
@@ -417,10 +417,17 @@ export const grouporderRouter = createTRPCRouter({
             input.itemBuyPrices.find((itemBuy) => itemBuy.id === order.id)?.price ??
             order.amountWithoutFees ??
             0
+          // categories as they were on the reservation - revertClosed uses the same
           const fees = calculateFeesPerCategory(
             price,
-            order.items.flatMap((mapping) => mapping.item.categories),
+            order.items.flatMap((mapping) => mapping.categories),
           )
+          if (fees.categories.some((cat) => cat.charges !== 0 && !cat.clearingAccountId)) {
+            throw new TRPCError({
+              code: "METHOD_NOT_SUPPORTED",
+              message: "Category has no clearing-account set - please contact an admin and let them fix it",
+            })
+          }
           return { order, price, fees, totalAmount: price + fees.total }
         })
       if (
@@ -505,6 +512,14 @@ export const grouporderRouter = createTRPCRouter({
       }
 
       await ctx.prisma.$transaction(async (tx) => {
+        // only one close can book the group order - a second (parallel) one finds no status 5 anymore
+        const locked = await tx.groupOrder.updateMany({
+          where: { id: group.id, status: 5 },
+          data: { status: 6 },
+        })
+        if (locked.count === 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Group order has already been closed" })
+        }
         // create transactions and update user balances
         for (const transaction of transactions) {
           const finishedTransaction = await tx.transaction.create({ data: transaction.transaction })
@@ -601,7 +616,7 @@ export const grouporderRouter = createTRPCRouter({
       const group = await ctx.prisma.groupOrder.findUniqueOrThrow({
         where: { id: input.groupId },
         include: {
-          orders: { include: { procurementItems: { include: { item: { include: { categories: { include: { markupDestination: true } } } } } }, items: { include: { item: { include: { categories: true } } } }, clearingAccount: true } },
+          orders: { include: { procurementItems: { include: { item: { include: { categories: { include: { markupDestination: true } } } } } }, items: { include: { categories: true } }, clearingAccount: true } },
           procurementWishes: { include: { items: { include: { categories: true } } } },
         },
       })
@@ -628,6 +643,14 @@ export const grouporderRouter = createTRPCRouter({
       }
 
       await ctx.prisma.$transaction(async (tx) => {
+        // only one revert can run - a second (parallel) one finds no status 6 anymore
+        const locked = await tx.groupOrder.updateMany({
+          where: { id: group.id, status: 6 },
+          data: { status: 5 },
+        })
+        if (locked.count === 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Group order has already been reverted" })
+        }
 
         for (const transaction of group.orders) {
           if (transaction.canceled) {
@@ -645,6 +668,10 @@ export const grouporderRouter = createTRPCRouter({
             for (const procItem of transaction.procurementItems) {
               const feesPerCat = calculateFeesPerCategory(procItem.cost, procItem.item.categories)
               for (const catFee of feesPerCat.categories) {
+                // like on close: fees of 0 were not booked
+                if (catFee.charges === 0) {
+                  continue
+                }
                 await tx.clearingAccount.update({
                   where: { id: catFee.clearingAccountId },
                   data: { balance: { decrement: catFee.charges } },
@@ -672,7 +699,7 @@ export const grouporderRouter = createTRPCRouter({
             // fees based on the booked price (may have been adjusted on close)
             const fees = calculateFeesPerCategory(
               transaction.amountWithoutFees ?? 0,
-              transaction.items.flatMap((mapping) => mapping.item.categories),
+              transaction.items.flatMap((mapping) => mapping.categories),
             )
             for (const cat of fees.categories) {
               if (cat.clearingAccountId && cat.charges !== 0) {
