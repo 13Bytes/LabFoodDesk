@@ -63,16 +63,6 @@ export const userRouter = createTRPCRouter({
       })
     }),
 
-  getCtx: publicProcedure.query(() => {
-    return {
-      LDAP_URL: env.LDAP_URL,
-      LDAP_BIND_USER: env.LDAP_BIND_USER,
-      LDAP_BIND_PASSWORT: env.LDAP_BIND_PASSWORT,
-      LDAP_SEARCH_BASE: env.LDAP_SEARCH_BASE,
-      LDAP_ADMIN_GROUP: env.LDAP_ADMIN_GROUP,
-    }
-  }),
-
   // Disabled as name is taken from LDAP
   // updateMe: protectedProcedure
   //   .input(
