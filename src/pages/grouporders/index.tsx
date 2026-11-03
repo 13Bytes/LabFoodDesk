@@ -39,6 +39,16 @@ const GroupOrders: NextPage = () => {
   const [selectedGroupOrder, setSetselectedGroupOrder] = useState<string>()
 
   const [closeOrderId, setCloseOrderId] = useState<Tid>()
+  const [pendingFilterCategories, setPendingFilterCategories] = useState<
+    Partial<Record<Tid, Tid | null>>
+  >({})
+  const groupOrders = groupOrderRequest.data?.map((groupOrder) => ({
+    ...groupOrder,
+    filterCategoryId:
+      pendingFilterCategories[groupOrder.id] !== undefined
+        ? pendingFilterCategories[groupOrder.id]
+        : groupOrder.filterCategoryId,
+  }))
 
   // categories of all items that can be ordered - to filter the items of a group order
   const categories = [
@@ -48,7 +58,7 @@ const GroupOrders: NextPage = () => {
     .flatMap((item) => item.categories)
     .filter((cat, index, all) => all.findIndex((other) => other.id === cat.id) === index)
     .sort((a, b) => a.name.localeCompare(b.name))
-  const filterCategoryId = groupOrderRequest.data?.find(
+  const filterCategoryId = groupOrders?.find(
     (groupOrder) => groupOrder.id === selectedGroupOrder,
   )?.filterCategoryId
   const matchesFilter = (item: { categories: { id: Tid }[] }) =>
@@ -80,11 +90,27 @@ const GroupOrders: NextPage = () => {
     await trpcUtils.groupOrders.invalidate()
   }
   const setFilterCategory = async (groupId: Tid, categoryId: Tid | null) => {
-    await setFilterCategoryRequest.mutateAsync(
-      { groupId, categoryId },
-      { onError: (error) => animate(animationRef, "failure", error.message) },
-    )
-    await trpcUtils.groupOrders.invalidate()
+    // Controlled selects need the new value before the asynchronous save finishes.
+    setPendingFilterCategories((pending) => ({ ...pending, [groupId]: categoryId }))
+    try {
+      const savedGroupOrder = await setFilterCategoryRequest.mutateAsync({ groupId, categoryId })
+      trpcUtils.groupOrders.getRelevant.setData(undefined, (groups) =>
+        groups?.map((group) =>
+          group.id === groupId
+            ? { ...group, filterCategoryId: savedGroupOrder.filterCategoryId }
+            : group,
+        ),
+      )
+      await trpcUtils.groupOrders.invalidate()
+    } catch (error) {
+      animate(animationRef, "failure", error instanceof Error ? error.message : String(error))
+    } finally {
+      setPendingFilterCategories((pending) => {
+        const remaining = { ...pending }
+        delete remaining[groupId]
+        return remaining
+      })
+    }
   }
   const rescindBuy = async (transactionId: Tid) => {
     await undoBuyGroupOrderItemRequest.mutateAsync({ transactionId })
@@ -132,7 +158,7 @@ const GroupOrders: NextPage = () => {
     <>
       <CenteredPage>
         <div className="container">
-          {groupOrderRequest.data?.map((groupOrder) => (
+          {groupOrders?.map((groupOrder) => (
             <div key={groupOrder.id} className="card mx-auto mb-5 max-w-5xl border border-base-300 dither bg-linear-to-br from-base-100 to-base-200 p-3 shadow-sm">
               <div className="flex flex-col justify-start gap-1 p-1">
                 <div className="flex flex-col items-start justify-between md:flex-row md:items-end">
@@ -142,8 +168,9 @@ const GroupOrders: NextPage = () => {
                       {sessionUser?.is_admin || groupOrder.shopperId === sessionUser?.id ? (
                         <select
                           // looks like the other small outline buttons
-                          className="select select-xs w-auto border-current bg-transparent font-semibold text-base-content/70"
+                          className="select select-xs w-auto border-current bg-transparent font-semibold text-base-content/70 [&::picker(select)]:bg-base-100"
                           value={groupOrder.filterCategoryId ?? ""}
+                          disabled={pendingFilterCategories[groupOrder.id] !== undefined}
                           onChange={(e) =>
                             setFilterCategory(groupOrder.id, e.target.value || null)
                           }
