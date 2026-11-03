@@ -1,4 +1,5 @@
 import type { Category, Item } from "~/generated/prisma/client"
+import { BottleWine } from "lucide-react"
 import { useState } from "react"
 import { calculateAdditionalItemPricing } from "~/helper/dataProcessing"
 import { ConfirmationModal } from "./ConfirmationModal"
@@ -66,10 +67,10 @@ const BuyItemCard = ({ item, buyAction, buyDepositAction, buttonName, userBalanc
 
   return (
     <>
-      <div className="card dither bg-linear-to-br from-base-100 to-base-200 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 hover:border-primary/30" key={item.id}>
+      <div className="card h-full dither bg-linear-to-br from-base-100 to-base-200 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 hover:border-primary/30" key={item.id}>
         <div className="card-body p-4">
           {/* Header with title and categories */}
-          <div className="space-y-3">
+          <div className="flex flex-1 flex-col gap-3">
             <div className="flex flex-col space-y-2">
               <h2 className="card-title text-lg font-semibold leading-tight">
                 {item.name}
@@ -87,7 +88,7 @@ const BuyItemCard = ({ item, buyAction, buyDepositAction, buttonName, userBalanc
               )}
             </div>
 
-            <div className="flex items-baseline space-x-1">
+            <div className="mt-auto flex min-h-8 flex-wrap items-center gap-x-1 gap-y-2 pointer-coarse:min-h-11">
               {itemWithPrice &&
                 <>
                   <span className="text-xl font-bold text-primary">{totalPrice.toFixed(2)}€</span>
@@ -97,18 +98,27 @@ const BuyItemCard = ({ item, buyAction, buyDepositAction, buttonName, userBalanc
                     </span>
                   )}
                   {buyDepositAction && deposit > 0 && (
-                    <button
-                      className="btn btn-outline btn-xs ml-auto self-center"
-                      onClick={handleBuyDepositClick}
-                      disabled={isProcessing}
-                      title={`Nur den Pfand von ${deposit.toFixed(2)}€ kaufen`}
+                    <span
+                      className="tooltip ml-auto self-center"
+                      data-tip={`Nur Pfand kaufen (${deposit.toFixed(2)}€)`}
                     >
-                      + Pfand {deposit.toFixed(2)}€
-                    </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs gap-1.5 px-2 font-normal text-base-content/70 hover:text-base-content pointer-coarse:min-h-11"
+                        onClick={handleBuyDepositClick}
+                        disabled={isProcessing}
+                        aria-label={`Nur Pfand für ${item.name} kaufen (${deposit.toFixed(2)} €)`}
+                      >
+                        <span className="inline-flex shrink-0 items-center gap-1.5" aria-hidden="true">
+                          <BottleWine className="h-5 w-4" strokeWidth={1.75} />
+                        </span>
+                        <span className="translate-y-px">Pfand</span>
+                      </button>
+                    </span>
                   )}
                 </>
               }
-              {!itemWithPrice && 
+              {!itemWithPrice &&
                 <span className="text-sm text-base-content/60">Preis nach Bestellung</span>
               }
             </div>
@@ -145,7 +155,7 @@ const BuyItemCard = ({ item, buyAction, buyDepositAction, buttonName, userBalanc
           <p className="text-base">
             Möchtest du {buyDeposit && "den Pfand für "}<span className="font-semibold">{item.name}</span> wirklich kaufen?
           </p>
-          
+
           {/* Quantity Selector */}
           <div className="bg-base-200 rounded-lg p-3">
             <div className="flex justify-between items-center">
