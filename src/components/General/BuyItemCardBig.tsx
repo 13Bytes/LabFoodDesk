@@ -12,7 +12,7 @@ const BuyItemCardBig = ({ item, buyAction }: Props) => {
   const additionalPricing = calculateAdditionalItemPricing(item, item.categories)
 
   return (
-    <div className="card h-full w-full md:w-1/2 xl:w-96 bg-base-300 shadow-sm" key={item.id}>
+    <div className="card h-full w-full md:w-1/2 xl:w-96 dither bg-linear-to-br from-base-100 to-base-200 border border-base-300 shadow-sm" key={item.id}>
       <div className="align-center card-body flex flex-col items-center">
         <h2 className="card-title text-2xl self-center">{item.name}</h2>
         <div className="flex flex-row gap-2">

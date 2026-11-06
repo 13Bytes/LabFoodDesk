@@ -1,3 +1,5 @@
+import { GROUP_ORDER_REVERT_TIMEOUT } from "./globalTypes"
+
 export const getUsernameLetters = (name: string | undefined | null) => {
   if (name) {
     const nameSegments = name.trim().split(" ")
@@ -13,6 +15,25 @@ export const getUsernameLetters = (name: string | undefined | null) => {
     return (firstLetter + secondLetter).toUpperCase()
   }
   return "?"
+}
+
+/**
+ * Admins can always revert a closed group order, the user who closed it only within GROUP_ORDER_REVERT_TIMEOUT
+ * @param closedAt creation of the compensation transaction
+ */
+export const canRevertGroupOrder = (
+  user: { id: string; is_admin: boolean } | undefined,
+  closedById: string | null,
+  closedAt: Date | undefined,
+  now: Date = new Date(),
+) => {
+  if (!user) return false
+  if (user.is_admin) return true
+  return (
+    user.id === closedById &&
+    !!closedAt &&
+    now.getTime() - closedAt.getTime() <= GROUP_ORDER_REVERT_TIMEOUT
+  )
 }
 
 export const toggleElementInArray = <T>(array: T[], value: T) => {
@@ -39,4 +60,36 @@ export function toFlatPropertyMap(obj: object, keySeparator = '.') {
     return propertyMap;
   };
   return flattenRecursive(obj);
+}
+
+export type SplitMode = "factor" | "percent" | "absolute"
+
+/**
+ * Calculates the effective share and the amount of each participant.
+ * Shares that are `undefined` are calculated automatically:
+ * factor -> 1, percent/absolute -> equal part of what's left of 100% / the total.
+ * Invalid (NaN/negative) shares count as 0.
+ */
+export const calculateSplit = (total: number, shares: (number | undefined)[], mode: SplitMode) => {
+  const cleanTotal = Number.isFinite(total) && total > 0 ? total : 0
+  const fixedShares = shares.map((share) =>
+    share === undefined ? undefined : Number.isFinite(share) && share > 0 ? share : 0
+  )
+  if (mode === "factor") {
+    const factors = fixedShares.map((share) => share ?? 1)
+    const factorSum = factors.reduce((sum, factor) => sum + factor, 0)
+    return {
+      shares: factors,
+      amounts: factors.map((factor) => (factorSum > 0 ? (cleanTotal * factor) / factorSum : 0)),
+    }
+  }
+  const target = mode === "percent" ? 100 : cleanTotal
+  const fixedSum = fixedShares.reduce<number>((sum, share) => sum + (share ?? 0), 0)
+  const autoCount = fixedShares.filter((share) => share === undefined).length
+  const autoShare = autoCount > 0 ? (target - fixedSum) / autoCount : 0 // negative if fixed shares exceed the target
+  const effectiveShares = fixedShares.map((share) => share ?? autoShare)
+  return {
+    shares: effectiveShares,
+    amounts: mode === "percent" ? effectiveShares.map((share) => (cleanTotal * share) / 100) : effectiveShares,
+  }
 }

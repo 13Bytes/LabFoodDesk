@@ -50,6 +50,17 @@ const AccountPage: NextPage = () => {
     },
   )
   const undoTransactionRequest = api.transaction.undoTransaction.useMutation()
+  const { mutate: markRetractionsSeen } = api.user.markRetractionsSeen.useMutation({
+    onSuccess: () => trpcUtils.user.getUnseenRetractionCount.invalidate(),
+  })
+
+  // everything up to the newest shown transaction counts as seen - clears the dot in the header
+  const newestTransactionTime = transactionData?.pages[0]?.items[0]?.createdAt.getTime()
+  React.useEffect(() => {
+    if (newestTransactionTime !== undefined) {
+      markRetractionsSeen({ seenUntil: new Date(newestTransactionTime) })
+    }
+  }, [newestTransactionTime, markRetractionsSeen])
   const maxPage = hasNextPage ? Infinity : page
 
   function userIsTransactionDestination(transaction: Transaction): boolean {

@@ -1,12 +1,13 @@
-import type { Category, Item } from "~/generated/prisma/client"
+import type { Category, Item, TransactionCategoryFee } from "~/generated/prisma/client"
 import { type Tid } from "./zodTypes"
-import { type RouterOutputs } from "~/utils/api"
+
+type CategoryMarkup = Pick<Category, "id" | "markupFixed" | "markupPercentage" | "markupDestinationId">
 
 /**
  * Returns all fees for a given price and categories
  * total as well as per category
  */
-export const calculateFeesPerCategory = (price: number, categories: Category[]) => {
+export const calculateFeesPerCategory = (price: number, categories: CategoryMarkup[]) => {
   const fees: {
     categories: { categoryId: Tid; charges: number; clearingAccountId?: Tid }[]
     total: number
@@ -27,7 +28,7 @@ export const calculateFeesPerCategory = (price: number, categories: Category[]) 
   return fees
 }
 
-export const calculateAdditionalPricing = (price: number, categories: Category[]) => {
+export const calculateAdditionalPricing = (price: number, categories: CategoryMarkup[]) => {
   return calculateFeesPerCategory(price, categories).total
 }
 
@@ -38,32 +39,16 @@ export const calculateAdditionalItemPricing = (item: Item, categories: Category[
   return calculateAdditionalPricing(item.price, categories)
 }
 
-type TransactionData = RouterOutputs["transaction"]["getMineInfinite"]["items"][0]
-
 /**
- * @returns the total fees of a list of items (without item costs itself)
+ * Category markups as they were stored on a reserved buy - to be used with calculateFeesPerCategory
  */
-export const getItemsFee = (
-  items: TransactionData["items"] = [],
-  procurementItems: TransactionData["procurementItems"] = [],
-) => {
-  let fees = 0
-  for (const item of items) {
-    fees += calculateAdditionalItemPricing(item.item, item.item.categories)
-  }
-  for (const procItem of procurementItems) {
-    procItem.cost
-    fees += calculateAdditionalPricing(procItem.cost, procItem.item.categories)
-  }
-  return fees
-}
-
-/**
- * @returns the total fees of all the items in a transaction (without item costs itself)
- */
-export const getTransactionFees = (transaction: TransactionData) => {
-  return getItemsFee(transaction.items, transaction.procurementItems)
-}
+export const categoryFeesAsMarkups = (fees: TransactionCategoryFee[]): CategoryMarkup[] =>
+  fees.map((fee) => ({
+    id: fee.categoryId,
+    markupFixed: fee.markupFixed,
+    markupPercentage: fee.markupPercentage,
+    markupDestinationId: fee.markupDestinationId,
+  }))
 
 export const getTimeFromDateString = (h: number, min: number) => {
   const hOut = h >= 10 ? h : "0" + h

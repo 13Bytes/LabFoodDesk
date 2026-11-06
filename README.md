@@ -1,7 +1,7 @@
 # LabEats
 **LabEats allows a group of people to manage money in combination with item-sales, procurement and group-orders in a moderated prepaid fashion.**
 
-A tool to manage (food)(orders) in the Aerospace Lab (an awesome club in Germany).\
+A tool to manage food orders in the Aerospace Lab (an awesome club in Germany).\
 It is designed with our club in mind, but can surely be adapted to fit more needs.
 
 <img src="https://13bytes.github.io/LabFoodDesk/screenshots/buy.png" height=500>
@@ -46,11 +46,20 @@ Only secured by basic HTTP auth (set in `./nginx/prismaStudio-htpasswd`), this p
 
 
 ## Development
-
 This is a NextJS project. Some file-conventions apply.
+Getting started:
 
-Start Developing:
-`npm run dev`
+Install dependencies:
+`npm install` \
+copy `.env.example` to `.env` and set `NEXTAUTH_SECRET` (e.g. `openssl rand -base64 32`) \
+create a small database to test edits:
+`npm run db:seed` \
+run (PowerShell):
+`$env:DATABASE_URL="file:./screenshots.db"; npm run dev` \
+run (bash/zsh):
+`DATABASE_URL="file:./screenshots.db" npm run dev`
+
+Log in via "Server Konsole" with `sally.ride@example.com` (admin). The magic link is printed in the terminal.
 
 Update types based on current schema:
 `npx prisma generate`
@@ -64,23 +73,17 @@ Create DB Migrations (for production)
 `npx prisma migrate dev`
 
 ### Open ToDos
-- Automatisches abmelden aller Accounts nach update (via changes)
-- Android Zahlentastatur Komma ausgeblendet
 - Kostenanpassung bei Gruppenbestellung greift für alle der gleichen Kategorien
 #### Nice Improvements:
-- Item-Page: Kategorie-filter für user persistieren
-- Gruppen-Split
 - Verrechnungskonten-Auszahlung für Admins auch selbst möglich
-- Gruppen-Kauf auf eine/mehrere Kategorien beschränken
+- Gruppen-Kauf auf mehrere Kategorien beschränken (eine Kategorie geht bereits)
 - Personen einen "Projekt-Tag" geben
 - Verrechnungkonten global anzeigen
-- Vorbesteller-Items mit Fix-Preis (Default-Feld vorausfüllen)
 - Ofengebühr für mehrfachbestellungen optional deaktivieren
 - write test-cases (https://www.prisma.io/docs/orm/prisma-client/testing/integration-testing)
 
 ---
 
 ## Questions & Contact
-
 Stuck somewhere? Or you want to adopt LabEats to your needs? \
 You can contact me at coding@13bytes.de or create a [issue](https://github.com/13Bytes/LabFoodDesk/issues).

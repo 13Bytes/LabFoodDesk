@@ -169,7 +169,7 @@ const UserOverview = () => {
       </AdminSectionCard>
 
       <Modal open={!!selectedUser} setOpen={() => setSelectedUser(undefined)}>
-        <UserForm id={selectedUser} finishAction={() => setSelectedUser(undefined)} />
+        <UserForm key={selectedUser} id={selectedUser} finishAction={() => setSelectedUser(undefined)} />
       </Modal>
 
       <ActionResponsePopup ref={animationRef} />

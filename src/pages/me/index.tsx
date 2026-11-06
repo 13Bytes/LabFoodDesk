@@ -3,9 +3,20 @@ import { useSession } from "next-auth/react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import { Balance } from "~/components/General/Balance"
 import { UserAvatar } from "~/components/General/UserAvatar"
-import { Info } from "lucide-react"
+import {
+    CalendarDays,
+    CalendarRange,
+    Heart,
+    Info,
+    Package,
+    Recycle,
+    ShoppingCart,
+    Trophy,
+} from "lucide-react"
 import { api } from "~/utils/api"
 import LowCreditWarning from "~/components/PageComponents/LowCreditWarning"
+import RankingCard from "~/components/PageComponents/RankingCard"
+import StatCard from "~/components/PageComponents/StatsCard"
 
 const Me: NextPage = () => {
     const { data: sessionData } = useSession()
@@ -38,49 +49,57 @@ const Me: NextPage = () => {
                 </div>
 
                 {/* Stats Cards */}
-                {!statsRequest.isLoading && statsRequest.data && (
-                    <div className="grid md:grid-cols-3 gap-6 mb-8">
-                        {/* Ranking Card */}
-                        <div className="card bg-base-100 shadow-xl">
-                            <div className="card-body text-center">
-                                <div className="text-4xl mb-2">🏆</div>
-                                <h3 className="card-title justify-center text-lg">Ranking</h3>
-                                <div className="text-3xl font-bold text-primary">
-                                    #{statsRequest.data.prepaidVolumePlacement}
-                                </div>
-                                <p className="text-sm text-base-content/70">
-                                    Platz bei Guthaben
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Purchases Card */}
-                        <div className="card bg-base-100 shadow-xl">
-                            <div className="card-body text-center">
-                                <div className="text-4xl mb-2">🛒</div>
-                                <h3 className="card-title justify-center text-lg">Einkäufe</h3>
-                                <div className="text-3xl font-bold text-success">
-                                    {statsRequest.data.totalAmountBought.toFixed(2)}€
-                                </div>
-                                <p className="text-sm text-base-content/70">
-                                    Dinge gekauft
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Procurement Card */}
-                        <div className="card bg-base-100 shadow-xl">
-                            <div className="card-body text-center">
-                                <div className="text-4xl mb-2">📦</div>
-                                <h3 className="card-title justify-center text-lg">Beschaffung</h3>
-                                <div className="text-3xl font-bold text-info">
-                                    {statsRequest.data.totalAmountProcured.toFixed(2)}€
-                                </div>
-                                <p className="text-sm text-base-content/70">
-                                    Für LabEats eingekauft
-                                </p>
-                            </div>
-                        </div>
+                {statsRequest.data && (
+                    <div className="grid md:grid-cols-3 gap-4 mb-8">
+                        <StatCard
+                            icon={Trophy}
+                            title="Ranking"
+                            value={`#${statsRequest.data.prepaidVolumePlacement}`}
+                            description="Platz bei Guthaben"
+                            colorClass="primary"
+                        />
+                        <StatCard
+                            icon={ShoppingCart}
+                            title="Einkäufe"
+                            value={`${statsRequest.data.totalAmountBought.toFixed(2)}€`}
+                            description="Gesamtausgaben (inkl. Pfand)"
+                            colorClass="success"
+                        />
+                        <StatCard
+                            icon={Package}
+                            title="Beschaffung"
+                            value={`${statsRequest.data.totalAmountProcured.toFixed(2)}€`}
+                            description="Für LabEats eingekauft"
+                            colorClass="info"
+                        />
+                        <StatCard
+                            icon={CalendarDays}
+                            title="Wochenschnitt"
+                            value={`${statsRequest.data.averagePerWeek.toFixed(2)}€`}
+                            description="Ø der letzten 12 Wochen"
+                            colorClass="success"
+                        />
+                        <StatCard
+                            icon={CalendarRange}
+                            title="Monatsschnitt"
+                            value={`${statsRequest.data.averagePerMonth.toFixed(2)}€`}
+                            description="Ø der letzten 12 Wochen"
+                            colorClass="success"
+                        />
+                        <StatCard
+                            icon={Recycle}
+                            title="Pfand"
+                            value={`${statsRequest.data.depositPaid.toFixed(2)}€`}
+                            description="Insgesamt Pfand bezahlt"
+                            colorClass="info"
+                        />
+                        <RankingCard
+                            icon={Heart}
+                            title="Lieblingsartikel"
+                            entries={statsRequest.data.favoriteItems}
+                            emptyText="Noch nichts gekauft"
+                            className="md:col-span-3"
+                        />
                     </div>
                 )}
 
@@ -88,7 +107,7 @@ const Me: NextPage = () => {
                 {statsRequest.isLoading && (
                     <div className="grid md:grid-cols-3 gap-6 mb-8">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="card bg-base-100 shadow-xl">
+                            <div key={i} className="card dither bg-linear-to-br from-base-100 to-base-200 border border-base-300 shadow-xl">
                                 <div className="card-body">
                                     <div className="skeleton h-16 w-16 rounded-full mx-auto mb-4"></div>
                                     <div className="skeleton h-4 w-24 mx-auto mb-2"></div>
@@ -101,7 +120,7 @@ const Me: NextPage = () => {
                 )}
 
                 {/* Profile Information Card */}
-                <div className="card bg-base-100 shadow-xl mb-6">
+                <div className="card dither bg-linear-to-br from-base-100 to-base-200 border border-base-300 shadow-xl mb-6">
                     <div className="card-body">            <h2 className="card-title text-xl mb-4">
                         <Info className="h-6 w-6" />
                         Profil Information

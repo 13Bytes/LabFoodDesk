@@ -5,7 +5,7 @@ import nextVitals from "eslint-config-next/core-web-vitals"
 
 export default defineConfig([
   {
-    ignores: ["src/generated/prisma/**"],
+    ignores: ["src/generated/prisma/**", ".next/**"],
   },
   {
     files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],

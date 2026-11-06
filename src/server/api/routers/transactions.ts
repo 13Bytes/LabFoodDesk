@@ -9,7 +9,16 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc"
 import { prisma } from "~/server/db"
-import { checkAccountBacking } from "~/server/helper/dbCallHelper"
+import { checkAccountBacking, getReservedAmount } from "~/server/helper/dbCallHelper"
+import {
+  averageOverWindow,
+  daysAgo,
+  daysPerMonth,
+  daysPerWeek,
+  isDepositTransaction,
+  rankByCountPerWeek,
+  sumSince,
+} from "~/server/helper/statistics"
 
 export const sendMoneyProcurementSchema = z.object({
   destinationUserId: id,
@@ -19,13 +28,6 @@ export const sendMoneyProcurementSchema = z.object({
 
 const pageSize = 20
 export const transactionRouter = createTRPCRouter({
-  getMineLatest: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.transaction.findMany({
-      orderBy: { createdAt: "desc" },
-      where: { userId: ctx.session.user.id },
-    })
-  }),
-
   getMineInfinite: protectedProcedure
     .input(
       z.object({
@@ -162,6 +164,78 @@ export const transactionRouter = createTRPCRouter({
       })
     }),
 
+  // anonymous summaries only - no data per person
+  getAdminStats: adminProcedure.query(async ({ ctx }) => {
+    const now = new Date()
+    // reserved group-order buys (type 4) only count once they are booked as type 0
+    const buyTransactions = await ctx.prisma.transaction.findMany({
+      where: { type: 0, canceled: false },
+      select: {
+        userId: true,
+        totalAmount: true,
+        createdAt: true,
+        note: true,
+        groupOrderId: true,
+        items: { select: { canonicalItemId: true, item: { select: { name: true } } } },
+        procurementItems: { select: { item: { select: { name: true } } } },
+      },
+      orderBy: { createdAt: "asc" },
+    })
+    const sales = buyTransactions.filter((transaction) => !isDepositTransaction(transaction))
+    const thirtyDaysAgo = daysAgo(now, 30)
+
+    const soldItems = sales.flatMap((transaction) => [
+      ...transaction.items.map((mapping) => ({
+        key: mapping.canonicalItemId,
+        name: mapping.item.name,
+        createdAt: transaction.createdAt,
+        groupOrder: transaction.groupOrderId !== null,
+      })),
+      ...transaction.procurementItems.map((billing) => ({
+        // procurement items are versioned on update, so they are grouped by name
+        key: `procurement:${billing.item.name}`,
+        name: billing.item.name,
+        createdAt: transaction.createdAt,
+        groupOrder: true,
+      })),
+    ])
+
+    const [credit, overdrawn] = await Promise.all([
+      ctx.prisma.user.aggregate({ where: { balance: { gt: 0 } }, _sum: { balance: true } }),
+      ctx.prisma.user.aggregate({
+        where: { balance: { lt: 0 } },
+        _sum: { balance: true },
+        _count: { _all: true },
+      }),
+    ])
+
+    return {
+      salesLast7Days: sumSince(sales, daysAgo(now, 7)),
+      salesLast30Days: sumSince(sales, thirtyDaysAgo),
+      averageSalesPerWeek: averageOverWindow(sales, now, daysPerWeek),
+      averageSalesPerMonth: averageOverWindow(sales, now, daysPerMonth),
+      depositLast30Days: sumSince(buyTransactions.filter(isDepositTransaction), thirtyDaysAgo),
+      activeUsersLast30Days: new Set(
+        buyTransactions
+          .filter((transaction) => transaction.createdAt >= thirtyDaysAgo)
+          .map((transaction) => transaction.userId),
+      ).size,
+      totalCredit: credit._sum.balance ?? 0,
+      totalOverdrawn: -(overdrawn._sum.balance ?? 0),
+      overdrawnAccounts: overdrawn._count._all,
+      topShopItems: rankByCountPerWeek(
+        soldItems.filter((item) => !item.groupOrder),
+        5,
+        now,
+      ),
+      topGroupOrderItems: rankByCountPerWeek(
+        soldItems.filter((item) => item.groupOrder),
+        5,
+        now,
+      ),
+    }
+  }),
+
   sendMoney: protectedProcedure
     .input(z.object({ destinationUserId: id, amount: z.number(), note: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
@@ -169,18 +243,19 @@ export const transactionRouter = createTRPCRouter({
         where: { id: input.destinationUserId },
       })
 
-      const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
       if (input.amount <= 0) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You can't send a negative amount",
         })
       }
-      checkAccountBacking(user, input.amount)
 
-      // atomic action:
-      await ctx.prisma.$transaction([
-        ctx.prisma.transaction.create({
+      // atomic action - the backing is checked inside so parallel transfers can't overdraw
+      await ctx.prisma.$transaction(async (tx) => {
+        const user = await tx.user.findUniqueOrThrow({ where: { id: ctx.session.user.id } })
+        checkAccountBacking(user, input.amount + (await getReservedAmount(tx, user.id)))
+
+        await tx.transaction.create({
           data: {
             user: { connect: { id: ctx.session.user.id } },
             type: 2,
@@ -188,53 +263,80 @@ export const transactionRouter = createTRPCRouter({
             totalAmount: input.amount,
             note: input.note,
           },
-        }),
-        ctx.prisma.user.update({
+        })
+        await tx.user.update({
           where: { id: ctx.session.user.id },
           data: { balance: { decrement: input.amount } },
-        }),
-        ctx.prisma.user.update({
+        })
+        await tx.user.update({
           where: { id: destinationUser.id },
           data: { balance: { increment: input.amount } },
-        }),
-      ])
+        })
+      })
     }),
 
   retractMoney: protectedProcedure
-    .input(z.object({ moneySourceUserId: id, amount: z.number(), note: z.string().optional() }))
-    .mutation(async ({ ctx, input }) => {
-      const moneySourceUser = await prisma.user.findUniqueOrThrow({
-        where: { id: input.moneySourceUserId },
+    .input(
+      z.object({
+        requests: z.array(z.object({ moneySourceUserId: id, amount: z.number() })).min(1),
+        note: z.string().optional(),
       })
-      if (input.amount <= 0) {
+    )
+    .mutation(async ({ ctx, input }) => {
+      const sourceUserIds = input.requests.map((request) => request.moneySourceUserId)
+      if (new Set(sourceUserIds).size !== sourceUserIds.length) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't request money from the same user twice",
+        })
+      }
+      if (sourceUserIds.includes(ctx.session.user.id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't request money from yourself",
+        })
+      }
+      if (input.requests.some((request) => !(request.amount > 0))) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You can't request a negative amount - send money instead",
         })
       }
+      const moneySourceUsers = await ctx.prisma.user.findMany({
+        where: { id: { in: sourceUserIds } },
+        select: { id: true },
+      })
+      if (moneySourceUsers.length !== sourceUserIds.length) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" })
+      }
+      const totalAmount = input.requests.reduce((sum, request) => sum + request.amount, 0)
 
       // atomic action:
       await ctx.prisma.$transaction([
-        ctx.prisma.transaction.create({
-          data: {
-            user: { connect: { id: ctx.session.user.id } },
-            type: 2,
-            moneyDestination: { connect: { id: moneySourceUser.id } },
-            totalAmount: -input.amount,  // send negative amount to retract money but still indicate the executing user
-            note: input.note,
-          },
-        }),
+        ...input.requests.flatMap((request) => [
+          ctx.prisma.transaction.create({
+            data: {
+              user: { connect: { id: ctx.session.user.id } },
+              type: 2,
+              moneyDestination: { connect: { id: request.moneySourceUserId } },
+              totalAmount: -request.amount,  // send negative amount to retract money but still indicate the executing user
+              note: input.note,
+            },
+          }),
+          ctx.prisma.user.update({
+            where: { id: request.moneySourceUserId },
+            data: { balance: { decrement: request.amount } },
+          }),
+        ]),
         ctx.prisma.user.update({
           where: { id: ctx.session.user.id },
-          data: { balance: { increment: input.amount } },
-        }),
-        ctx.prisma.user.update({
-          where: { id: moneySourceUser.id },
-          data: { balance: { decrement: input.amount } },
+          data: { balance: { increment: totalAmount } },
         }),
       ])
     }),
 
+  // ATTENTION: creates money without a counter-booking - not used in the frontend on purpose.
+  // Only for correcting wrong balances by hand (e.g. via the tRPC API), never for regular bookings.
   sendMoneyProcurement: adminProcedure
     .input(sendMoneyProcurementSchema)
     .mutation(async ({ ctx, input }) => {
@@ -290,18 +392,32 @@ export const transactionRouter = createTRPCRouter({
           })
         }
         await ctx.prisma.$transaction(async (tx) => {
-          await tx.transaction.update({
-            where: { id: input.transactionId },
+          // only succeeds once - a second (parallel) undo finds no buy anymore
+          const undone = await tx.transaction.updateMany({
+            where: { id: input.transactionId, type: 0 },
             data: { type: 90 },
           })
+          if (undone.count === 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Transaction was already undone",
+            })
+          }
           await tx.user.update({
             where: { id: transaction.userId },
             data: { balance: { increment: transaction.totalAmount } },
           })
+          // the item price (or the deposit) went to the item's clearing-account (see buyItem / buyDeposit)
+          if (transaction.clearingAccountId) {
+            await tx.clearingAccount.update({
+              where: { id: transaction.clearingAccountId },
+              data: { balance: { decrement: transaction.amountWithoutFees ?? 0 } },
+            })
+          }
           for (const item of transaction.items) {
             const fees = calculateFeesPerCategory(item.item.price, item.categories)
             for (const cat of fees.categories) {
-              if (cat.charges !== 0) {
+              if (cat.clearingAccountId && cat.charges !== 0) {
                 await tx.clearingAccount.update({
                   where: { id: cat.clearingAccountId },
                   data: { balance: { decrement: cat.charges } },
