@@ -7,11 +7,15 @@ trigger_cron_api() {
     done
 }
 
-npx prisma migrate deploy
+# stop instead of running the app on an outdated database
+if ! prisma migrate deploy; then
+    echo "prisma migrate deploy failed - not starting LabEats"
+    exit 1
+fi
 
 if [ "$ENABLE_PRISMA_STUDIO" == "true" ]; then
     echo "starting prisma studio"
-    npx prisma studio &  # start prisma studio on :5555
+    prisma studio &  # start prisma studio on :5555
 fi
 
 trigger_cron_api &
