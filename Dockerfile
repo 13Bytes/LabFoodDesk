@@ -60,6 +60,12 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+RUN npm install --prefix /opt/prisma-cli --no-audit --no-fund \
+      "prisma@$(node -p "require('./package.json').devDependencies.prisma")" \
+      "dotenv@$(node -p "require('./package.json').dependencies.dotenv")" \
+    && ln -s /opt/prisma-cli/node_modules/prisma /opt/prisma-cli/node_modules/dotenv ./node_modules/ \
+    && ln -s /opt/prisma-cli/node_modules/.bin/prisma /usr/local/bin/prisma
+
 ENV PORT=3000
 
 USER nextjs
