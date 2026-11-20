@@ -3,7 +3,7 @@ import type {
   EmailUserConfig,
   SendVerificationRequestParams,
 } from "next-auth/providers/email"
-import { createTransport } from "nodemailer9"
+import { createTransport } from "nodemailer10"
 
 async function sendVerificationRequest({
   identifier,
