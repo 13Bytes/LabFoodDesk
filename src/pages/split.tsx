@@ -1,6 +1,7 @@
 import { type NextPage } from "next"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
+import { useState } from "react"
 import { ArrowUpRight, ArrowDownLeft, Zap, BarChart3, User, Plus } from "lucide-react"
 import CenteredPage from "~/components/Layout/CenteredPage"
 import GetMoney from "~/components/PageComponents/GetMoney"
@@ -12,11 +13,12 @@ import { api } from "~/utils/api"
 const SplitPage: NextPage = () => {
   const session = useSession()
   const userData = api.user.getMe.useQuery();
+  const [groupMode, setGroupMode] = useState(false)
 
   return (
     <>
       <CenteredPage>
-        <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="w-full max-w-6xl mx-auto px-4 py-6">
           {/* Header with personal balance */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -39,7 +41,7 @@ const SplitPage: NextPage = () => {
           {/* Main Actions Grid */}
           <div className="grid lg:grid-cols-2 gap-8 mb-8">
             {/* Send Money Section */}
-            <div className="space-y-6">              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-6 [&>.card]:flex-1">              <div className="flex items-center gap-4">
               <div className="p-4 bg-linear-to-br from-success/20 to-success/5 rounded-2xl border border-success/20">
                 <ArrowUpRight className="h-6 w-6 text-success" />
               </div>
@@ -55,7 +57,7 @@ const SplitPage: NextPage = () => {
             </div>
 
             {/* Get Money Section */}
-            <div className="space-y-6">              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-6 [&>.card]:flex-1">              <div className="flex items-center gap-4">
               <div className="p-4 bg-linear-to-br from-warning/20 to-warning/5 rounded-2xl border border-warning/20">
                 <ArrowDownLeft className="h-6 w-6 text-warning" />
               </div>
@@ -63,13 +65,27 @@ const SplitPage: NextPage = () => {
                 <h2 className="text-2xl font-bold text-base-content">Geld einfordern</h2>
                 <p className="text-base-content/70">Fordere ausstehende Beträge ein</p>
               </div>
+              <div className="join ml-auto">
+                <button
+                  className={`btn btn-sm join-item ${groupMode ? "" : "btn-warning"}`}
+                  onClick={() => setGroupMode(false)}
+                >
+                  Einzeln
+                </button>
+                <button
+                  className={`btn btn-sm join-item ${groupMode ? "btn-warning" : ""}`}
+                  onClick={() => setGroupMode(true)}
+                >
+                  Gruppe
+                </button>
+              </div>
             </div>
-              <GetMoney />
+              <GetMoney groupMode={groupMode} />
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-base-200 rounded-2xl p-6 mb-8">
+          <div className="bg-base-200 border border-base-300 rounded-2xl p-6 mb-8">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Zap className="h-6 w-6 text-primary" />
               Schnellaktionen

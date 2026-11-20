@@ -8,14 +8,10 @@ import path from "node:path"
 const defaultScreenshotDatabaseUrl = "file:./screenshots.db"
 const databaseUrl = process.env.SCREENSHOT_DATABASE_URL ?? defaultScreenshotDatabaseUrl
 
-const databaseUrlServer = databaseUrl.startsWith("file:./")
-  ? `file:./prisma/${databaseUrl.slice("file:./".length)}`
-  : databaseUrl;
-
-process.env.DATABASE_URL = databaseUrlServer
+process.env.DATABASE_URL = databaseUrl
 
 if (databaseUrl === defaultScreenshotDatabaseUrl) {
-  const databasePath = path.resolve("prisma", "screenshots.db")
+  const databasePath = path.resolve("screenshots.db")
   rmSync(databasePath, { force: true })
   rmSync(`${databasePath}-journal`, { force: true })
   writeFileSync(databasePath, "")
@@ -47,7 +43,7 @@ if (push.status !== 0) {
 
 const prisma = new PrismaClient({
   adapter: new PrismaBetterSqlite3({
-    url: databaseUrlServer,
+    url: databaseUrl,
   }),
 })
 

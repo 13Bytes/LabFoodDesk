@@ -21,6 +21,8 @@ const getTransactionTypeLabel = (type: number): string => {
       return "Überweisung"
     case 3:
       return "Beschaffung"
+    case 4:
+      return "Vorgemerkter Kauf"
     case 90:
       return "Stornierter Kauf"
     case 91:
@@ -54,7 +56,6 @@ const TransactionList = (props: Props) => {
       const data = await trpcUtils.transaction.getAllFixedTimespan.fetch({
         timespan: duration,
       })
-      console.log("converting to csv")
       const flatData = data.map((item) => toFlatPropertyMap(item))
       const csv = CSVParser.unparse(flatData, { delimiter: ';', skipEmptyLines: true })
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
@@ -70,7 +71,7 @@ const TransactionList = (props: Props) => {
 
   if (props.transactions === undefined) {
     return (
-      <div className="card border border-base-300 bg-base-100 shadow-xl">
+      <div className="card border border-base-300 dither bg-linear-to-br from-base-100 to-base-200 shadow-xl">
         <div className="card-body p-6">
           <div className="flex justify-center py-12">
             <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -82,7 +83,7 @@ const TransactionList = (props: Props) => {
 
   if (props.transactions.length === 0) {
     return (
-      <div className="card border border-base-300 bg-base-100 shadow-xl">
+      <div className="card border border-base-300 dither bg-linear-to-br from-base-100 to-base-200 shadow-xl">
         <div className="card-body p-6">
           <div className="py-12 text-center">
             <div className="space-y-2 text-base-content/50">
@@ -97,7 +98,7 @@ const TransactionList = (props: Props) => {
   }
 
   return (
-    <div className="card border border-base-300 bg-base-100 shadow-xl w-full max-w-xl lg:max-w-full">
+    <div className="card border border-base-300 dither bg-linear-to-br from-base-100 to-base-200 shadow-xl w-full max-w-xl lg:max-w-full">
       <div className="card-body p-6 w-full">
         {/* Header Section */}
         <div className="mb-6 flex items-center gap-3">

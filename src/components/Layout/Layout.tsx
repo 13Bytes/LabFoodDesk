@@ -13,8 +13,8 @@ interface Props {
 export default function Layout({ children }: Props) {
   return (
     <>
-      <div className={`h-dvh ${font.className}`}>
-        <div className="flex h-full flex-col">
+      <div className={`min-h-dvh bg-base-300 ${font.className}`}>
+        <div className="flex min-h-dvh flex-col">
           <Header />
           <main>{children}</main>
 

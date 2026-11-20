@@ -7,15 +7,12 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const databaseUrl = env.DATABASE_URL.startsWith("file:./")
-  ? `file:./prisma/${env.DATABASE_URL.slice("file:./".length)}`
-  : env.DATABASE_URL;
-
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     adapter: new PrismaBetterSqlite3({
-      url: databaseUrl,
+      // Match prisma.config.ts: relative SQLite paths start at the project root.
+      url: env.DATABASE_URL,
     }),
     log:
       env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],

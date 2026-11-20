@@ -14,7 +14,7 @@ import { Pagination } from "~/components/General/Pagination"
 import Modal from "~/components/Layout/Modal"
 import RegularPage from "~/components/Layout/RegularPage"
 import StatCard from "~/components/PageComponents/StatsCard"
-import { localStringOptions, weekdays } from "~/helper/globalTypes"
+import { weekdays } from "~/helper/globalTypes"
 import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
@@ -48,7 +48,21 @@ const GroupOrdersPage = () => {
 
   // Calculate statistics
   const templateCount = allOrderTemplateRequest.data?.length ?? 0
-  const activeTemplates = allOrderTemplateRequest.data?.filter((t) => t.active).length ?? 0
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("de", { hour: "2-digit", minute: "2-digit" })
+  // next deadline over all templates (same logic as the cron job)
+  const nextTemplateDeadline = (() => {
+    const now = new Date()
+    let next: { date: Date; name: string } | undefined
+    for (const template of allOrderTemplateRequest.data ?? []) {
+      const date = new Date(now)
+      date.setDate(now.getDate() + ((template.weekday - now.getDay() + 7) % 7))
+      date.setHours(template.ordersCloseAt.getHours(), template.ordersCloseAt.getMinutes(), 0, 0)
+      if (date <= now) date.setDate(date.getDate() + 7)
+      if (!next || date < next.date) next = { date, name: template.name }
+    }
+    return next
+  })()
 
   const currentPageOrders = groupOrders?.pages[page]?.items ?? []
   const totalOrders = currentPageOrders.length
@@ -58,11 +72,11 @@ const GroupOrdersPage = () => {
 
   const legendTemplatesRow = (
     <tr>
-      <th className="w-12"></th>
+      <th>Termin</th>
       <th>Name</th>
-      <th>Wochentag</th>
-      <th className="text-center">Status</th>
-      <th className="text-right">Aktionen</th>
+      <th className="hidden md:table-cell">Kategorie</th>
+      <th className="hidden md:table-cell">Anlegen</th>
+      <th className="hidden text-right sm:table-cell">Aktionen</th>
     </tr>
   )
 
@@ -71,8 +85,8 @@ const GroupOrdersPage = () => {
       <th>Datum</th>
       <th>Name</th>
       <th className="text-center">Status</th>
-      <th>Bestellungen</th>
-      <th className="text-right">Aktionen</th>
+      <th className="hidden md:table-cell">Bestellungen</th>
+      <th className="hidden text-right sm:table-cell">Aktionen</th>
     </tr>
   )
 
@@ -116,7 +130,7 @@ const GroupOrdersPage = () => {
       <div className="space-y-8">
         {/* Templates Section */}
         <div className="card border border-base-300 bg-base-100 shadow-xl">
-          <div className="card-body p-6">
+          <div className="card-body p-4 sm:p-6">
             {/* Header Section */}
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
@@ -136,18 +150,22 @@ const GroupOrdersPage = () => {
             <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               <StatCard
                 icon={Repeat}
-                title="Wiederholungen gesamt"
+                title="Wiederholungen"
                 value={templateCount}
-                description="Konfigurierte Templates"
+                description="Werden automatisch angelegt"
                 colorClass="primary"
               />
 
               <StatCard
-                icon={CheckCircle}
-                title="Aktiv"
-                value={activeTemplates}
-                description="Aktive Templates"
-                colorClass="success"
+                icon={Calendar}
+                title="Nächste Deadline"
+                value={
+                  nextTemplateDeadline
+                    ? `${weekdays[nextTemplateDeadline.date.getDay()]?.slice(0, 2)}, ${formatTime(nextTemplateDeadline.date)}`
+                    : "–"
+                }
+                description={nextTemplateDeadline?.name ?? "Keine Wiederholung"}
+                colorClass="info"
               />
             </div>
 
@@ -178,36 +196,34 @@ const GroupOrdersPage = () => {
                   </thead>
                   <tbody>
                     {allOrderTemplateRequest.data?.map((item) => (
-                      <tr key={item.id} className="transition-colors hover:bg-base-200/50">
+                      <tr
+                        key={item.id}
+                        className="cursor-pointer transition-colors hover:bg-base-200/50"
+                        onClick={() => setGrouporderTemplateModalOpen(item.id)}
+                      >
                         <td>
-                          {item.active ? (
-                            <span className="badge badge-success gap-1">
-                              <CheckCircle className="h-3 w-3" />
+                          <div className="flex flex-col">
+                            <span className="font-bold">{weekdays[item.weekday]}</span>
+                            <span className="text-xs text-base-content/60">
+                              {formatTime(item.ordersCloseAt)}
                             </span>
-                          ) : (
-                            <span className="badge badge-ghost gap-1">
-                              <XCircle className="h-3 w-3" />
-                            </span>
-                          )}
+                          </div>
                         </td>
                         <td>
                           <div className="font-bold">{item.name}</div>
                         </td>
-                        <td>
-                          <span className="badge badge-outline">{weekdays[item.weekday]}</span>
-                        </td>
-                        <td className="text-center">
-                          {item.active ? (
-                            <span className="font-semibold text-success">Aktiv</span>
+                        <td className="hidden md:table-cell">
+                          {item.defaultCategory ? (
+                            <span className="badge badge-outline badge-sm">{item.defaultCategory.name}</span>
                           ) : (
-                            <span className="text-base-content/40">Inaktiv</span>
+                            <span className="text-sm text-base-content/40">Alle</span>
                           )}
                         </td>
-                        <td className="text-right">
-                          <button
-                            className="btn btn-ghost btn-sm hover:btn-primary"
-                            onClick={() => setGrouporderTemplateModalOpen(item.id)}
-                          >
+                        <td className="hidden md:table-cell">
+                          <span className="text-sm">{item.ordersStartsAt} h vorher</span>
+                        </td>
+                        <td className="hidden text-right sm:table-cell">
+                          <button className="btn btn-ghost btn-sm hover:btn-primary">
                             Details
                           </button>
                         </td>
@@ -222,7 +238,7 @@ const GroupOrdersPage = () => {
 
         {/* Group Orders Section */}
         <div className="card border border-base-300 bg-base-100 shadow-xl">
-          <div className="card-body p-6">
+          <div className="card-body p-4 sm:p-6">
             {/* Header Section */}
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
@@ -294,17 +310,22 @@ const GroupOrdersPage = () => {
                   </thead>
                   <tbody>
                     {currentPageOrders.map((order) => (
-                      <tr key={order.id} className="transition-colors hover:bg-base-200/50">
+                      <tr
+                        key={order.id}
+                        className="cursor-pointer transition-colors hover:bg-base-200/50"
+                        onClick={() => setAddGrouporderModalOpen(order.id)}
+                      >
                         <td>
                           <div className="flex flex-col">
                             <span className="font-bold">
-                              {order.ordersCloseAt.toLocaleDateString("de", localStringOptions)}
+                              {order.ordersCloseAt.toLocaleDateString("de", {
+                                weekday: "short",
+                                day: "numeric",
+                                month: "short",
+                              })}
                             </span>
                             <span className="text-xs text-base-content/60">
-                              {order.ordersCloseAt.toLocaleTimeString("de", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {formatTime(order.ordersCloseAt)}
                             </span>
                           </div>
                         </td>
@@ -312,7 +333,7 @@ const GroupOrdersPage = () => {
                           <div className="font-bold">{order.name}</div>
                         </td>
                         <td className="text-center">{getStatusBadge(order.status)}</td>
-                        <td>
+                        <td className="hidden md:table-cell">
                           <div className="flex flex-wrap gap-1">
                             {order.orders.length > 0 ? (
                               order.orders.map((ord) => (
@@ -327,11 +348,8 @@ const GroupOrdersPage = () => {
                             )}
                           </div>
                         </td>
-                        <td className="text-right">
-                          <button
-                            className="btn btn-ghost btn-sm hover:btn-primary"
-                            onClick={() => setAddGrouporderModalOpen(order.id)}
-                          >
+                        <td className="hidden text-right sm:table-cell">
+                          <button className="btn btn-ghost btn-sm hover:btn-primary">
                             Details
                           </button>
                         </td>

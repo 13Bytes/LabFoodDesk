@@ -32,7 +32,7 @@ const TopUp: NextPage = () => {
           </div>
 
           {/* Current Balance Display */}
-          <div className="card bg-linear-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
+          <div className="card dither bg-linear-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
             <div className="card-body p-6 text-center">
               <h2 className="text-xl font-semibold text-base-content/80 mb-2">Dein aktuelles Guthaben</h2>
               <div className="text-4xl font-bold">
@@ -90,7 +90,7 @@ const TopUp: NextPage = () => {
               </div>
 
               {/* Authorized Users List */}
-                <div className="card bg-linear-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
+                <div className="card dither bg-linear-to-br from-base-100 to-base-200 shadow-xl border border-base-300">
                 <div className="card-body p-6">
                   <h3 className="text-xl font-semibold text-base-content mb-4 flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />

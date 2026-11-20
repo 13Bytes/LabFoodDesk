@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useMemo } from "react"
 import type { SubmitHandler } from "react-hook-form"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
+import DecimalInput from "~/components/General/DecimalInput"
 import { type Tid } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 
@@ -32,6 +33,7 @@ const CategoryForm = (props: Props) => {
   const {
     register: addItemRegister,
     handleSubmit: addItemSubmit,
+    control,
     reset,
     formState: { errors },
   } = useForm<AddCategoryInput>({
@@ -117,12 +119,19 @@ const CategoryForm = (props: Props) => {
             <label className="label">
               <span className="label-text text-base">Aufpreis Absolut (€)</span>
             </label>
-            <input
-              type="number"
-              step={0.01}
-              min={0}
-              {...addItemRegister("markupFixed", { valueAsNumber: true })}
-              className="input-primary input w-full max-w-md"
+            <Controller
+              control={control}
+              name="markupFixed"
+              render={({ field }) => (
+                <DecimalInput
+                  name={field.name}
+                  value={field.value}
+                  min={0}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  className="input-primary input w-full max-w-md"
+                />
+              )}
             />
             {errors.markupFixed && <p>{errors.markupFixed.message}</p>}
           </div>

@@ -45,3 +45,11 @@
   --depth: 1;
   --noise: 0;
 }
+
+/*
+ * The page canvas (visible when overscrolling past the top) uses the header
+ * colour; the layout wrapper paints the regular page background on top.
+ */
+:root {
+  --root-bg: var(--color-base-200);
+}

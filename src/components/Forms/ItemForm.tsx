@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useMemo } from "react"
 import type { SubmitHandler } from "react-hook-form"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
+import DecimalInput from "~/components/General/DecimalInput"
 import { type Tid, formCategories, id } from "~/helper/zodTypes"
 import { api } from "~/utils/api"
 import CategorySelector from "../FormElements/CategorySelector"
@@ -12,6 +13,7 @@ export const createItemSchema = z.object({
   categories: z.array(id),
   account: id,
   price: z.number(),
+  deposit: z.number().nonnegative().optional().default(0),
   for_grouporders: z.boolean().optional().default(false),
 })
 export type AddItem = z.infer<typeof createItemSchema>
@@ -50,14 +52,14 @@ const ItemForm = (props: Props) => {
     () =>
       props.id
         ? {
-            ...currentItem.data,
-            account: currentItem.data?.accountId,
-            categories: currentItem.data?.categories.map((category) => ({
-              label: category.name,
-              value: category.id,
-            })),
-          }
-        : { name: "", price: 0, for_grouporders: false, categories: [] },
+          ...currentItem.data,
+          account: currentItem.data?.accountId,
+          categories: currentItem.data?.categories.map((category) => ({
+            label: category.name,
+            value: category.id,
+          })),
+        }
+        : { name: "", price: 0, deposit: 0, for_grouporders: false, categories: [] },
     [currentItem.data, props.id],
   )
 
@@ -106,17 +108,43 @@ const ItemForm = (props: Props) => {
             <label className="label">
               <span className="label-text text-base">Preis [€]</span>
             </label>
-            <input
-              type="number"
-              step={0.01}
-              {...addItemRegister("price", {
-                required: true,
-                valueAsNumber: true,
-              })}
-              className="input input-primary w-full max-w-md"
-              placeholder="Preis"
+            <Controller
+              control={control}
+              name="price"
+              rules={{ required: true }}
+              render={({ field }) => (
+                <DecimalInput
+                  name={field.name}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  className="input input-primary w-full max-w-md"
+                  placeholder="Preis"
+                />
+              )}
             />
             {errors.price && <p>{errors.price.message}</p>}
+          </div>
+          <div>
+            <label className="label">
+              <span className="label-text text-base">Pfand [€] (optional, wird separat gekauft)</span>
+            </label>
+            <Controller
+              control={control}
+              name="deposit"
+              render={({ field }) => (
+                <DecimalInput
+                  name={field.name}
+                  value={field.value}
+                  min={0}
+                  onChange={(value) => field.onChange(Number.isNaN(value) ? 0 : value)}
+                  onBlur={field.onBlur}
+                  className="input input-primary w-full max-w-md"
+                  placeholder="Pfand"
+                />
+              )}
+            />
+            {errors.deposit && <p>{errors.deposit.message}</p>}
           </div>
           <div>
             <label className="label">
@@ -145,7 +173,7 @@ const ItemForm = (props: Props) => {
             {errors.account && <p>{errors.account.message}</p>}
           </div>
           <div>
-            <input type="checkbox" className="mr-3" {...addItemRegister("for_grouporders")} />
+            <input type="checkbox" className="checkbox checkbox-sm mr-3" {...addItemRegister("for_grouporders")} />
             <span className="label-text text-base">(Nur) Für Gruppenkäufe verwenden</span>
             {errors.for_grouporders && <p>{errors.for_grouporders.message}</p>}
           </div>

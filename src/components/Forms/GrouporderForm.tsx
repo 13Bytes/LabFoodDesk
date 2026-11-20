@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { ConfirmationModal } from "~/components/General/ConfirmationModal"
 import type { SubmitHandler } from "react-hook-form"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -24,6 +25,7 @@ const AddGrouporderForm = (props: Props) => {
   const deleteGrouporder = api.groupOrders.delete.useMutation()
 
   const animationRef = useRef<AnimationHandle>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const currentGroupOrder = api.groupOrders.get.useQuery({ id: props.id! }, { enabled: !!props.id })
 
@@ -91,7 +93,7 @@ const AddGrouporderForm = (props: Props) => {
             <input
               type="text"
               {...register("name", { required: true })}
-              className="input input-primary w-full max-w-md"
+              className="input input-bordered input-primary w-full max-w-md"
               placeholder="Name"
             />
           </div>
@@ -102,22 +104,34 @@ const AddGrouporderForm = (props: Props) => {
             <input
               type="datetime-local"
               {...register("ordersCloseAt", { required: true })}
-              className="input input-primary w-full max-w-md"
+              className="input input-bordered input-primary w-full max-w-md"
             />
           </div>
 
-          <button className="btn btn-primary btn-block mt-1" type="submit">
-            {!!props.id ? "Aktualisieren" : "Anlegen"}
-          </button>
-        </form>
-        {!!props.id && currentGroupOrder.data?.status === 0 && (
-          <div className="flex flex-row justify-end gap-3 pt-3">
-            <button className="btn btn-ghost btn-secondary" onClick={deleteGroupOrder}>
-              Stornieren / Löschen
+          <div className="mt-1 flex flex-row gap-3">
+            {!!props.id && currentGroupOrder.data?.status === 0 && (
+              <button className="btn btn-ghost hover:btn-error" type="button" onClick={() => setConfirmDelete(true)}>
+                Stornieren / Löschen
+              </button>
+            )}
+            <button className="btn btn-primary flex-1" type="submit">
+              {!!props.id ? "Aktualisieren" : "Anlegen"}
             </button>
           </div>
-        )}
+        </form>
       </div>
+      <ConfirmationModal
+        open={confirmDelete}
+        close={() => setConfirmDelete(false)}
+        proceed={deleteGroupOrder}
+        title="Gruppen-Kauf stornieren?"
+        proceedText="Stornieren / Löschen"
+        proceedButtonClass="btn btn-error"
+        // opened from inside another modal - keep it on top
+        className="z-[1000]"
+      >
+        <p>Das geht nur, solange noch niemand bestellt hat.</p>
+      </ConfirmationModal>
       <ActionResponsePopup ref={animationRef} />
     </>
   )

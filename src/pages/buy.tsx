@@ -1,6 +1,6 @@
 import { type NextPage } from "next"
-import { useRef, useState, useSyncExternalStore } from "react"
-import { Search, Package } from "lucide-react"
+import { useMemo, useRef, useState, useSyncExternalStore } from "react"
+import { ArrowUpDown, Check, Package, Search, X } from "lucide-react"
 import ActionResponsePopup, {
   type AnimationHandle,
   animate,
@@ -38,17 +38,64 @@ const subscribeToSortMode = (onStoreChange: () => void) => {
   }
 }
 
+const CATEGORY_FILTER_STORAGE_KEY_PREFIX = "buyPageCategoryFilter:"
+
+type CategoryOverrides = { [index: string]: boolean }
+
+const parseCategoryOverrides = (value: string | null): CategoryOverrides => {
+  if (!value) {
+    return {}
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value)
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      return {}
+    }
+    return Object.fromEntries(
+      Object.entries(parsed).filter(
+        (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+      ),
+    )
+  } catch {
+    return {}
+  }
+}
+
 const BuyPage: NextPage = () => {
   const allItemsRequest = api.item.getBuyable.useQuery()
-  const allCategoriesRequest = api.category.getAllWithItems.useQuery()
+  const allCategoriesRequest = api.category.getAll.useQuery()
   const userDataRequest = api.user.getMe.useQuery()
   const trpcUtils = api.useUtils()
   const animationRef = useRef<AnimationHandle>(null)
   const [searchString, setSearchString] = useState("")
   const sortMode = useSyncExternalStore(subscribeToSortMode, getStoredSortMode, () => "recent")
-  const [categoryOverrides, setCategoryOverrides] = useState<{ [index: string]: boolean }>({})
+  // category filter is remembered per user (in this browser)
+  const categoryFilterStorageKey = userDataRequest.data?.id
+    ? CATEGORY_FILTER_STORAGE_KEY_PREFIX + userDataRequest.data.id
+    : null
+  const storedCategoryOverrides = useSyncExternalStore(
+    subscribeToSortMode,
+    () => (categoryFilterStorageKey ? window.localStorage.getItem(categoryFilterStorageKey) : null),
+    () => null,
+  )
+  const categoryOverrides = useMemo(
+    () => parseCategoryOverrides(storedCategoryOverrides),
+    [storedCategoryOverrides],
+  )
+  const setCategoryOverrides = (
+    update: CategoryOverrides | ((current: CategoryOverrides) => CategoryOverrides),
+  ) => {
+    if (!categoryFilterStorageKey) {
+      return
+    }
+    const newOverrides = typeof update === "function" ? update(categoryOverrides) : update
+    window.localStorage.setItem(categoryFilterStorageKey, JSON.stringify(newOverrides))
+    window.dispatchEvent(new Event(SORT_MODE_STORAGE_EVENT))
+  }
 
   const apiBuyOneItemMultiple = api.item.buyItem.useMutation()
+  const apiBuyDeposit = api.item.buyDeposit.useMutation()
 
   const handleSortModeChange = (newSortMode: SortMode) => {
     window.localStorage.setItem(SORT_MODE_STORAGE_KEY, newSortMode)
@@ -65,6 +112,21 @@ const BuyPage: NextPage = () => {
       animate(animationRef, "success", message)
       await trpcUtils.user.invalidate()
       await trpcUtils.item.getBuyable.invalidate()
+    } catch (error: any) {
+      console.error(error)
+      animate(animationRef, "failure", error.message)
+      throw error
+    }
+  }
+
+  const buyDepositAction = async (itemID: string, quantity: number = 1): Promise<void> => {
+    try {
+      await apiBuyDeposit.mutateAsync({ productID: itemID, quantity })
+      const message = quantity === 1
+        ? "Pfand erfolgreich gekauft!"
+        : `${quantity}x Pfand erfolgreich gekauft!`
+      animate(animationRef, "success", message)
+      await trpcUtils.user.invalidate()
     } catch (error: any) {
       console.error(error)
       animate(animationRef, "failure", error.message)
@@ -145,89 +207,80 @@ const BuyPage: NextPage = () => {
     <RegularPage>
       <div className="flex flex-col space-y-6">
         {/* Search and Filter Section */}
-        <div className="card bg-base-200 shadow-sm">
-          <div className="card-body p-4">
+        <div className="card border border-base-300 bg-base-200 shadow-sm">
+          <div className="card-body gap-4 p-4">
+            {/* Search and Sorting */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <label className="input w-full sm:flex-1">
+                <Search className="h-4 w-4 shrink-0 text-base-content/50" />
+                <input
+                  type="text"
+                  className="grow"
+                  placeholder="Nach Produkten suchen..."
+                  aria-label="Produktsuche"
+                  value={searchString}
+                  onChange={(e) => setSearchString(e.target.value)}
+                />
+                {searchString && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="btn btn-ghost btn-circle btn-xs"
+                    aria-label="Suche leeren"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </label>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-between items-start">
-              <div className="flex-1 max-w-md">
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">Produktsuche</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Nach Produkten suchen..."
-                      className="input w-full pr-20 pl-10"
-                      value={searchString}
-                      onChange={(e) => setSearchString(e.target.value)}
-                    />
-                    <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/50" />
-                    {searchString && (
-                      <button
-                        onClick={clearSearch}
-                        className="btn btn-ghost btn-sm absolute right-1 top-1/2 transform -translate-y-1/2"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-
-              <div className="sm:w-40">
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">Sortierung</span>
-                  </label>
-                  <div>
-                    <select
-                      className="select select-bordered select-sm w-full"
-                      value={sortMode}
-                      onChange={(e) => handleSortModeChange(e.target.value as SortMode)}
-                    >
-                      <option value="recent">Zuletzt gekauft</option>
-                      <option value="alphabetic">Alphabetisch</option>
-                      <option value="mostBought">AI (activity indicator)</option>
-                    </select>
-                  </div>
-                </div>
-
-
-                <div className="text-xs pt-1 text-base-content/70">
-                  {displayedItems ? (
-                    <span>
-                      {displayedItems.length} Produkt{displayedItems.length !== 1 ? "e" : ""} gefunden
-                    </span>
-                  ) : (
-                    <span>Lade...</span>
-                  )}
-                </div>
-              </div>
+              <label className="select w-full sm:w-56">
+                <ArrowUpDown className="h-4 w-4 shrink-0 text-base-content/50" />
+                <select
+                  aria-label="Sortierung"
+                  value={sortMode}
+                  onChange={(e) => handleSortModeChange(e.target.value as SortMode)}
+                >
+                  <option value="recent">Zuletzt gekauft</option>
+                  <option value="alphabetic">Alphabetisch</option>
+                  <option value="mostBought">AI (activity indicator)</option>
+                </select>
+              </label>
             </div>
 
-            {/* Category Filters */}
-            <div className="space-y-3">
-              <div className="flex flex-row gap-2 items-center justify-start flex-wrap">
-                <label className="label">
-                  <span className="label-text font-medium">Kategorien filtern</span>
-                </label>
+            <div className="border-t border-base-300" />
 
-                <div className="flex gap-2">
+            {/* Category Filters */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-medium">Kategorien</span>
+                  <span className="text-xs text-base-content/60">
+                    {displayedItems ? (
+                      <>
+                        {displayedItems.length} Produkt{displayedItems.length !== 1 ? "e" : ""}
+                      </>
+                    ) : (
+                      "Lade..."
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex gap-1">
                   <button
+                    type="button"
                     onClick={handleSelectAllCategories}
-                    className="btn btn-xs btn-outline"
+                    className="btn btn-ghost btn-xs"
                     disabled={allCategoriesSelected}
                   >
-                    Alle auswählen
+                    Alle
                   </button>
                   <button
+                    type="button"
                     onClick={handleClearAllCategories}
-                    className="btn btn-xs btn-ghost"
+                    className="btn btn-ghost btn-xs"
                     disabled={noCategoriesSelected}
                   >
-                    Alle abwählen
+                    Keine
                   </button>
                 </div>
               </div>
@@ -239,20 +292,21 @@ const BuyPage: NextPage = () => {
 
                   return (
                     <button
+                      type="button"
                       key={category.id}
-                      className={`btn btn-sm transition-all duration-200 ${isSelected
+                      aria-pressed={isSelected}
+                      className={`btn btn-sm rounded-full font-normal transition-colors ${isSelected
                         ? "btn-primary"
-                        : "btn-outline"
+                        : "btn-outline border-base-300"
                         }`}
                       onClick={() => {
                         const id = category.id
                         setCategoryOverrides((dc) => ({ ...dc, [id]: !displayCategories[id] }))
                       }}
                     >
+                      {isSelected && <Check className="h-3.5 w-3.5" />}
                       <span>{category.name}</span>
-                      <div className="badge badge-sm ml-1 opacity-70">
-                        {itemCount}
-                      </div>
+                      <span className="text-xs opacity-60">{itemCount}</span>
                     </button>
                   )
                 })}
@@ -286,6 +340,7 @@ const BuyPage: NextPage = () => {
                   key={item.id}
                   item={item}
                   buyAction={buyAction}
+                  buyDepositAction={buyDepositAction}
                   userBalance={userDataRequest.data?.balance}
                 />
               ))}

@@ -16,13 +16,6 @@ export const categoryRouter = createTRPCRouter({
     })
   }),
 
-  getAllWithItems: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.category.findMany({
-      where: { is_active: true },
-      include: { items: true, procurementItems: true },
-    })
-  }),
-
   get: protectedProcedure.input(idObj).query(({ ctx, input }) => {
     return ctx.prisma.category.findUniqueOrThrow({
       where: { id: input.id },
@@ -31,7 +24,6 @@ export const categoryRouter = createTRPCRouter({
   }),
 
   create: adminProcedure.input(addCategoryValidationSchem).mutation(async ({ ctx, input }) => {
-    console.log(input)
     const { markupDestination, ...correctedData } = input
     const entryWithMarkup = markupDestination != undefined && markupDestination !== ""
     if (!entryWithMarkup) {
@@ -68,7 +60,14 @@ export const categoryRouter = createTRPCRouter({
       }
       const oldCategoryWithInclude = await ctx.prisma.category.findUniqueOrThrow({
         where: { id },
-        include: { items: true, procurementItems: true },
+        include: {
+          items: true,
+          procurementItems: true,
+          // open group orders keep their filter on the replacement
+          groupOrdersFiltered: { where: { status: 0 }, select: { id: true } },
+          // templates keep their default category on the replacement
+          groupOrderTemplates: { select: { id: true } },
+        },
       })
 
       await prisma.$transaction([
@@ -80,6 +79,12 @@ export const categoryRouter = createTRPCRouter({
             items: { connect: oldCategoryWithInclude.items.map((item) => ({ id: item.id })) },
             procurementItems: {
               connect: oldCategoryWithInclude.procurementItems.map((item) => ({ id: item.id })),
+            },
+            groupOrdersFiltered: {
+              connect: oldCategoryWithInclude.groupOrdersFiltered.map((groupOrder) => ({ id: groupOrder.id })),
+            },
+            groupOrderTemplates: {
+              connect: oldCategoryWithInclude.groupOrderTemplates.map((template) => ({ id: template.id })),
             },
             ...data,
           },
@@ -105,7 +110,7 @@ export const categoryRouter = createTRPCRouter({
     } else {
       return await ctx.prisma.category.update({
         where: { id: input.id },
-        data: { is_active: false },
+        data: { is_active: false, groupOrderTemplates: { set: [] } },
       })
     }
   }),

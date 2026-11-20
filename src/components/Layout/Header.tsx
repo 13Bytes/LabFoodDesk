@@ -1,5 +1,6 @@
 import {
   Archive,
+  BarChart3,
   CreditCard,
   DollarSign,
   FileText,
@@ -29,6 +30,19 @@ export default function Header() {
   const { data: userData } = api.user.getMe.useQuery(undefined, {
     enabled: loggedIn,
   })
+  const { data: unseenRetractionCount } = api.user.getUnseenRetractionCount.useQuery(undefined, {
+    enabled: loggedIn,
+    refetchInterval: 60_000,
+  })
+  const hasUnseenRetractions = (unseenRetractionCount ?? 0) > 0
+  const unseenRetractionsDot = (
+    <span
+      role="img"
+      className="inline-block h-2 w-2 shrink-0 rounded-full bg-error"
+      title="Dir wurde Geld eingezogen"
+      aria-label="Dir wurde Geld eingezogen"
+    />
+  )
 
   const isActive = (path: string) => {
     // Handle exact matches for root paths
@@ -40,12 +54,8 @@ export default function Header() {
     path: string,
     baseClasses = "hover:bg-primary hover:text-primary-content transition-colors duration-200 font-medium",
   ) => {
-    if (path === "/top-up") {
-      const activeClasses = "bg-success text-success-content"
-      return isActive(path) ? `${baseClasses} ${activeClasses}` : baseClasses
-    }
-
-    const activeClasses = "bg-primary text-primary-content"
+    const activeClasses =
+      path === "/admin" ? "bg-warning text-warning-content" : "bg-primary text-primary-content"
     return isActive(path) ? `${baseClasses} ${activeClasses}` : baseClasses
   }
 
@@ -70,13 +80,7 @@ export default function Header() {
         </Link>
       </li>
       <li>
-        <Link
-          href="/top-up"
-          className={getNavItemClasses(
-            "/top-up",
-            "font-medium transition-colors duration-200 hover:bg-success hover:text-success-content",
-          )}
-        >
+        <Link href="/top-up" className={getNavItemClasses("/top-up")}>
           <Plus className="h-4 w-4" />
           Aufladen
         </Link>
@@ -85,6 +89,7 @@ export default function Header() {
         <Link href="/account" className={getNavItemClasses("/account")}>
           <Settings className="h-4 w-4" />
           Konto
+          {hasUnseenRetractions && unseenRetractionsDot}
         </Link>
       </li>{" "}
       {sessionData?.user.is_admin && (
@@ -163,6 +168,15 @@ export default function Header() {
                   Alle Transaktionen
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/admin/stats"
+                  className={`transition-colors duration-200 hover:bg-base-300 ${isActive("/admin/stats") ? "bg-base-300 font-semibold" : ""}`}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  Statistik
+                </Link>
+              </li>
             </ul>
           </details>
         </li>
@@ -176,8 +190,9 @@ export default function Header() {
           <div className="navbar-start">
             <div className="dropdown menu">
               {" "}
-              <div tabIndex={0} role="button" className="btn btn-ghost hover:bg-base-300 lg:hidden">
+              <div tabIndex={0} role="button" className="btn btn-ghost relative hover:bg-base-300 lg:hidden">
                 <Menu className="h-6 w-6" />
+                {hasUnseenRetractions && <span className="absolute top-2 right-2">{unseenRetractionsDot}</span>}
               </div>
               <ul
                 tabIndex={0}
